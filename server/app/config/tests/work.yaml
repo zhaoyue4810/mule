@@ -1,0 +1,119 @@
+test_code: work
+name: 职场人格图鉴
+category: 职业测评
+source: index.html
+description: 了解你在职场中的隐藏技能树。
+duration_minutes: 7
+dimensions:
+  - code: initiative
+    name: 主动性
+  - code: collaboration
+    name: 协作性
+  - code: time_management
+    name: 时间管理
+  - code: communication
+    name: 沟通力
+  - code: resilience
+    name: 抗压力
+questions:
+  - seq: 1
+    code: work_q1
+    title: 开会时你更倾向于？
+    interaction_type: bubble
+    options:
+      - code: a
+        text: 主导讨论
+        dimension_code: initiative
+        value: 1.0
+      - code: b
+        text: 认真记录
+        dimension_code: time_management
+        value: 0.8
+      - code: c
+        text: 提出创新想法
+        dimension_code: communication
+        value: 0.9
+      - code: d
+        text: 倾听并总结
+        dimension_code: collaboration
+        value: 1.0
+  - seq: 2
+    code: work_q2
+    title: 我喜欢同时处理多个任务。
+    interaction_type: swipe
+    dimension_weights:
+      time_management: 1.0
+  - seq: 3
+    code: work_q3
+    title: 截止日期对你来说是？
+    interaction_type: versus
+    options:
+      - code: a
+        text: 必须严格遵守
+        dimension_code: time_management
+        value: 1.0
+      - code: b
+        text: 一个灵活的参考
+        dimension_code: resilience
+        value: 0.5
+  - seq: 4
+    code: work_q4
+    title: 我更喜欢口头沟通而非文字。
+    interaction_type: slider
+    dimension_weights:
+      communication: 1.0
+  - seq: 5
+    code: work_q5
+    title: 下班前 10 分钟，同事突然丢给你一个紧急任务...
+    interaction_type: scenario
+    options:
+      - code: a
+        text: 留下来帮忙
+        dimension_code: collaboration
+        value: 1.0
+      - code: b
+        text: 告诉 TA 你明天一早处理
+        dimension_code: time_management
+        value: 0.9
+      - code: c
+        text: 快速看一眼给个方向就走
+        dimension_code: initiative
+        value: 0.8
+  - seq: 6
+    code: work_q6
+    title: 面对批评你会？
+    interaction_type: bubble
+    options:
+      - code: a
+        text: 理性分析接受
+        dimension_code: resilience
+        value: 1.0
+      - code: b
+        text: 有些难过但改进
+        dimension_code: resilience
+        value: 0.7
+      - code: c
+        text: 觉得不公平反驳
+        dimension_code: communication
+        value: 0.4
+      - code: d
+        text: 记住教训改进
+        dimension_code: initiative
+        value: 0.8
+personas:
+  - code: dependable_operator
+    name: 稳定执行者
+    dim_pattern:
+      initiative: 0.7
+      collaboration: 0.8
+      time_management: 0.95
+      communication: 0.6
+      resilience: 0.8
+  - code: expressive_driver
+    name: 外放驱动者
+    dim_pattern:
+      initiative: 0.9
+      collaboration: 0.7
+      time_management: 0.7
+      communication: 0.95
+      resilience: 0.75

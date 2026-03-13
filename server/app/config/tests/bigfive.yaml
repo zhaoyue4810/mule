@@ -1,0 +1,65 @@
+test_code: bigfive
+name: 大五人格测试
+category: 性格测试
+source: index.html
+description: 基于经典大五人格模型，全面评估你的性格维度。
+duration_minutes: 8
+dimensions:
+  - code: openness
+    name: 开放性
+  - code: conscientiousness
+    name: 尽责性
+  - code: extraversion
+    name: 外向性
+  - code: agreeableness
+    name: 宜人性
+  - code: emotional_stability
+    name: 情绪稳定度
+questions:
+  - seq: 1
+    code: bigfive_q1
+    title: 我喜欢结交新朋友，在社交场合感到自在。
+    interaction_type: swipe
+    dimension_weights:
+      extraversion: 1.0
+  - seq: 2
+    code: bigfive_q2
+    title: 我经常会为各种事情感到担忧。
+    interaction_type: slider
+    dimension_weights:
+      emotional_stability: 1.0
+  - seq: 3
+    code: bigfive_q3
+    title: 我对艺术和美学有浓厚的兴趣。
+    interaction_type: star
+    dimension_weights:
+      openness: 1.0
+  - seq: 4
+    code: bigfive_q4
+    title: 我愿意帮助他人，即使需要牺牲自己的时间。
+    interaction_type: swipe
+    dimension_weights:
+      agreeableness: 1.0
+  - seq: 5
+    code: bigfive_q5
+    title: 我做事有条理，能坚持完成任务。
+    interaction_type: slider
+    dimension_weights:
+      conscientiousness: 1.0
+personas:
+  - code: balanced_explorer
+    name: 平衡探索者
+    dim_pattern:
+      openness: 0.8
+      conscientiousness: 0.7
+      extraversion: 0.6
+      agreeableness: 0.7
+      emotional_stability: 0.6
+  - code: calm_builder
+    name: 沉静建构者
+    dim_pattern:
+      openness: 0.5
+      conscientiousness: 0.9
+      extraversion: 0.3
+      agreeableness: 0.6
+      emotional_stability: 0.8

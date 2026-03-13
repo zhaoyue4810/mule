@@ -1,0 +1,76 @@
+{
+  "pages": [
+    {
+      "path": "pages/home/index",
+      "style": {
+        "navigationBarTitleText": "心测"
+      }
+    },
+    {
+      "path": "pages/discover/index",
+      "style": {
+        "navigationBarTitleText": "发现"
+      }
+    },
+    {
+      "path": "pages/match/index",
+      "style": {
+        "navigationBarTitleText": "匹配"
+      }
+    },
+    {
+      "path": "pages/profile/index",
+      "style": {
+        "navigationBarTitleText": "我的"
+      }
+    },
+    {
+      "path": "pages/test/detail",
+      "style": {
+        "navigationBarTitleText": "测试详情"
+      }
+    },
+    {
+      "path": "pages/test/answer",
+      "style": {
+        "navigationBarTitleText": "开始测试"
+      }
+    },
+    {
+      "path": "pages/test/result",
+      "style": {
+        "navigationBarTitleText": "测试结果"
+      }
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "心测",
+    "navigationBarBackgroundColor": "#fff8f0",
+    "backgroundColor": "#fff8f0"
+  },
+  "tabBar": {
+    "color": "#7b6c5f",
+    "selectedColor": "#d96f3d",
+    "backgroundColor": "#fffaf4",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/home/index",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/discover/index",
+        "text": "发现"
+      },
+      {
+        "pagePath": "pages/match/index",
+        "text": "匹配"
+      },
+      {
+        "pagePath": "pages/profile/index",
+        "text": "我的"
+      }
+    ]
+  }
+}

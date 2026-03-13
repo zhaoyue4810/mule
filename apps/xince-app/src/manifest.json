@@ -1,0 +1,23 @@
+{
+  "name": "心测",
+  "appid": "__UNI__XINCE__",
+  "description": "心测用户端",
+  "versionName": "0.1.0",
+  "versionCode": "100",
+  "transformPx": false,
+  "app-plus": {
+    "usingComponents": true
+  },
+  "mp-weixin": {
+    "appid": "",
+    "setting": {
+      "urlCheck": false
+    }
+  },
+  "h5": {
+    "title": "心测",
+    "router": {
+      "base": "/"
+    }
+  }
+}

@@ -1,0 +1,153 @@
+test_code: love
+name: 恋爱人格图鉴
+category: 关系匹配
+source: index.html
+description: 探索你的爱情模式，找到最适合你的 TA。
+duration_minutes: 6
+is_match: true
+dimensions:
+  - code: communication
+    name: 沟通力
+  - code: security
+    name: 安全感
+  - code: intimacy
+    name: 亲密度
+  - code: conflict
+    name: 冲突力
+  - code: values
+    name: 价值观
+questions:
+  - seq: 1
+    code: love_q1
+    title: 你的理想约会方式是？
+    interaction_type: bubble
+    options:
+      - code: a
+        text: 一起烹饪晚餐
+        dimension_code: intimacy
+        value: 1.0
+      - code: b
+        text: 户外冒险活动
+        dimension_code: values
+        value: 0.8
+      - code: c
+        text: 安静的咖啡馆
+        dimension_code: communication
+        value: 1.0
+      - code: d
+        text: 看电影或演出
+        dimension_code: intimacy
+        value: 0.7
+  - seq: 2
+    code: love_q2
+    title: 吵架后你通常会？
+    interaction_type: bubble
+    options:
+      - code: a
+        text: 主动和好
+        dimension_code: conflict
+        value: 1.0
+      - code: b
+        text: 等对方先道歉
+        dimension_code: security
+        value: 0.3
+      - code: c
+        text: 冷静后再沟通
+        dimension_code: communication
+        value: 1.0
+      - code: d
+        text: 假装没发生
+        dimension_code: conflict
+        value: 0.1
+  - seq: 3
+    code: love_q3
+    title: 在感情中安全感对我非常重要。
+    interaction_type: swipe
+    dimension_weights:
+      security: 1.0
+  - seq: 4
+    code: love_q4
+    title: 你和 TA 在逛街时看到一件很贵的东西...
+    interaction_type: scenario
+    options:
+      - code: a
+        text: 偷偷记住回来买给 TA
+        dimension_code: intimacy
+        value: 1.0
+      - code: b
+        text: 一起讨论要不要买
+        dimension_code: communication
+        value: 1.0
+      - code: c
+        text: 装作没注意到
+        dimension_code: security
+        value: 0.2
+  - seq: 5
+    code: love_q5
+    title: 你认为健康的关系最需要？
+    interaction_type: versus
+    options:
+      - code: a
+        text: 相互信任
+        dimension_code: security
+        value: 1.0
+      - code: b
+        text: 保持激情
+        dimension_code: intimacy
+        value: 1.0
+  - seq: 6
+    code: love_q6
+    title: 我喜欢用言语表达爱意。
+    interaction_type: slider
+    dimension_weights:
+      communication: 1.0
+  - seq: 7
+    code: love_q7
+    title: 你更看重伴侣的哪个特质？
+    interaction_type: bubble
+    options:
+      - code: a
+        text: 幽默风趣
+        dimension_code: communication
+        value: 0.8
+      - code: b
+        text: 温柔体贴
+        dimension_code: security
+        value: 1.0
+      - code: c
+        text: 上进有担当
+        dimension_code: values
+        value: 1.0
+      - code: d
+        text: 浪漫有情调
+        dimension_code: intimacy
+        value: 1.0
+  - seq: 8
+    code: love_q8
+    title: 我需要一定的个人空间。
+    interaction_type: star
+    dimension_weights:
+      conflict: 1.0
+  - seq: 9
+    code: love_q9
+    title: 你对「浪漫」的温度是？
+    interaction_type: hotcold
+    dimension_weights:
+      intimacy: 1.0
+personas:
+  - code: warm_guardian
+    name: 温暖守护者
+    dim_pattern:
+      communication: 0.7
+      security: 0.9
+      intimacy: 0.7
+      conflict: 0.6
+      values: 0.7
+  - code: passionate_resonator
+    name: 热烈共振者
+    dim_pattern:
+      communication: 0.8
+      security: 0.5
+      intimacy: 0.95
+      conflict: 0.7
+      values: 0.8

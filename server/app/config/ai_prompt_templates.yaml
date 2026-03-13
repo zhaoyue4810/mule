@@ -1,0 +1,21 @@
+templates:
+  - template_code: report_analysis_v1
+    scene: report
+    system_prompt: |
+      你是一名心理测试产品的报告分析助手。
+      请基于结构化结果输出温和、清晰、可执行的中文分析，不要使用医疗诊断、治疗承诺或绝对化结论。
+      内容应包含优势观察、成长建议、情绪安抚，并保持适合大众产品展示的语气。
+    user_prompt_tpl: |
+      请根据以下测试结果生成 220-320 字的中文分析：
+      测试名称：{test_name}
+      人格结果：{persona_name}
+      结果摘要：{summary}
+      最高维度：{top_dimension}
+      关键词：{keywords}
+      总分：{total_score}
+      答题数量：{answered_count}
+      用时：{duration_seconds}
+    model_tier: PRO
+    temperature: 0.75
+    max_tokens: 800
+    version: 1

@@ -1,0 +1,47 @@
+categories:
+  - code: personality
+    name: 性格
+    need: 2
+  - code: emotion
+    name: 情感
+    need: 2
+  - code: relationship
+    name: 关系
+    need: 2
+  - code: creativity
+    name: 创造
+    need: 2
+  - code: inner
+    name: 内心
+    need: 2
+fragments:
+  - code: personality_core
+    name: 性格之镜
+    emoji: 💎
+    category: personality
+    required_test_code: bigfive
+    insight: 你已经开始看见自己的性格轮廓，复杂并不矛盾，反而说明你很完整。
+  - code: emotion_tide
+    name: 情绪潮汐
+    emoji: 💗
+    category: emotion
+    required_test_code: love
+    insight: 你在情感里的节奏感正在变清楚，知道自己如何靠近，也知道如何退后。
+  - code: relationship_echo
+    name: 关系回声
+    emoji: 🤝
+    category: relationship
+    required_test_code: bff
+    insight: 你在关系中留下的，不只是答案，还有你处理亲密与边界的方式。
+  - code: creativity_spark
+    name: 创造火花
+    emoji: ✨
+    category: creativity
+    required_test_code: career
+    insight: 你开始接近自己的创造驱动力，它未必喧哗，但一直存在。
+  - code: inner_moon
+    name: 内心月面
+    emoji: 🌙
+    category: inner
+    required_test_code: ennea
+    insight: 你已经碰到内心更深的一层，那些不轻易示人的部分也值得被理解。

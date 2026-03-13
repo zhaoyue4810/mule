@@ -1,0 +1,113 @@
+test_code: couple
+name: CP默契挑战
+category: 关系匹配
+source: index.html
+description: 你们在一起有多默契？来挑战吧。
+duration_minutes: 6
+is_match: true
+dimensions:
+  - code: communication
+    name: 沟通质量
+  - code: connection
+    name: 情感连接
+  - code: values
+    name: 价值匹配
+  - code: lifestyle
+    name: 生活习惯
+  - code: future
+    name: 未来愿景
+questions:
+  - seq: 1
+    code: couple_q1
+    title: 周末最喜欢一起做什么？
+    interaction_type: bubble
+    options:
+      - code: a
+        text: 宅家看剧
+        dimension_code: lifestyle
+        value: 0.8
+      - code: b
+        text: 出去探店
+        dimension_code: connection
+        value: 0.8
+      - code: c
+        text: 各做各的
+        dimension_code: values
+        value: 0.5
+      - code: d
+        text: 运动锻炼
+        dimension_code: lifestyle
+        value: 1.0
+  - seq: 2
+    code: couple_q2
+    title: 对方最让你感动的是？
+    interaction_type: bubble
+    options:
+      - code: a
+        text: 记住小细节
+        dimension_code: connection
+        value: 1.0
+      - code: b
+        text: 默默付出
+        dimension_code: values
+        value: 0.9
+      - code: c
+        text: 坦诚沟通
+        dimension_code: communication
+        value: 1.0
+      - code: d
+        text: 给予自由
+        dimension_code: future
+        value: 0.8
+  - seq: 3
+    code: couple_q3
+    title: 我们能坦然讨论金钱问题。
+    interaction_type: swipe
+    dimension_weights:
+      values: 1.0
+  - seq: 4
+    code: couple_q4
+    title: 我了解对方的梦想和目标。
+    interaction_type: star
+    dimension_weights:
+      future: 1.0
+  - seq: 5
+    code: couple_q5
+    title: 你们对于「要不要养宠物」意见不同...
+    interaction_type: scenario
+    options:
+      - code: a
+        text: 继续软磨硬泡
+        dimension_code: connection
+        value: 0.6
+      - code: b
+        text: 尊重对方意见放弃
+        dimension_code: communication
+        value: 0.8
+      - code: c
+        text: 提出先养一周试试看
+        dimension_code: lifestyle
+        value: 1.0
+  - seq: 6
+    code: couple_q6
+    title: 我认为我们的未来规划是一致的。
+    interaction_type: slider
+    dimension_weights:
+      future: 1.0
+personas:
+  - code: gentle_teammates
+    name: 温柔搭档
+    dim_pattern:
+      communication: 0.8
+      connection: 0.85
+      values: 0.8
+      lifestyle: 0.7
+      future: 0.75
+  - code: future_builders
+    name: 共建未来型
+    dim_pattern:
+      communication: 0.75
+      connection: 0.7
+      values: 0.85
+      lifestyle: 0.8
+      future: 0.95

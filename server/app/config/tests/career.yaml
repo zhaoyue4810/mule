@@ -1,0 +1,177 @@
+test_code: career
+name: 职业天赋探测
+category: 职业测评
+source: index.html
+description: 发现你的隐藏天赋和最佳职业方向。
+duration_minutes: 10
+dimensions:
+  - code: leadership
+    name: 领导力
+  - code: creativity
+    name: 创造力
+  - code: analysis
+    name: 分析力
+  - code: social
+    name: 社交力
+  - code: execution
+    name: 执行力
+  - code: resilience
+    name: 抗压力
+questions:
+  - seq: 1
+    code: career_q1
+    title: 你更喜欢哪种工作环境？
+    interaction_type: bubble
+    options:
+      - code: a
+        text: 自由灵活远程
+        dimension_code: creativity
+        value: 0.8
+      - code: b
+        text: 结构化办公室
+        dimension_code: execution
+        value: 1.0
+      - code: c
+        text: 户外实地工作
+        dimension_code: resilience
+        value: 0.8
+      - code: d
+        text: 创意工作室
+        dimension_code: creativity
+        value: 1.0
+  - seq: 2
+    code: career_q2
+    title: 我喜欢领导团队完成项目。
+    interaction_type: swipe
+    dimension_weights:
+      leadership: 1.0
+  - seq: 3
+    code: career_q3
+    title: 我擅长处理数据和分析。
+    interaction_type: star
+    dimension_weights:
+      analysis: 1.0
+  - seq: 4
+    code: career_q4
+    title: 面对一个全新的项目，你首先会？
+    interaction_type: versus
+    options:
+      - code: a
+        text: 制定详细计划再动手
+        dimension_code: execution
+        value: 1.0
+      - code: b
+        text: 先行动再边做边调整
+        dimension_code: resilience
+        value: 0.9
+  - seq: 5
+    code: career_q5
+    title: 领导突然让你明天做一个从没接触过的领域的汇报...
+    interaction_type: scenario
+    options:
+      - code: a
+        text: 加班通宵也要做好
+        dimension_code: resilience
+        value: 1.0
+      - code: b
+        text: 找同事求助分担
+        dimension_code: social
+        value: 1.0
+      - code: c
+        text: 坦白说自己不太了解能否延期
+        dimension_code: analysis
+        value: 0.6
+  - seq: 6
+    code: career_q6
+    title: 你如何看待工作与生活的平衡？
+    interaction_type: versus
+    options:
+      - code: a
+        text: 工作是生活的一部分
+        dimension_code: execution
+        value: 0.8
+      - code: b
+        text: 工作和生活要严格分开
+        dimension_code: resilience
+        value: 0.7
+  - seq: 7
+    code: career_q7
+    title: 我愿意承担风险追求高回报。
+    interaction_type: slider
+    dimension_weights:
+      leadership: 1.0
+  - seq: 8
+    code: career_q8
+    title: 我喜欢与人打交道胜过独自工作。
+    interaction_type: swipe
+    dimension_weights:
+      social: 1.0
+  - seq: 9
+    code: career_q9
+    title: 在星空中选择最能代表你职业理想的词。
+    interaction_type: constellation
+    options:
+      - code: a
+        text: 创造
+        dimension_code: creativity
+        value: 1.0
+      - code: b
+        text: 稳定
+        dimension_code: execution
+        value: 1.0
+      - code: c
+        text: 影响力
+        dimension_code: leadership
+        value: 1.0
+      - code: d
+        text: 自由
+        dimension_code: resilience
+        value: 0.8
+      - code: e
+        text: 成长
+        dimension_code: analysis
+        value: 0.8
+  - seq: 10
+    code: career_q10
+    title: 转动命运轮盘，看看你的职业天赋。
+    interaction_type: fortune
+    options:
+      - code: a
+        text: 领袖型
+        dimension_code: leadership
+        value: 1.0
+      - code: b
+        text: 创造型
+        dimension_code: creativity
+        value: 1.0
+      - code: c
+        text: 分析型
+        dimension_code: analysis
+        value: 1.0
+      - code: d
+        text: 协调型
+        dimension_code: social
+        value: 1.0
+      - code: e
+        text: 执行型
+        dimension_code: execution
+        value: 1.0
+personas:
+  - code: strategic_captain
+    name: 战略领航者
+    dim_pattern:
+      leadership: 0.95
+      creativity: 0.6
+      analysis: 0.8
+      social: 0.75
+      execution: 0.85
+      resilience: 0.8
+  - code: inventive_builder
+    name: 创造建构者
+    dim_pattern:
+      leadership: 0.5
+      creativity: 0.95
+      analysis: 0.7
+      social: 0.6
+      execution: 0.8
+      resilience: 0.7

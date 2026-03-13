@@ -1,0 +1,591 @@
+<script setup lang="ts">
+import { computed, ref } from "vue";
+import { onLoad, onUnload } from "@dcloudio/uni-app";
+
+import type { AppReportDetail } from "@/shared/models/reports";
+import {
+  fetchReportAiStatus,
+  fetchReportDetail,
+  retryReportAi,
+} from "@/shared/services/reports";
+
+const report = ref<AppReportDetail | null>(null);
+const loading = ref(true);
+const error = ref("");
+const aiRefreshing = ref(false);
+let currentRecordId = 0;
+let pollTimer: ReturnType<typeof setInterval> | null = null;
+
+const titleText = computed(() =>
+  report.value?.persona.persona_name
+    ? `你当前最接近 ${report.value.persona.persona_name}`
+    : "你的结果已经生成",
+);
+
+function backHome() {
+  uni.switchTab({
+    url: "/pages/home/index",
+  });
+}
+
+function goProfile() {
+  uni.switchTab({
+    url: "/pages/profile/index",
+  });
+}
+
+function stopPolling() {
+  if (pollTimer) {
+    clearInterval(pollTimer);
+    pollTimer = null;
+  }
+}
+
+function formatPercent(value: number) {
+  return `${Math.round(value * 100)}%`;
+}
+
+async function refreshAiStatus() {
+  if (!currentRecordId || !report.value) {
+    return;
+  }
+  try {
+    aiRefreshing.value = true;
+    const statusPayload = await fetchReportAiStatus(currentRecordId);
+    report.value = {
+      ...report.value,
+      ai_status: statusPayload.status,
+      ai_text: statusPayload.content || report.value.ai_text,
+    };
+    if (statusPayload.status === "COMPLETED" || statusPayload.status === "FAILED") {
+      stopPolling();
+    }
+  } catch (err) {
+    console.error(err);
+    stopPolling();
+  } finally {
+    aiRefreshing.value = false;
+  }
+}
+
+function startPolling() {
+  stopPolling();
+  pollTimer = setInterval(() => {
+    refreshAiStatus();
+  }, 2500);
+}
+
+async function handleRetryAi() {
+  if (!currentRecordId || aiRefreshing.value) {
+    return;
+  }
+  try {
+    aiRefreshing.value = true;
+    const statusPayload = await retryReportAi(currentRecordId);
+    if (report.value) {
+      report.value = {
+        ...report.value,
+        ai_status: statusPayload.status,
+        ai_text: statusPayload.content || null,
+      };
+    }
+    if (statusPayload.status !== "COMPLETED") {
+      startPolling();
+    }
+  } catch (err) {
+    uni.showToast({
+      title: err instanceof Error ? err.message : "重试失败",
+      icon: "none",
+    });
+  } finally {
+    aiRefreshing.value = false;
+  }
+}
+
+async function loadReport(recordId: number) {
+  loading.value = true;
+  error.value = "";
+  try {
+    report.value = await fetchReportDetail(recordId);
+    if (report.value.ai_status === "PENDING" || report.value.ai_status === "RUNNING") {
+      startPolling();
+    }
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : "报告加载失败";
+  } finally {
+    loading.value = false;
+  }
+}
+
+onLoad((query) => {
+  const recordId =
+    query && typeof query.recordId === "string" ? Number(query.recordId) : 0;
+  if (!recordId) {
+    error.value = "缺少 recordId 参数";
+    loading.value = false;
+    return;
+  }
+  currentRecordId = recordId;
+  loadReport(recordId);
+});
+
+onUnload(() => {
+  stopPolling();
+});
+</script>
+
+<template>
+  <view class="page">
+    <view v-if="loading" class="panel">
+      <text class="panel__body">正在生成报告...</text>
+    </view>
+
+    <view v-else-if="error" class="panel">
+      <text class="panel__body">{{ error }}</text>
+    </view>
+
+    <view v-else-if="report" class="report">
+      <view class="hero">
+        <text class="hero__eyebrow">{{ report.test_name }} · 测试报告</text>
+        <text class="hero__title">{{ titleText }}</text>
+        <text class="hero__tier">{{ report.result_tier }}</text>
+        <view class="hero__metrics">
+          <view class="hero__metric">
+            <text class="hero__metric-value">{{ report.total_score || 0 }}</text>
+            <text class="hero__metric-label">总分</text>
+          </view>
+          <view class="hero__metric">
+            <text class="hero__metric-value">{{ report.answered_count }}</text>
+            <text class="hero__metric-label">题数</text>
+          </view>
+          <view class="hero__metric">
+            <text class="hero__metric-value">{{ report.duration_seconds || 0 }}s</text>
+            <text class="hero__metric-label">用时</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="persona-card" v-if="report.persona.persona_name">
+        <text class="persona-card__title">{{ report.persona.persona_name }}</text>
+        <text class="persona-card__body">
+          {{ report.persona.description || report.summary }}
+        </text>
+        <view v-if="report.persona_tags.length" class="tags">
+          <text
+            v-for="tag in report.persona_tags"
+            :key="`${tag.tone}-${tag.label}`"
+            class="tag"
+          >
+            {{ tag.label }}
+          </text>
+        </view>
+      </view>
+
+      <view class="panel">
+        <text class="panel__title">结果摘要</text>
+        <text class="panel__body">{{ report.summary }}</text>
+      </view>
+
+      <view class="panel" v-if="report.radar_dimensions.length">
+        <text class="panel__title">维度雷达</text>
+        <view class="radar-list">
+          <view
+            v-for="item in report.radar_dimensions"
+            :key="item.dim_code"
+            class="radar-item"
+          >
+            <view class="radar-item__head">
+              <text class="radar-item__label">{{ item.label }}</text>
+              <text class="radar-item__value">{{ item.score.toFixed(2) }}</text>
+            </view>
+            <view class="radar-item__track">
+              <view
+                class="radar-item__fill"
+                :style="{ width: formatPercent(item.normalized_score) }"
+              />
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="panel" v-if="report.top_dimensions.length">
+        <text class="panel__title">核心维度</text>
+        <view class="chips">
+          <view
+            v-for="item in report.top_dimensions"
+            :key="item.dim_code"
+            class="chip"
+          >
+            <text class="chip__name">{{ item.dim_code.toUpperCase() }}</text>
+            <text class="chip__score">{{ item.score.toFixed(2) }}</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="panel">
+        <text class="panel__title">灵魂天气</text>
+        <text class="panel__meta">{{ report.soul_weather.title }}</text>
+        <text class="panel__body">{{ report.soul_weather.description }}</text>
+      </view>
+
+      <view class="panel" v-if="report.metaphor_cards.length">
+        <text class="panel__title">隐喻卡片</text>
+        <view class="metaphors">
+          <view
+            v-for="item in report.metaphor_cards"
+            :key="`${item.category}-${item.title}`"
+            class="metaphor-card"
+          >
+            <text class="metaphor-card__emoji">{{ item.emoji }}</text>
+            <text class="metaphor-card__category">{{ item.category }}</text>
+            <text class="metaphor-card__title">{{ item.title }}</text>
+            <text class="metaphor-card__body">{{ item.subtitle }}</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="panel" v-if="report.dna_segments.length">
+        <text class="panel__title">DNA 条形图</text>
+        <view class="dna-list">
+          <view
+            v-for="item in report.dna_segments"
+            :key="item.dim_code"
+            class="dna-item"
+          >
+            <text class="dna-item__label">{{ item.label }}</text>
+            <view class="dna-item__track">
+              <view
+                class="dna-item__fill"
+                :style="{ width: `${item.percentage}%` }"
+              />
+            </view>
+            <text class="dna-item__percent">{{ item.percentage }}%</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="panel" v-if="report.action_guides.length">
+        <text class="panel__title">成长建议</text>
+        <view class="guide-list">
+          <view
+            v-for="item in report.action_guides"
+            :key="item.title"
+            class="guide-card"
+          >
+            <text class="guide-card__title">{{ item.title }}</text>
+            <text class="guide-card__body">{{ item.description }}</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="panel">
+        <text class="panel__title">AI 解读</text>
+        <text class="panel__meta">
+          {{ report.ai_status === "COMPLETED" ? "已生成" : "待生成" }}
+        </text>
+        <text class="panel__body">
+          {{
+            report.ai_text ||
+            "当前 MVP 先展示同步结构化报告，AI 深度文案会在后续异步网关阶段接入。"
+          }}
+        </text>
+        <button
+          v-if="report.ai_status !== 'COMPLETED'"
+          class="mini-button"
+          :disabled="aiRefreshing"
+          @tap="handleRetryAi"
+        >
+          {{ aiRefreshing ? "处理中..." : "重新生成 AI 解读" }}
+        </button>
+      </view>
+
+      <view class="actions">
+        <button class="button button--secondary" @tap="goProfile">查看我的画像</button>
+        <button class="button" @tap="backHome">返回首页</button>
+      </view>
+    </view>
+  </view>
+</template>
+
+<style lang="scss" scoped>
+.page {
+  padding: 28rpx 28rpx 40rpx;
+}
+
+.report {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.hero {
+  padding: 36rpx 30rpx;
+  border-radius: 30rpx;
+  background:
+    radial-gradient(circle at top right, rgba(255, 240, 219, 0.98), rgba(255, 204, 170, 0.92)),
+    linear-gradient(145deg, #fff0db, #ffd9bb);
+  box-shadow: $xc-shadow;
+}
+
+.hero__eyebrow {
+  display: block;
+  font-size: 22rpx;
+  color: $xc-accent;
+}
+
+.hero__title {
+  display: block;
+  margin-top: 14rpx;
+  font-size: 40rpx;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.hero__tier {
+  display: inline-flex;
+  margin-top: 18rpx;
+  padding: 10rpx 18rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.7);
+  color: $xc-accent;
+  font-size: 22rpx;
+}
+
+.hero__metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14rpx;
+  margin-top: 22rpx;
+}
+
+.hero__metric {
+  padding: 20rpx;
+  border-radius: 22rpx;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.hero__metric-value {
+  display: block;
+  font-size: 32rpx;
+  font-weight: 700;
+}
+
+.hero__metric-label {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: rgba(43, 33, 24, 0.7);
+}
+
+.panel,
+.persona-card {
+  padding: 28rpx;
+  border-radius: 24rpx;
+  background: rgba(255, 255, 255, 0.9);
+  border: 2rpx solid rgba(43, 33, 24, 0.06);
+}
+
+.persona-card {
+  background:
+    linear-gradient(145deg, rgba(255, 251, 245, 0.98), rgba(255, 239, 228, 0.9)),
+    #fff;
+}
+
+.persona-card__title {
+  display: block;
+  font-size: 34rpx;
+  font-weight: 700;
+}
+
+.persona-card__body {
+  display: block;
+  margin-top: 14rpx;
+  font-size: 26rpx;
+  line-height: 1.75;
+  color: $xc-muted;
+}
+
+.panel__title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.panel__body {
+  display: block;
+  margin-top: 16rpx;
+  font-size: 26rpx;
+  line-height: 1.75;
+  color: $xc-muted;
+}
+
+.panel__meta {
+  display: block;
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  color: $xc-accent;
+}
+
+.tags,
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14rpx;
+  margin-top: 18rpx;
+}
+
+.tag,
+.chip {
+  padding: 12rpx 18rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 238, 224, 0.92);
+  color: $xc-accent;
+  font-size: 22rpx;
+}
+
+.chip {
+  min-width: 152rpx;
+  border-radius: 20rpx;
+}
+
+.chip__name,
+.chip__score {
+  display: block;
+}
+
+.chip__score {
+  margin-top: 8rpx;
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
+.radar-list,
+.dna-list,
+.guide-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  margin-top: 18rpx;
+}
+
+.radar-item__head,
+.dna-item {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.radar-item__head {
+  justify-content: space-between;
+  margin-bottom: 10rpx;
+}
+
+.radar-item__label,
+.radar-item__value,
+.dna-item__label,
+.dna-item__percent {
+  font-size: 24rpx;
+}
+
+.radar-item__track,
+.dna-item__track {
+  flex: 1;
+  height: 18rpx;
+  border-radius: 999rpx;
+  background: rgba(43, 33, 24, 0.08);
+  overflow: hidden;
+}
+
+.radar-item__fill,
+.dna-item__fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(135deg, #d96f3d, #f1b17a);
+}
+
+.metaphors {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14rpx;
+  margin-top: 18rpx;
+}
+
+.metaphor-card {
+  padding: 22rpx 18rpx;
+  border-radius: 22rpx;
+  background: rgba(255, 248, 240, 0.95);
+}
+
+.metaphor-card__emoji {
+  display: block;
+  font-size: 34rpx;
+}
+
+.metaphor-card__category {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 22rpx;
+  color: $xc-muted;
+}
+
+.metaphor-card__title {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 26rpx;
+  font-weight: 600;
+}
+
+.metaphor-card__body {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 22rpx;
+  line-height: 1.7;
+  color: $xc-muted;
+}
+
+.guide-card {
+  padding: 22rpx;
+  border-radius: 20rpx;
+  background: rgba(255, 248, 240, 0.95);
+}
+
+.guide-card__title {
+  display: block;
+  font-size: 26rpx;
+  font-weight: 600;
+}
+
+.guide-card__body {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  line-height: 1.7;
+  color: $xc-muted;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14rpx;
+}
+
+.button {
+  border-radius: 999rpx;
+  background: linear-gradient(135deg, #d96f3d, #bf5321);
+  color: #fff9f3;
+}
+
+.button--secondary {
+  background: rgba(255, 255, 255, 0.92);
+  color: $xc-accent;
+  border: 2rpx solid rgba(217, 111, 61, 0.18);
+}
+
+.mini-button {
+  margin-top: 18rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 238, 224, 0.92);
+  color: $xc-accent;
+  font-size: 24rpx;
+}
+</style>

@@ -1,0 +1,141 @@
+interaction_types:
+  swipe:
+    title: 左右滑动
+    component: SwipeCard
+    scoring_method: binary
+    default_config:
+      left_label: 不认同
+      right_label: 认同
+      threshold: 60
+  bubble:
+    title: 气泡选择
+    component: BubbleSelect
+    scoring_method: preset_value
+    default_config:
+      columns: 2
+  slider:
+    title: 滑块调节
+    component: EmojiSlider
+    scoring_method: normalize
+    default_config:
+      min: 1
+      max: 5
+      labels:
+        - 完全不符
+        - 非常符合
+      emojis:
+        - 😔
+        - 😐
+        - 🙂
+        - 😊
+        - 😄
+  versus:
+    title: 对比选择
+    component: VersusPick
+    scoring_method: binary
+    default_config:
+      top_color: purple-p
+      bottom_color: pink-p
+  star:
+    title: 星星评分
+    component: StarRate
+    scoring_method: normalize
+    default_config:
+      max_stars: 5
+      labels:
+        - 完全不符合
+        - 不太符合
+        - 一般
+        - 比较符合
+        - 非常符合
+  scenario:
+    title: 情景模拟
+    component: ScenarioPick
+    scoring_method: preset_value
+    default_config:
+      scene_emoji: ☕
+      scene_text: 你在咖啡店...
+      tip_text: 选择你最自然的反应
+  tarot:
+    title: 塔罗翻牌
+    component: TarotCards
+    scoring_method: preset_value
+    default_config:
+      card_count: 3
+  hotcold:
+    title: 冷热调节
+    component: HotCold
+    scoring_method: normalize
+    default_config:
+      min_label: 冰冷
+      max_label: 火热
+      emojis:
+        - ❄️
+        - 🧊
+        - 😐
+        - 🔥
+        - ☀️
+  constellation:
+    title: 星座连线
+    component: Constellation
+    scoring_method: preset_value
+    default_config:
+      positions:
+        - x: 20%
+          y: 30%
+        - x: 65%
+          y: 15%
+        - x: 40%
+          y: 70%
+  fortune:
+    title: 抽签转盘
+    component: FortuneWheel
+    scoring_method: preset_value
+    default_config:
+      sector_colors:
+        - "#9B7ED8"
+        - "#E8729A"
+        - "#F2A68B"
+        - "#7CC5B2"
+  scratch:
+    title: 刮刮卡
+    component: ScratchCard
+    scoring_method: preset_value
+    default_config:
+      canvas_width: 260
+      canvas_height: 180
+      reveal_threshold: 0.35
+  rank:
+    title: 拖拽排序
+    component: RankDrag
+    scoring_method: position_normalize
+    default_config: {}
+  pressure:
+    title: 长按压力
+    component: PressureHold
+    scoring_method: duration_normalize
+    default_config:
+      max_duration: 3000
+      levels: 5
+  plot2d:
+    title: 二维坐标
+    component: Plot2d
+    scoring_method: xy_map
+    default_config:
+      x_min: 内向
+      x_max: 外向
+      y_min: 感性
+      y_max: 理性
+      grid_size: 240
+  colorpick:
+    title: 色彩转盘
+    component: ColorPick
+    scoring_method: hue_map
+    default_config:
+      hue_map:
+        "0": 热情
+        "60": 乐观
+        "120": 平和
+        "180": 沉稳
+        "240": 忧郁
+        "300": 神秘

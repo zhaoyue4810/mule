@@ -1,0 +1,131 @@
+test_code: ennea
+name: 九型人格测试
+category: 性格测试
+source: index.html
+description: 揭示你内心深处的核心动机与恐惧。
+duration_minutes: 12
+dimensions:
+  - code: perfectionist
+    name: 完美型
+  - code: helper
+    name: 助人型
+  - code: achiever
+    name: 成就型
+  - code: individualist
+    name: 自我型
+  - code: thinker
+    name: 思考型
+questions:
+  - seq: 1
+    code: ennea_q1
+    title: 你最害怕的是什么？
+    interaction_type: bubble
+    options:
+      - code: a
+        text: 被认为不完美
+        dimension_code: perfectionist
+        value: 1.0
+      - code: b
+        text: 不被人需要
+        dimension_code: helper
+        value: 1.0
+      - code: c
+        text: 没有成就
+        dimension_code: achiever
+        value: 1.0
+      - code: d
+        text: 失去自我
+        dimension_code: individualist
+        value: 1.0
+  - seq: 2
+    code: ennea_q2
+    title: 我追求完美，对细节要求很高。
+    interaction_type: swipe
+    dimension_weights:
+      perfectionist: 1.0
+  - seq: 3
+    code: ennea_q3
+    title: 帮助别人时我感到最有价值。
+    interaction_type: slider
+    dimension_weights:
+      helper: 1.0
+  - seq: 4
+    code: ennea_q4
+    title: 我非常注重效率和目标达成。
+    interaction_type: star
+    dimension_weights:
+      achiever: 1.0
+  - seq: 5
+    code: ennea_q5
+    title: 深夜一个人在家，突然感到一阵莫名的不安...
+    interaction_type: scenario
+    options:
+      - code: a
+        text: 打开手机找人聊天
+        dimension_code: helper
+        value: 1.0
+      - code: b
+        text: 列一个待办清单让自己安心
+        dimension_code: perfectionist
+        value: 1.0
+      - code: c
+        text: 戴上耳机听音乐沉浸自己
+        dimension_code: individualist
+        value: 1.0
+      - code: d
+        text: 分析焦虑的来源试图理解它
+        dimension_code: thinker
+        value: 1.0
+  - seq: 6
+    code: ennea_q6
+    title: 安全感和冒险精神，你更偏向？
+    interaction_type: versus
+    options:
+      - code: a
+        text: 安全感和稳定
+        dimension_code: perfectionist
+        value: 1.0
+      - code: b
+        text: 冒险和新鲜感
+        dimension_code: individualist
+        value: 1.0
+  - seq: 7
+    code: ennea_q7
+    title: 我总在寻找新的刺激和体验。
+    interaction_type: star
+    dimension_weights:
+      individualist: 1.0
+  - seq: 8
+    code: ennea_q8
+    title: 命运给你三扇门，你推开哪一扇？
+    interaction_type: tarot
+    options:
+      - code: a
+        text: 通往真相之门
+        dimension_code: thinker
+        value: 1.0
+      - code: b
+        text: 通往自由之门
+        dimension_code: individualist
+        value: 1.0
+      - code: c
+        text: 通往爱之门
+        dimension_code: helper
+        value: 1.0
+personas:
+  - code: principled_helper
+    name: 温柔秩序者
+    dim_pattern:
+      perfectionist: 0.8
+      helper: 0.7
+      achiever: 0.4
+      individualist: 0.3
+      thinker: 0.5
+  - code: intense_seeker
+    name: 深度求索者
+    dim_pattern:
+      perfectionist: 0.4
+      helper: 0.3
+      achiever: 0.6
+      individualist: 0.9
+      thinker: 0.8

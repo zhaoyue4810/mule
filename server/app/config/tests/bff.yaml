@@ -1,0 +1,124 @@
+test_code: bff
+name: 闺蜜默契度
+category: 关系匹配
+source: index.html
+description: 测测你们的友谊有多深厚。
+duration_minutes: 5
+is_match: true
+dimensions:
+  - code: trust
+    name: 信任度
+  - code: communication
+    name: 沟通力
+  - code: tolerance
+    name: 包容度
+  - code: chemistry
+    name: 默契值
+  - code: loyalty
+    name: 忠诚度
+questions:
+  - seq: 1
+    code: bff_q1
+    title: 朋友遇到困难时你会？
+    interaction_type: bubble
+    options:
+      - code: a
+        text: 立刻赶到身边
+        dimension_code: loyalty
+        value: 1.0
+      - code: b
+        text: 打电话安慰
+        dimension_code: communication
+        value: 0.9
+      - code: c
+        text: 给出实际建议
+        dimension_code: trust
+        value: 0.8
+      - code: d
+        text: 默默陪伴
+        dimension_code: tolerance
+        value: 1.0
+  - seq: 2
+    code: bff_q2
+    title: 我会毫无保留地和好友分享秘密。
+    interaction_type: swipe
+    dimension_weights:
+      trust: 1.0
+  - seq: 3
+    code: bff_q3
+    title: 我认为好朋友不需要天天联系。
+    interaction_type: versus
+    options:
+      - code: a
+        text: 同意，真朋友不需要
+        dimension_code: trust
+        value: 1.0
+      - code: b
+        text: 不同意，要常联系
+        dimension_code: communication
+        value: 1.0
+  - seq: 4
+    code: bff_q4
+    title: 你们最可能一起做什么？
+    interaction_type: bubble
+    options:
+      - code: a
+        text: 一起旅行
+        dimension_code: chemistry
+        value: 1.0
+      - code: b
+        text: 深夜聊天
+        dimension_code: communication
+        value: 1.0
+      - code: c
+        text: 一起学习
+        dimension_code: loyalty
+        value: 0.7
+      - code: d
+        text: 吃喝玩乐
+        dimension_code: chemistry
+        value: 0.8
+  - seq: 5
+    code: bff_q5
+    title: 我会直接指出朋友的问题。
+    interaction_type: slider
+    dimension_weights:
+      communication: 1.0
+  - seq: 6
+    code: bff_q6
+    title: 闺蜜找你借了 500 块，一个月了还没提还钱...
+    interaction_type: scenario
+    options:
+      - code: a
+        text: 直接提醒她还钱
+        dimension_code: communication
+        value: 1.0
+      - code: b
+        text: 旁敲侧击暗示一下
+        dimension_code: tolerance
+        value: 0.7
+      - code: c
+        text: 算了不计较
+        dimension_code: loyalty
+        value: 0.8
+      - code: d
+        text: 默默记住以后不借了
+        dimension_code: trust
+        value: 0.2
+personas:
+  - code: steadfast_bestie
+    name: 稳定型闺蜜
+    dim_pattern:
+      trust: 0.9
+      communication: 0.7
+      tolerance: 0.8
+      chemistry: 0.6
+      loyalty: 0.9
+  - code: lively_confidante
+    name: 灵动知己
+    dim_pattern:
+      trust: 0.7
+      communication: 0.9
+      tolerance: 0.6
+      chemistry: 0.95
+      loyalty: 0.7

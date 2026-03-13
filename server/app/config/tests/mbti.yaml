@@ -1,0 +1,77 @@
+test_code: mbti
+name: MBTI 16型人格
+category: 性格测试
+source: index.html
+description: 探索你的认知功能偏好，解锁你独特的性格密码。
+duration_minutes: 10
+dimensions:
+  - code: ei
+    name: 外向/内向
+  - code: sn
+    name: 感觉/直觉
+  - code: tf
+    name: 思考/情感
+  - code: jp
+    name: 判断/知觉
+questions:
+  - seq: 1
+    code: mbti_q1
+    title: 参加社交活动后，你通常感到？
+    interaction_type: versus
+    options:
+      - code: a
+        text: 精力充沛想继续
+        dimension_code: ei
+        value: 1.0
+      - code: b
+        text: 有些疲惫需要休息
+        dimension_code: ei
+        value: 0.0
+  - seq: 2
+    code: mbti_q2
+    title: 做决定时，你更依赖？
+    interaction_type: bubble
+    options:
+      - code: a
+        text: 逻辑分析
+        dimension_code: tf
+        value: 0.0
+      - code: b
+        text: 内心感受
+        dimension_code: tf
+        value: 1.0
+      - code: c
+        text: 过去经验
+        dimension_code: sn
+        value: 0.0
+      - code: d
+        text: 直觉灵感
+        dimension_code: sn
+        value: 1.0
+  - seq: 3
+    code: mbti_q3
+    title: 我更喜欢按计划行事而非随性而为。
+    interaction_type: swipe
+    dimension_weights:
+      jp: 1.0
+  - seq: 4
+    code: mbti_q4
+    title: 我更关注当下的现实而非未来的可能。
+    interaction_type: slider
+    dimension_weights:
+      sn: 1.0
+personas:
+  - code: warm_connector
+    name: 温暖连接者
+    dim_pattern:
+      ei: 0.8
+      sn: 0.6
+      tf: 0.9
+      jp: 0.4
+  - code: rational_strategist
+    name: 理性探索家
+    dim_pattern:
+      ei: 0.3
+      sn: 0.8
+      tf: 0.2
+      jp: 0.8

@@ -1,0 +1,23 @@
+badges:
+  - code: first_test
+    name: 初次觉醒
+    emoji: 🌟
+    scope: personal
+    unlock_rule:
+      type: test_count
+      value: 1
+  - code: midnight_thinker
+    name: 深夜思考者
+    emoji: 🌙
+    scope: personal
+    unlock_rule:
+      type: time_range
+      start: 23
+      end: 5
+  - code: perfect_match
+    name: 天作之合
+    emoji: 💎
+    scope: duo
+    unlock_rule:
+      type: match_score_above
+      value: 95
