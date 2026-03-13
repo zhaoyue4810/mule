@@ -128,6 +128,11 @@ def test_app_tests_only_return_published_content() -> None:
         assert submit_payload["answers"][0]["label"] == "热闹局"
         assert submit_payload["persona_key"] == "entp"
         assert submit_payload["record_id"] >= 1
+        assert any(
+            item["badge_key"] == "first_test"
+            for item in submit_payload.get("unlocked_badges", [])
+        )
+        assert submit_payload.get("unlocked_fragments", []) == []
 
         report_response = client.get(
             f"/api/app/reports/{submit_payload['record_id']}"
@@ -173,6 +178,11 @@ def test_app_tests_only_return_published_content() -> None:
         assert profile_overview["distinct_test_count"] == 1
         assert profile_overview["recent_reports"][0]["record_id"] == submit_payload["record_id"]
         assert profile_overview["dominant_dimensions"][0]["dim_code"] == "ei"
+        assert any(item["badge_key"] == "first_test" for item in profile_overview["badges"])
+        assert len(profile_overview["calendar_heatmap"]) == 30
+        assert any(item["activity_count"] >= 1 for item in profile_overview["calendar_heatmap"])
+        assert profile_overview["soul_fragments"] == []
+        assert len(profile_overview["fragment_progress"]) >= 1
 
         profile_reports_response = client.get(
             f"/api/app/profile/{submit_payload['user_id']}/reports"
@@ -317,6 +327,116 @@ def test_profile_history_orders_latest_reports_first() -> None:
         assert len(profile_reports) == 2
         assert profile_reports[0]["record_id"] == second_submit["record_id"]
         assert profile_reports[1]["record_id"] == first_submit["record_id"]
+    finally:
+        app.dependency_overrides.clear()
+        import asyncio
+
+        asyncio.run(engine.dispose())
+
+
+def test_submit_unlocks_soul_fragment_when_test_matches_definition() -> None:
+    engine = create_async_engine("sqlite+aiosqlite:///:memory:", future=True)
+    session_factory = async_sessionmaker(engine, expire_on_commit=False)
+
+    async def override_get_db():
+        async with session_factory() as session:
+            yield session
+
+    app.dependency_overrides[get_db] = override_get_db
+
+    try:
+        import asyncio
+
+        asyncio.run(_prepare_db(engine))
+        client = TestClient(app)
+
+        task_id = client.post(
+            "/api/admin/import/tasks",
+            json={"file_type": "html", "file_path": str(REPO_ROOT / "index.html")},
+        ).json()["id"]
+        client.post(f"/api/admin/import/tasks/{task_id}/parse", json={"force": True})
+        client.post(f"/api/admin/import/tasks/{task_id}/apply", json={"note": "apply"})
+
+        versions = client.get("/api/admin/content/tests/love/versions").json()
+        version_id = versions[0]["id"]
+        client.put(
+            f"/api/admin/content/tests/love/versions/{version_id}/content",
+            json={
+                "title": "恋爱能量速测",
+                "category": "emotion",
+                "is_match_enabled": False,
+                "participant_count": 180,
+                "sort_order": 2,
+                "description": "灵魂碎片测试用例",
+                "duration_hint": "3分钟",
+                "cover_gradient": "sunset",
+                "report_template_code": "love_public_v1",
+                "dimensions": [
+                    {
+                        "dim_code": "heart",
+                        "dim_name": "心动值",
+                        "max_score": 100,
+                        "sort_order": 1,
+                    }
+                ],
+                "questions": [
+                    {
+                        "question_code": "q1",
+                        "seq": 1,
+                        "question_text": "今天你更想如何靠近喜欢的人？",
+                        "interaction_type": "bubble",
+                        "dim_weights": {"heart": 1},
+                        "options": [
+                            {
+                                "option_code": "a",
+                                "seq": 1,
+                                "label": "直接表达",
+                                "value": 3,
+                                "score_rules": {"dimension_code": "heart", "value": 3},
+                            }
+                        ],
+                    }
+                ],
+                "personas": [
+                    {
+                        "persona_key": "warm",
+                        "persona_name": "心动表达者",
+                        "keywords": ["热烈"],
+                        "dim_pattern": {"heart": "H"},
+                    }
+                ],
+            },
+        )
+        client.post("/api/admin/content/tests/love/publish", json={"version": 1})
+
+        submit_response = client.post(
+            "/api/app/tests/love/submit",
+            json={
+                "nickname": "碎片用户",
+                "duration_seconds": 16,
+                "answers": [{"question_seq": 1, "option_code": "a"}],
+            },
+        )
+        assert submit_response.status_code == 200
+        submit_payload = submit_response.json()
+        assert any(
+            item["fragment_key"] == "emotion_tide"
+            for item in submit_payload["unlocked_fragments"]
+        )
+
+        profile_overview_response = client.get(
+            f"/api/app/profile/{submit_payload['user_id']}/overview"
+        )
+        assert profile_overview_response.status_code == 200
+        profile_overview = profile_overview_response.json()
+        assert any(
+            item["fragment_key"] == "emotion_tide"
+            for item in profile_overview["soul_fragments"]
+        )
+        assert any(
+            item["category_code"] == "emotion" and item["unlocked_count"] >= 1
+            for item in profile_overview["fragment_progress"]
+        )
     finally:
         app.dependency_overrides.clear()
         import asyncio

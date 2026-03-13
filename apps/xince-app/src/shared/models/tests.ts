@@ -95,6 +95,20 @@ export interface SubmittedAnswerSummary {
   label: string;
 }
 
+export interface UnlockedBadgeSummary {
+  badge_key: string;
+  name: string;
+  emoji: string;
+}
+
+export interface UnlockedSoulFragmentSummary {
+  fragment_key: string;
+  name: string;
+  emoji?: string | null;
+  category: string;
+  insight?: string | null;
+}
+
 export interface TestSubmitResponse {
   record_id: number;
   user_id: number;
@@ -106,4 +120,6 @@ export interface TestSubmitResponse {
   persona_name?: string | null;
   report_summary: string;
   answers: SubmittedAnswerSummary[];
+  unlocked_badges: UnlockedBadgeSummary[];
+  unlocked_fragments: UnlockedSoulFragmentSummary[];
 }

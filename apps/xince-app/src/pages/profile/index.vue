@@ -30,6 +30,14 @@ const hasProfile = computed(() => Boolean(overview.value));
 const canSubmitPhoneBind = computed(
   () => phone.value.trim().length >= 11 && code.value.trim().length >= 4,
 );
+const calendarHeatmapWeeks = computed(() => {
+  const items = overview.value?.calendar_heatmap || [];
+  const weeks: typeof items[] = [];
+  for (let index = 0; index < items.length; index += 7) {
+    weeks.push(items.slice(index, index + 7));
+  }
+  return weeks;
+});
 
 function formatTime(value?: string | null) {
   if (!value) {
@@ -46,6 +54,18 @@ function formatTime(value?: string | null) {
   const hour = `${date.getHours()}`.padStart(2, "0");
   const minute = `${date.getMinutes()}`.padStart(2, "0");
   return `${month}-${day} ${hour}:${minute}`;
+}
+
+function formatDayLabel(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+  return `${date.getMonth() + 1}/${date.getDate()}`;
+}
+
+function heatmapClass(intensity: number) {
+  return `heatmap-cell--level-${Math.max(0, Math.min(intensity, 4))}`;
 }
 
 function openReport(recordId: number) {
@@ -185,6 +205,90 @@ onShow(() => {
           <text class="stat-card__value">
             {{ overview.persona_distribution[0]?.persona_name || "待生成" }}
           </text>
+        </view>
+      </view>
+
+      <view class="panel" v-if="overview.badges.length">
+        <text class="panel__title">已解锁勋章</text>
+        <text class="panel__body">
+          这些勋章会随着你的答题行为持续增长，后续会扩展更多成长触发规则。
+        </text>
+        <view class="badge-grid">
+          <view
+            v-for="item in overview.badges"
+            :key="item.badge_key"
+            class="badge-card"
+          >
+            <text class="badge-card__emoji">{{ item.emoji }}</text>
+            <text class="badge-card__name">{{ item.name }}</text>
+            <text class="badge-card__time">{{ formatTime(item.unlocked_at) }}</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="panel" v-if="overview.calendar_heatmap.length">
+        <text class="panel__title">近30天心动轨迹</text>
+        <text class="panel__body">
+          每完成一次测试，这里都会留下当天的活跃印记。颜色越深，代表当天互动越频繁。
+        </text>
+        <view class="heatmap">
+          <view
+            v-for="(week, weekIndex) in calendarHeatmapWeeks"
+            :key="`week-${weekIndex}`"
+            class="heatmap__week"
+          >
+            <view
+              v-for="item in week"
+              :key="item.date"
+              class="heatmap-cell"
+              :class="heatmapClass(item.intensity)"
+            >
+              <text class="heatmap-cell__day">{{ formatDayLabel(item.date) }}</text>
+              <text class="heatmap-cell__count">
+                {{ item.activity_count > 0 ? item.activity_count : "-" }}
+              </text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="panel" v-if="overview.fragment_progress.length">
+        <text class="panel__title">灵魂碎片进度</text>
+        <text class="panel__body">
+          不同测试会点亮不同的内在切面。你收集到的碎片越多，个人中心就越像一张更完整的自我地图。
+        </text>
+        <view class="rows rows--soft">
+          <view
+            v-for="item in overview.fragment_progress"
+            :key="item.category_code"
+            class="row row--soft"
+          >
+            <text class="row__name">
+              {{ item.category_name }}{{ item.completed ? " · 已点亮" : "" }}
+            </text>
+            <text class="row__value">{{ item.unlocked_count }}/{{ item.total_count }}</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="panel" v-if="overview.soul_fragments.length">
+        <text class="panel__title">已收集的灵魂碎片</text>
+        <text class="panel__body">
+          每一片都代表一次更靠近自己的探索，后续这里会继续扩展成更完整的成长资产页。
+        </text>
+        <view class="fragment-grid">
+          <view
+            v-for="item in overview.soul_fragments"
+            :key="item.fragment_key"
+            class="fragment-card"
+          >
+            <text class="fragment-card__emoji">{{ item.emoji || "✨" }}</text>
+            <text class="fragment-card__name">{{ item.name }}</text>
+            <text class="fragment-card__category">{{ item.category }}</text>
+            <text class="fragment-card__body">
+              {{ item.insight || "这片碎片已经被点亮，说明你又看见了自己的一个切面。" }}
+            </text>
+          </view>
         </view>
       </view>
 
@@ -418,6 +522,139 @@ onShow(() => {
   font-size: 24rpx;
 }
 
+.badge-grid {
+  margin-top: 18rpx;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14rpx;
+}
+
+.badge-card {
+  padding: 18rpx;
+  border-radius: 18rpx;
+  background: rgba(255, 248, 238, 0.96);
+  border: 2rpx solid rgba(217, 111, 61, 0.12);
+}
+
+.badge-card__emoji {
+  display: block;
+  font-size: 34rpx;
+}
+
+.badge-card__name {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  font-weight: 600;
+}
+
+.badge-card__time {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 20rpx;
+  color: $xc-muted;
+}
+
+.fragment-grid {
+  margin-top: 18rpx;
+  display: grid;
+  gap: 14rpx;
+}
+
+.fragment-card {
+  padding: 20rpx;
+  border-radius: 20rpx;
+  background:
+    linear-gradient(145deg, rgba(255, 247, 235, 0.96), rgba(255, 235, 214, 0.92));
+  border: 2rpx solid rgba(217, 111, 61, 0.12);
+}
+
+.fragment-card__emoji {
+  display: block;
+  font-size: 34rpx;
+}
+
+.fragment-card__name {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.fragment-card__category {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: $xc-accent;
+}
+
+.fragment-card__body {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  line-height: 1.6;
+  color: $xc-muted;
+}
+
+.heatmap {
+  margin-top: 18rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+}
+
+.heatmap__week {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 10rpx;
+}
+
+.heatmap-cell {
+  min-height: 92rpx;
+  padding: 12rpx 10rpx;
+  border-radius: 16rpx;
+  border: 2rpx solid rgba(217, 111, 61, 0.08);
+  background: rgba(255, 250, 244, 0.72);
+}
+
+.heatmap-cell--level-0 {
+  background: rgba(255, 250, 244, 0.72);
+}
+
+.heatmap-cell--level-1 {
+  background: rgba(255, 234, 214, 0.96);
+}
+
+.heatmap-cell--level-2 {
+  background: rgba(246, 200, 163, 0.96);
+}
+
+.heatmap-cell--level-3 {
+  background: rgba(230, 153, 101, 0.94);
+}
+
+.heatmap-cell--level-4 {
+  background: rgba(191, 83, 33, 0.92);
+}
+
+.heatmap-cell__day,
+.heatmap-cell__count {
+  display: block;
+  text-align: center;
+}
+
+.heatmap-cell__day {
+  font-size: 18rpx;
+  color: rgba(43, 33, 24, 0.72);
+}
+
+.heatmap-cell__count {
+  margin-top: 10rpx;
+  font-size: 26rpx;
+  font-weight: 700;
+  color: $xc-ink;
+}
+
 .stat-card {
   padding: 24rpx;
   border-radius: 22rpx;
@@ -474,6 +711,10 @@ onShow(() => {
   margin-top: 18rpx;
 }
 
+.rows--soft {
+  margin-top: 16rpx;
+}
+
 .row {
   display: flex;
   align-items: center;
@@ -481,6 +722,11 @@ onShow(() => {
   padding: 18rpx 20rpx;
   border-radius: 18rpx;
   background: rgba(255, 250, 244, 0.92);
+}
+
+.row--soft {
+  background: rgba(255, 247, 238, 0.96);
+  border: 2rpx solid rgba(217, 111, 61, 0.08);
 }
 
 .row__name,

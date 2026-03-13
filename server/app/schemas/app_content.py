@@ -100,6 +100,20 @@ class SubmittedAnswerSummary(BaseModel):
     label: str
 
 
+class UnlockedBadgeSummary(BaseModel):
+    badge_key: str
+    name: str
+    emoji: str
+
+
+class UnlockedSoulFragmentSummary(BaseModel):
+    fragment_key: str
+    name: str
+    emoji: str | None = None
+    category: str
+    insight: str | None = None
+
+
 class TestSubmitResponse(BaseModel):
     record_id: int
     user_id: int
@@ -111,3 +125,5 @@ class TestSubmitResponse(BaseModel):
     persona_name: str | None = None
     report_summary: str
     answers: list[SubmittedAnswerSummary] = Field(default_factory=list)
+    unlocked_badges: list[UnlockedBadgeSummary] = Field(default_factory=list)
+    unlocked_fragments: list[UnlockedSoulFragmentSummary] = Field(default_factory=list)

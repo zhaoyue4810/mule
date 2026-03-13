@@ -5,10 +5,13 @@ from collections import defaultdict
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models.badge import BadgeDefinition, UserBadge
 from app.models.record import TestRecord
 from app.models.report import ReportSnapshot
 from app.models.test import Test
 from app.models.user import User
+from app.services.calendar_activity_service import CalendarActivityService
+from app.services.soul_fragment_service import SoulFragmentService
 
 
 class AppProfileService:
@@ -61,6 +64,14 @@ class AppProfileService:
                 reverse=True,
             )[:5]
         ]
+        badges = await self._get_badges(user_id)
+        calendar_heatmap = await CalendarActivityService(self.db).build_heatmap(
+            user_id=user_id,
+            days=30,
+        )
+        soul_fragment_service = SoulFragmentService(self.db)
+        soul_fragments = await soul_fragment_service.list_user_fragments(user_id)
+        fragment_progress = await soul_fragment_service.build_category_progress(user_id)
 
         return {
             "user_id": user.id,
@@ -72,6 +83,17 @@ class AppProfileService:
             "last_test_at": history[0]["completed_at"] if history else None,
             "dominant_dimensions": dominant_dimensions,
             "persona_distribution": persona_distribution,
+            "badges": badges,
+            "calendar_heatmap": [
+                {
+                    "date": item.date,
+                    "activity_count": item.activity_count,
+                    "intensity": item.intensity,
+                }
+                for item in calendar_heatmap
+            ],
+            "soul_fragments": soul_fragments,
+            "fragment_progress": fragment_progress,
             "recent_reports": [
                 self._to_history_payload(item) for item in history[:3]
             ],
@@ -135,3 +157,22 @@ class AppProfileService:
             "duration_seconds": item["duration_seconds"],
             "completed_at": item["completed_at"],
         }
+
+    async def _get_badges(self, user_id: int) -> list[dict]:
+        rows = (
+            await self.db.execute(
+                select(UserBadge, BadgeDefinition)
+                .join(BadgeDefinition, BadgeDefinition.id == UserBadge.badge_id)
+                .where(UserBadge.user_id == user_id)
+                .order_by(UserBadge.created_at.desc(), UserBadge.id.desc())
+            )
+        ).all()
+        return [
+            {
+                "badge_key": badge.badge_key,
+                "name": badge.name,
+                "emoji": badge.emoji,
+                "unlocked_at": user_badge.created_at,
+            }
+            for user_badge, badge in rows
+        ]

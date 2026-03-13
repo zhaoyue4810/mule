@@ -8,7 +8,10 @@ from app.models.report import ReportSnapshot
 from app.models.test import Option, Question, Test, TestPersona, TestVersion
 from app.models.user import User
 from app.schemas.app_content import TestSubmitRequest
+from app.services.badge_unlock_service import BadgeUnlockService
+from app.services.calendar_activity_service import CalendarActivityService
 from app.services.score_engine import ScoreEngine
+from app.services.soul_fragment_service import SoulFragmentService
 
 
 class TestSubmissionService:
@@ -215,6 +218,20 @@ class TestSubmissionService:
             )
         )
 
+        calendar_service = CalendarActivityService(self.db)
+        await calendar_service.record_test_completion(
+            user_id=user.id,
+            test_record_id=record.id,
+        )
+
+        badge_service = BadgeUnlockService(self.db)
+        unlocked_badges = await badge_service.unlock_for_user(user_id=user.id)
+        soul_fragment_service = SoulFragmentService(self.db)
+        unlocked_fragments = await soul_fragment_service.unlock_for_user(
+            user_id=user.id,
+            test_code=test.test_code,
+        )
+
         await self.db.commit()
         await self.db.refresh(record)
 
@@ -247,6 +264,24 @@ class TestSubmissionService:
                     ),
                 }
                 for item in selected_answers
+            ],
+            "unlocked_badges": [
+                {
+                    "badge_key": item.badge_key,
+                    "name": item.name,
+                    "emoji": item.emoji,
+                }
+                for item in unlocked_badges
+            ],
+            "unlocked_fragments": [
+                {
+                    "fragment_key": item.fragment_key,
+                    "name": item.name,
+                    "emoji": item.emoji,
+                    "category": item.category,
+                    "insight": item.insight,
+                }
+                for item in unlocked_fragments
             ],
         }
 

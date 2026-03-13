@@ -16,6 +16,36 @@ class ProfilePersonaAggregate(BaseModel):
     count: int
 
 
+class ProfileBadgeItem(BaseModel):
+    badge_key: str
+    name: str
+    emoji: str
+    unlocked_at: datetime
+
+
+class ProfileCalendarHeatmapItem(BaseModel):
+    date: str
+    activity_count: int
+    intensity: int
+
+
+class ProfileSoulFragmentItem(BaseModel):
+    fragment_key: str
+    name: str
+    emoji: str | None = None
+    category: str
+    insight: str | None = None
+    unlocked_at: datetime
+
+
+class ProfileSoulFragmentCategoryProgress(BaseModel):
+    category_code: str
+    category_name: str
+    unlocked_count: int
+    total_count: int
+    completed: bool
+
+
 class ProfileReportHistoryItem(BaseModel):
     record_id: int
     test_code: str
@@ -38,4 +68,8 @@ class AppProfileOverview(BaseModel):
     last_test_at: datetime | None = None
     dominant_dimensions: list[ProfileDimensionAggregate] = Field(default_factory=list)
     persona_distribution: list[ProfilePersonaAggregate] = Field(default_factory=list)
+    badges: list[ProfileBadgeItem] = Field(default_factory=list)
+    calendar_heatmap: list[ProfileCalendarHeatmapItem] = Field(default_factory=list)
+    soul_fragments: list[ProfileSoulFragmentItem] = Field(default_factory=list)
+    fragment_progress: list[ProfileSoulFragmentCategoryProgress] = Field(default_factory=list)
     recent_reports: list[ProfileReportHistoryItem] = Field(default_factory=list)

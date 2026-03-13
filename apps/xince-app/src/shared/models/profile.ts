@@ -9,6 +9,36 @@ export interface ProfilePersonaAggregate {
   count: number;
 }
 
+export interface ProfileBadgeItem {
+  badge_key: string;
+  name: string;
+  emoji: string;
+  unlocked_at: string;
+}
+
+export interface ProfileCalendarHeatmapItem {
+  date: string;
+  activity_count: number;
+  intensity: number;
+}
+
+export interface ProfileSoulFragmentItem {
+  fragment_key: string;
+  name: string;
+  emoji?: string | null;
+  category: string;
+  insight?: string | null;
+  unlocked_at: string;
+}
+
+export interface ProfileSoulFragmentCategoryProgress {
+  category_code: string;
+  category_name: string;
+  unlocked_count: number;
+  total_count: number;
+  completed: boolean;
+}
+
 export interface ProfileReportHistoryItem {
   record_id: number;
   test_code: string;
@@ -31,5 +61,9 @@ export interface AppProfileOverview {
   last_test_at?: string | null;
   dominant_dimensions: ProfileDimensionAggregate[];
   persona_distribution: ProfilePersonaAggregate[];
+  badges: ProfileBadgeItem[];
+  calendar_heatmap: ProfileCalendarHeatmapItem[];
+  soul_fragments: ProfileSoulFragmentItem[];
+  fragment_progress: ProfileSoulFragmentCategoryProgress[];
   recent_reports: ProfileReportHistoryItem[];
 }
