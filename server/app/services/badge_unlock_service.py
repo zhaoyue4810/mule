@@ -90,29 +90,40 @@ class BadgeUnlockService:
         return unlocked
 
     async def _ensure_default_definitions(self) -> None:
-        definition_count = int(
-            await self.db.scalar(select(func.count(BadgeDefinition.id))) or 0
-        )
-        if definition_count > 0:
-            return
-
         if not yaml_config._store:
             yaml_config.load_all()
 
         badges = yaml_config._store.get("badges", {}).get("badges", [])
-        for sort_order, item in enumerate(badges, start=1):
-            self.db.add(
-                BadgeDefinition(
-                    badge_key=item["code"],
-                    name=item["name"],
-                    emoji=item.get("emoji", "🏅"),
-                    description=item.get("description"),
-                    type=item.get("scope", "personal"),
-                    unlock_rule=item.get("unlock_rule") or {},
-                    sort_order=sort_order,
-                    yaml_source="badges.yaml",
-                )
+        existing_definitions = {
+            item.badge_key: item
+            for item in (
+                await self.db.scalars(select(BadgeDefinition))
             )
+        }
+        for sort_order, item in enumerate(badges, start=1):
+            definition = existing_definitions.get(item["code"])
+            if definition is None:
+                self.db.add(
+                    BadgeDefinition(
+                        badge_key=item["code"],
+                        name=item["name"],
+                        emoji=item.get("emoji", "🏅"),
+                        description=item.get("description"),
+                        type=item.get("scope", "personal"),
+                        unlock_rule=item.get("unlock_rule") or {},
+                        sort_order=sort_order,
+                        yaml_source="badges.yaml",
+                    )
+                )
+                continue
+
+            definition.name = item["name"]
+            definition.emoji = item.get("emoji", definition.emoji)
+            definition.description = item.get("description")
+            definition.type = item.get("scope", definition.type)
+            definition.unlock_rule = item.get("unlock_rule") or {}
+            definition.sort_order = sort_order
+            definition.yaml_source = "badges.yaml"
         await self.db.flush()
 
     def _rule_matched(
@@ -133,10 +144,49 @@ class BadgeUnlockService:
             target = int(rule.get("value") or 0)
             return int(metrics.get("daily_streak") or 0) >= target > 0
 
+        if rule_type == "streak":
+            target = int(rule.get("value") or 0)
+            return int(metrics.get("daily_streak") or 0) >= target > 0
+
         if rule_type == "time_range":
             start_hour = int(rule.get("start") or 0)
             end_hour = int(rule.get("end") or 0)
             return self._hour_in_range(now_local.hour, start_hour, end_hour)
+
+        if rule_type == "match_score_above":
+            target = int(rule.get("value") or 0)
+            return int(metrics.get("match_score") or 0) >= target > 0
+
+        if rule_type == "match_score_exact":
+            target = int(rule.get("value") or -1)
+            return int(metrics.get("match_score") or -2) == target
+
+        if rule_type == "any_match":
+            return int(metrics.get("match_count") or 0) >= 1
+
+        if rule_type == "same_partner_count":
+            target = int(rule.get("value") or 0)
+            return int(metrics.get("same_partner_count") or 0) >= target > 0
+
+        if rule_type == "complementary_type":
+            return bool(metrics.get("complementary_type"))
+
+        if rule_type == "close_dimension":
+            return bool(metrics.get("close_dimension"))
+
+        if rule_type == "both_high_score":
+            return bool(metrics.get("both_high_score"))
+
+        if rule_type == "first_match":
+            return bool(metrics.get("first_match"))
+
+        if rule_type == "invite_count":
+            target = int(rule.get("value") or 0)
+            return int(metrics.get("invite_count") or 0) >= target > 0
+
+        if rule_type == "average_match_score_above":
+            target = int(rule.get("value") or 0)
+            return float(metrics.get("average_match_score") or 0) > target > 0
 
         return False
 

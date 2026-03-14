@@ -6,6 +6,7 @@ def import_all_models() -> None:
     from app.models import badge  # noqa: F401
     from app.models import calendar  # noqa: F401
     from app.models import importing  # noqa: F401
+    from app.models import match  # noqa: F401
     from app.models import record  # noqa: F401
     from app.models import report  # noqa: F401
     from app.models import soul  # noqa: F401

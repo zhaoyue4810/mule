@@ -19,6 +19,24 @@
       }
     },
     {
+      "path": "pages/match/invite",
+      "style": {
+        "navigationBarTitleText": "匹配邀请"
+      }
+    },
+    {
+      "path": "pages/match/waiting",
+      "style": {
+        "navigationBarTitleText": "等待匹配"
+      }
+    },
+    {
+      "path": "pages/match/report",
+      "style": {
+        "navigationBarTitleText": "匹配报告"
+      }
+    },
+    {
       "path": "pages/profile/index",
       "style": {
         "navigationBarTitleText": "我的"

@@ -35,3 +35,61 @@ badges:
     unlock_rule:
       type: match_score_above
       value: 95
+  - code: soul_resonance
+    name: 灵魂共振
+    emoji: 💞
+    scope: duo
+    unlock_rule:
+      type: any_match
+  - code: rainbow_bridge
+    name: 彩虹桥
+    emoji: 🌈
+    scope: duo
+    unlock_rule:
+      type: same_partner_count
+      value: 3
+  - code: contrast_charm
+    name: 反差萌
+    emoji: 🪄
+    scope: duo
+    unlock_rule:
+      type: complementary_type
+  - code: tacit_glow
+    name: 心有灵犀
+    emoji: ✨
+    scope: duo
+    unlock_rule:
+      type: close_dimension
+  - code: power_duo
+    name: 强强联合
+    emoji: ⚡
+    scope: duo
+    unlock_rule:
+      type: both_high_score
+  - code: first_encounter
+    name: 初次邂逅
+    emoji: 🌸
+    scope: duo
+    unlock_rule:
+      type: first_match
+  - code: cupid_certified
+    name: 月老认证
+    emoji: 🎯
+    scope: duo
+    unlock_rule:
+      type: invite_count
+      value: 5
+  - code: soulmate_average
+    name: 灵魂伴侣
+    emoji: 🫶
+    scope: duo
+    unlock_rule:
+      type: average_match_score_above
+      value: 90
+  - code: destiny_88
+    name: 命运之约
+    emoji: ∞
+    scope: duo
+    unlock_rule:
+      type: match_score_exact
+      value: 88

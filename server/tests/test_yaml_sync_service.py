@@ -82,12 +82,13 @@ async def test_sync_all_tests_creates_eight_tests() -> None:
 async def test_sync_dictionaries_creates_runtime_dictionary_rows() -> None:
     yaml_config.load_all()
     engine, session_factory = await _build_session()
+    expected_badge_count = len(yaml_config._store.get("badges", {}).get("badges", []))
 
     async with session_factory() as session:
         service = YamlSyncService(session)
         summary = await service.sync_dictionaries()
 
-        assert summary.badge_count == 5
+        assert summary.badge_count == expected_badge_count
         assert summary.daily_question_count == 3
         assert summary.soul_fragment_count == 5
 
@@ -99,7 +100,7 @@ async def test_sync_dictionaries_creates_runtime_dictionary_rows() -> None:
             select(func.count(SoulFragmentDefinition.id))
         )
 
-        assert badge_count == 5
+        assert badge_count == expected_badge_count
         assert daily_question_count == 3
         assert soul_fragment_count == 5
 
