@@ -66,6 +66,19 @@ class AppProfileService:
         await self.db.refresh(user)
         return await self.get_onboarding_profile(user_id)
 
+    async def get_settings(self, user_id: int) -> dict:
+        user = await self._get_user(user_id)
+        return {
+            "sound_enabled": bool(user.sound_enabled),
+        }
+
+    async def update_settings(self, user_id: int, payload) -> dict:
+        user = await self._get_user(user_id)
+        user.sound_enabled = bool(payload.sound_enabled)
+        await self.db.commit()
+        await self.db.refresh(user)
+        return await self.get_settings(user_id)
+
     async def get_overview(self, user_id: int) -> dict:
         user = await self._get_user(user_id)
         history = await self._get_report_history(user_id)
@@ -120,6 +133,7 @@ class AppProfileService:
         soul_fragment_service = SoulFragmentService(self.db)
         soul_fragments = await soul_fragment_service.list_user_fragments(user_id)
         fragment_progress = await soul_fragment_service.build_category_progress(user_id)
+        fragment_map = await soul_fragment_service.build_fragment_map(user_id)
 
         return {
             "user_id": user.id,
@@ -142,6 +156,7 @@ class AppProfileService:
             ],
             "soul_fragments": soul_fragments,
             "fragment_progress": fragment_progress,
+            "fragment_map": fragment_map,
             "recent_reports": [
                 self._to_history_payload(item) for item in history[:3]
             ],
@@ -220,6 +235,8 @@ class AppProfileService:
                 "badge_key": badge.badge_key,
                 "name": badge.name,
                 "emoji": badge.emoji,
+                "tier": user_badge.tier,
+                "unlock_count": user_badge.unlock_count,
                 "unlocked_at": user_badge.created_at,
             }
             for user_badge, badge in rows

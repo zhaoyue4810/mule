@@ -81,6 +81,7 @@ class AppReportService:
         )
 
         return {
+            "report_id": snapshot.id,
             "record_id": record.id,
             "test_code": test.test_code,
             "test_name": test.title,

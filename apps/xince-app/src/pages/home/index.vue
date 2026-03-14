@@ -1,17 +1,54 @@
 <script setup lang="ts">
-import { computed, onMounted } from "vue";
+import { computed, ref } from "vue";
+import { onShow } from "@dcloudio/uni-app";
 
+import TimeCapsuleReveal from "@/components/feedback/TimeCapsuleReveal.vue";
+import type { TimeCapsuleItem } from "@/shared/models/capsule";
+import type { MemoryGreetingPayload, MemorySuggestPayload } from "@/shared/models/memory";
+import { checkRevealableCapsules, revealTimeCapsule } from "@/shared/services/capsule";
+import { ensureAppSession } from "@/shared/services/auth";
+import { fetchMemoryGreeting, fetchMemorySuggest } from "@/shared/services/memory";
 import { useTestCatalogStore } from "@/stores/test-catalog";
 
 const store = useTestCatalogStore();
 
+const greeting = ref<MemoryGreetingPayload | null>(null);
+const suggest = ref<MemorySuggestPayload | null>(null);
+const revealItem = ref<TimeCapsuleItem | null>(null);
+const revealVisible = ref(false);
+
 const tests = computed(() => store.tests);
 const loading = computed(() => store.loading);
 const error = computed(() => store.error);
+const mascotEmoji = computed(() => {
+  const mood = greeting.value?.mood || "cheer";
+  const mapping: Record<string, string> = {
+    happy: "😄",
+    thinking: "🤔",
+    cheer: "💪",
+    love: "💗",
+    calm: "🙂",
+    sleepy: "🌙",
+    spark: "✨",
+  };
+  return mapping[mood] || "🧠";
+});
 
 async function load() {
   try {
-    await store.loadTests();
+    await ensureAppSession();
+    await store.loadTests(true);
+    const [greetingPayload, suggestPayload, capsulePayload] = await Promise.all([
+      fetchMemoryGreeting(),
+      fetchMemorySuggest(),
+      checkRevealableCapsules(),
+    ]);
+    greeting.value = greetingPayload;
+    suggest.value = suggestPayload;
+    if (capsulePayload.has_revealable && capsulePayload.items.length) {
+      revealItem.value = capsulePayload.items[0];
+      revealVisible.value = true;
+    }
   } catch (err) {
     console.error(err);
   }
@@ -23,19 +60,60 @@ function openDetail(testCode: string) {
   });
 }
 
-onMounted(() => {
-  load();
+async function closeReveal() {
+  if (revealItem.value) {
+    try {
+      await revealTimeCapsule(revealItem.value.id);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+  revealVisible.value = false;
+  revealItem.value = null;
+}
+
+onShow(() => {
+  void load();
 });
 </script>
 
 <template>
   <view class="page">
     <view class="hero">
-      <text class="hero__eyebrow">Published Tests</text>
-      <text class="hero__title">把已经上线的测试内容，变成真正能跑的用户入口。</text>
-      <text class="hero__body">
-        当前首页直接读取后端已发布版本，前台不会误吃到草稿内容。
-      </text>
+      <view class="hero__mascot">
+        <text class="hero__emoji">{{ mascotEmoji }}</text>
+      </view>
+      <view class="hero__copy">
+        <text class="hero__eyebrow">XinCe Memory</text>
+        <text class="hero__title">{{ greeting?.greeting || "今天想先从哪一份测试开始？" }}</text>
+        <text class="hero__body">
+          记忆等级 Lv.{{ greeting?.know_level || 0 }} · 已完成 {{ greeting?.test_count || 0 }} 次测试
+        </text>
+        <view v-if="greeting?.behavior_tags?.length" class="hero__tags">
+          <text v-for="tag in greeting.behavior_tags" :key="tag" class="hero__tag">{{ tag }}</text>
+        </view>
+      </view>
+    </view>
+
+    <view v-if="suggest?.items?.length" class="panel">
+      <text class="panel__title">{{ suggest.title }}</text>
+      <text class="panel__body">{{ suggest.reason }}</text>
+      <scroll-view scroll-x class="suggest">
+        <view class="suggest__list">
+          <view
+            v-for="item in suggest.items"
+            :key="item.test_code"
+            class="suggest__card"
+            @tap="openDetail(item.test_code)"
+          >
+            <text class="suggest__category">{{ item.category }}</text>
+            <text class="suggest__title">{{ item.name }}</text>
+            <text class="suggest__meta">
+              {{ item.question_count }} 题 · {{ item.duration_hint || "待补充时长" }}
+            </text>
+          </view>
+        </view>
+      </scroll-view>
     </view>
 
     <view class="section-head">
@@ -44,16 +122,16 @@ onMounted(() => {
     </view>
 
     <view v-if="loading" class="panel">
-      <text class="panel__text">正在加载已发布测试...</text>
+      <text class="panel__body">正在加载已发布测试...</text>
     </view>
 
     <view v-else-if="error" class="panel panel--error">
-      <text class="panel__text">{{ error }}</text>
+      <text class="panel__body">{{ error }}</text>
       <button class="panel__button" @tap="load">重新加载</button>
     </view>
 
     <view v-else-if="tests.length === 0" class="panel">
-      <text class="panel__text">当前还没有发布内容，请先在后台发布至少一个测试版本。</text>
+      <text class="panel__body">当前还没有发布内容，请先在后台发布至少一个测试版本。</text>
     </view>
 
     <view v-else class="cards">
@@ -74,6 +152,12 @@ onMounted(() => {
         <text class="card__footer">进入测试详情</text>
       </view>
     </view>
+
+    <TimeCapsuleReveal
+      :visible="revealVisible"
+      :item="revealItem"
+      @close="closeReveal"
+    />
   </view>
 </template>
 
@@ -83,12 +167,25 @@ onMounted(() => {
 }
 
 .hero {
+  display: grid;
+  grid-template-columns: 132rpx 1fr;
+  gap: 20rpx;
   padding: 36rpx 32rpx;
-  border-radius: 28rpx;
-  background:
-    linear-gradient(135deg, rgba(255, 241, 223, 0.95), rgba(255, 221, 193, 0.92)),
-    #fff8f1;
+  border-radius: 30rpx;
+  background: linear-gradient(145deg, rgba(255, 239, 222, 0.96), rgba(255, 219, 194, 0.94));
   box-shadow: $xc-shadow;
+}
+
+.hero__mascot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 28rpx;
+  background: rgba(255, 255, 255, 0.62);
+}
+
+.hero__emoji {
+  font-size: 72rpx;
 }
 
 .hero__eyebrow {
@@ -101,19 +198,32 @@ onMounted(() => {
 
 .hero__title {
   display: block;
-  margin-top: 18rpx;
-  font-size: 42rpx;
-  line-height: 1.35;
-  font-weight: 600;
-  color: $xc-ink;
+  margin-top: 16rpx;
+  font-size: 38rpx;
+  line-height: 1.45;
+  font-weight: 700;
 }
 
 .hero__body {
   display: block;
-  margin-top: 16rpx;
-  font-size: 26rpx;
-  line-height: 1.7;
+  margin-top: 14rpx;
+  font-size: 24rpx;
   color: $xc-muted;
+}
+
+.hero__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx;
+  margin-top: 16rpx;
+}
+
+.hero__tag {
+  padding: 10rpx 16rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.72);
+  font-size: 22rpx;
+  color: $xc-accent;
 }
 
 .section-head {
@@ -134,20 +244,26 @@ onMounted(() => {
 }
 
 .panel {
-  padding: 30rpx;
-  border: 2rpx solid $xc-line;
+  padding: 28rpx;
   border-radius: 24rpx;
-  background: rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.84);
+  border: 2rpx solid $xc-line;
 }
 
 .panel--error {
-  border-color: rgba(196, 90, 60, 0.2);
   background: rgba(255, 240, 235, 0.92);
 }
 
-.panel__text {
+.panel__title {
   display: block;
-  font-size: 26rpx;
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
+.panel__body {
+  display: block;
+  margin-top: 14rpx;
+  font-size: 24rpx;
   line-height: 1.7;
   color: $xc-muted;
 }
@@ -159,29 +275,61 @@ onMounted(() => {
   color: #fff7f0;
 }
 
+.suggest {
+  margin-top: 18rpx;
+}
+
+.suggest__list {
+  display: flex;
+  gap: 14rpx;
+}
+
+.suggest__card,
+.card {
+  padding: 24rpx;
+  border-radius: 24rpx;
+  background: rgba(255, 253, 248, 0.94);
+  border: 2rpx solid rgba(217, 111, 61, 0.08);
+  box-shadow: $xc-shadow;
+}
+
+.suggest__card {
+  width: 280rpx;
+}
+
+.suggest__category,
+.card__category {
+  font-size: 22rpx;
+  color: $xc-muted;
+}
+
+.suggest__title,
+.card__title {
+  display: block;
+  margin-top: 12rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+}
+
+.suggest__meta,
+.card__meta,
+.card__footer {
+  display: block;
+  margin-top: 12rpx;
+  font-size: 22rpx;
+  color: $xc-muted;
+}
+
 .cards {
   display: flex;
   flex-direction: column;
   gap: 20rpx;
 }
 
-.card {
-  padding: 28rpx;
-  border-radius: 26rpx;
-  background: rgba(255, 253, 248, 0.94);
-  border: 2rpx solid rgba(217, 111, 61, 0.08);
-  box-shadow: $xc-shadow;
-}
-
 .card__top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-}
-
-.card__category {
-  font-size: 22rpx;
-  color: $xc-muted;
 }
 
 .card__badge {
@@ -192,25 +340,7 @@ onMounted(() => {
   color: $xc-accent;
 }
 
-.card__title {
-  display: block;
-  margin-top: 14rpx;
-  font-size: 34rpx;
-  font-weight: 600;
-  color: $xc-ink;
-}
-
-.card__meta {
-  display: block;
-  margin-top: 12rpx;
-  font-size: 24rpx;
-  color: $xc-muted;
-}
-
 .card__footer {
-  display: block;
-  margin-top: 20rpx;
-  font-size: 24rpx;
   color: $xc-accent;
 }
 </style>

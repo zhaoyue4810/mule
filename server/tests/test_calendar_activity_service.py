@@ -97,3 +97,33 @@ async def _test_record_test_completion_uses_local_date() -> None:
             assert item.source == "test"
     finally:
         await engine.dispose()
+
+
+def test_calendar_stats_and_events_include_manual_and_fragment_activity() -> None:
+    asyncio.run(_test_calendar_stats_and_events_include_manual_and_fragment_activity())
+
+
+async def _test_calendar_stats_and_events_include_manual_and_fragment_activity() -> None:
+    engine = create_async_engine("sqlite+aiosqlite:///:memory:", future=True)
+    session_factory = async_sessionmaker(engine, expire_on_commit=False)
+
+    try:
+        async with engine.begin() as conn:
+            await conn.run_sync(get_metadata().create_all)
+
+        async with session_factory() as session:
+            service = CalendarActivityService(session)
+            await service.record_manual_mood(user_id=9, mood_level=5, record_date=date(2026, 3, 14))
+            await service.record_activity(user_id=9, source="fragment", activity_date=date(2026, 3, 14))
+            await session.commit()
+
+            items = await service.build_heatmap(user_id=9, days=1, end_date=date(2026, 3, 14))
+            stats = await service.build_stats(user_id=9)
+
+            assert items[0].activity_count == 2
+            assert items[0].mood_level == 5
+            assert any(event["source"] == "fragment" for event in items[0].events or [])
+            assert stats["active_days"] >= 1
+            assert stats["average_mood"] == 5.0
+    finally:
+        await engine.dispose()

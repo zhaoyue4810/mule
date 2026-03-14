@@ -99,6 +99,7 @@ export interface UnlockedBadgeSummary {
   badge_key: string;
   name: string;
   emoji: string;
+  tier: number;
 }
 
 export interface UnlockedSoulFragmentSummary {

@@ -2,18 +2,23 @@ categories:
   - code: personality
     name: 性格
     need: 2
+    complete_insight: 你已经把性格维度的拼图逐渐拼齐，接下来更适合观察自己在不同关系中的稳定模式。
   - code: emotion
     name: 情感
     need: 2
+    complete_insight: 情感类别已经完整点亮，你对自己的靠近、退后和表达节奏会更有感知。
   - code: relationship
     name: 关系
     need: 2
+    complete_insight: 关系类碎片已经集齐，你正在更清楚地理解亲密、边界和回应他人的方式。
   - code: creativity
     name: 创造
     need: 2
+    complete_insight: 创造类碎片全部归位后，你会更容易看见自己真正被什么激发和点亮。
   - code: inner
     name: 内心
     need: 2
+    complete_insight: 内心类别完成后，说明你已经触碰到更深层的自己，也更能接住那些细微感受。
 fragments:
   - code: personality_core
     name: 性格之镜

@@ -49,6 +49,18 @@
       }
     },
     {
+      "path": "pages/profile/persona-card",
+      "style": {
+        "navigationBarTitleText": "我的人设名片"
+      }
+    },
+    {
+      "path": "pages/profile/settings",
+      "style": {
+        "navigationBarTitleText": "声音与触感"
+      }
+    },
+    {
       "path": "pages/test/detail",
       "style": {
         "navigationBarTitleText": "测试详情"

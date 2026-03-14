@@ -2,12 +2,19 @@
 import { computed, ref } from "vue";
 import { onShow } from "@dcloudio/uni-app";
 
+import CelebrationOverlay from "@/components/feedback/CelebrationOverlay.vue";
+import type { TimeCapsuleItem } from "@/shared/models/capsule";
 import type {
   AppProfileOverview,
   DailyQuestionStatePayload,
+  ProfileSettingsPayload,
   ProfileReportHistoryItem,
 } from "@/shared/models/profile";
 import type { AuthUserPayload } from "@/shared/models/auth";
+import type {
+  CalendarDayDetail,
+  CalendarStatsPayload,
+} from "@/shared/models/calendar";
 import {
   bindPhone,
   ensureAppSession,
@@ -18,9 +25,21 @@ import {
 import {
   fetchMyDailyQuestion,
   fetchMyProfileOverview,
+  fetchMyProfileSettings,
   fetchMyProfileReports,
   submitMyDailyQuestion,
+  updateMyProfileSettings,
 } from "@/shared/services/profile";
+import { fetchTimeCapsules as fetchCapsules } from "@/shared/services/capsule";
+import {
+  fetchCalendarMonth,
+  fetchCalendarStats,
+  fetchCalendarYear,
+  recordCalendarMood,
+} from "@/shared/services/calendar";
+
+type CelebrationBadgeSummary = DailyQuestionStatePayload["unlocked_badges"][number];
+type CalendarGridCell = { key: string; empty: boolean; item?: CalendarDayDetail };
 
 const overview = ref<AppProfileOverview | null>(null);
 const reports = ref<ProfileReportHistoryItem[]>([]);
@@ -36,6 +55,23 @@ const debugCode = ref("");
 const dailyQuestion = ref<DailyQuestionStatePayload | null>(null);
 const dailyQuestionSubmitting = ref(false);
 const isWechatMiniProgram = ref(false);
+const celebrationVisible = ref(false);
+const celebrationBadges = ref<CelebrationBadgeSummary[]>([]);
+const celebrationTitle = ref("太棒了！");
+const celebrationMessage = ref("新的成长印记已经点亮。");
+const calendarView = ref<"month" | "year">("month");
+const calendarMonth = ref(new Date().getMonth() + 1);
+const calendarYear = ref(new Date().getFullYear());
+const calendarMonthItems = ref<CalendarDayDetail[]>([]);
+const calendarYearItems = ref<CalendarDayDetail[]>([]);
+const calendarStats = ref<CalendarStatsPayload | null>(null);
+const calendarLoading = ref(false);
+const calendarSelectedDay = ref<CalendarDayDetail | null>(null);
+const fragmentInsight = ref<{ title: string; emoji: string; body: string } | null>(null);
+const moodSaving = ref(false);
+const capsules = ref<TimeCapsuleItem[]>([]);
+const profileSettings = ref<ProfileSettingsPayload | null>(null);
+const savingSound = ref(false);
 
 // #ifdef MP-WEIXIN
 isWechatMiniProgram.value = true;
@@ -53,6 +89,74 @@ const calendarHeatmapWeeks = computed(() => {
   }
   return weeks;
 });
+const calendarMonthGrid = computed(() => {
+  const firstDay = new Date(calendarYear.value, calendarMonth.value - 1, 1).getDay();
+  const leading: CalendarGridCell[] = Array.from({ length: firstDay }, (_, index) => ({
+    key: `leading-${index}`,
+    empty: true,
+  }));
+  const actual: CalendarGridCell[] = calendarMonthItems.value.map((item) => ({
+    key: item.date,
+    empty: false,
+    item,
+  }));
+  return [...leading, ...actual];
+});
+const calendarYearWeeks = computed(() => {
+  const firstDay = new Date(calendarYear.value, 0, 1).getDay();
+  const placeholders: CalendarGridCell[] = Array.from({ length: firstDay }, (_, index) => ({
+    key: `y-leading-${index}`,
+    empty: true,
+  }));
+  const actual: CalendarGridCell[] = calendarYearItems.value.map((item) => ({
+    key: item.date,
+    empty: false,
+    item,
+  }));
+  const allItems: CalendarGridCell[] = [...placeholders, ...actual];
+  const weeks: CalendarGridCell[][] = [];
+  for (let index = 0; index < allItems.length; index += 7) {
+    weeks.push(allItems.slice(index, index + 7));
+  }
+  return weeks;
+});
+const fragmentColumns = computed(() => {
+  if (!overview.value) {
+    return [];
+  }
+  const categoryEmoji: Record<string, string> = {
+    personality: "🪞",
+    emotion: "💗",
+    relationship: "🤝",
+    creativity: "✨",
+    inner: "🌙",
+  };
+  return overview.value.fragment_progress.map((category) => ({
+    ...category,
+    emoji: categoryEmoji[category.category_code] || "🧩",
+    items: overview.value?.fragment_map.filter(
+      (item) => item.category === category.category_code,
+    ) || [],
+  }));
+});
+const miniStats = computed(() => [
+  {
+    label: "连续天数",
+    value: `${calendarStats.value?.current_streak || 0}`,
+  },
+  {
+    label: "活跃天数",
+    value: `${calendarStats.value?.active_days || 0}`,
+  },
+  {
+    label: "平均心情",
+    value: `${calendarStats.value?.average_mood || 0}`,
+  },
+  {
+    label: "最佳连续",
+    value: `${calendarStats.value?.best_streak || 0}`,
+  },
+]);
 
 function formatTime(value?: string | null) {
   if (!value) {
@@ -71,16 +175,125 @@ function formatTime(value?: string | null) {
   return `${month}-${day} ${hour}:${minute}`;
 }
 
+function parseDate(value: string) {
+  return new Date(`${value}T00:00:00`);
+}
+
 function formatDayLabel(value: string) {
-  const date = new Date(value);
+  const date = parseDate(value);
   if (Number.isNaN(date.getTime())) {
     return value;
   }
   return `${date.getMonth() + 1}/${date.getDate()}`;
 }
 
+function formatCalendarCell(value: string) {
+  const date = parseDate(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+  return `${date.getDate()}`;
+}
+
 function heatmapClass(intensity: number) {
   return `heatmap-cell--level-${Math.max(0, Math.min(intensity, 4))}`;
+}
+
+function formatCalendarTitle() {
+  return `${calendarYear.value} 年 ${calendarMonth.value} 月`;
+}
+
+function openCalendarDay(item: CalendarDayDetail) {
+  calendarSelectedDay.value = item;
+}
+
+function closeCalendarDay() {
+  calendarSelectedDay.value = null;
+}
+
+async function updateCalendarMood(moodLevel: number) {
+  if (!calendarSelectedDay.value || moodSaving.value) {
+    return;
+  }
+  moodSaving.value = true;
+  try {
+    calendarStats.value = await recordCalendarMood(
+      moodLevel,
+      calendarSelectedDay.value.date,
+    );
+    await loadCalendar();
+    calendarSelectedDay.value = calendarMonthItems.value.find(
+      (item) => item.date === calendarSelectedDay.value?.date,
+    ) || calendarYearItems.value.find((item) => item.date === calendarSelectedDay.value?.date) || null;
+    uni.showToast({
+      title: "心情已记录",
+      icon: "success",
+    });
+  } catch (err) {
+    uni.showToast({
+      title: err instanceof Error ? err.message : "记录失败",
+      icon: "none",
+    });
+  } finally {
+    moodSaving.value = false;
+  }
+}
+
+async function changeCalendarMonth(step: number) {
+  const nextDate = new Date(calendarYear.value, calendarMonth.value - 1 + step, 1);
+  calendarYear.value = nextDate.getFullYear();
+  calendarMonth.value = nextDate.getMonth() + 1;
+  await loadCalendar();
+}
+
+async function toggleCalendarView(view: "month" | "year") {
+  if (calendarView.value === view) {
+    return;
+  }
+  calendarView.value = view;
+  await loadCalendar();
+}
+
+function showBadgeCelebration(
+  badges: CelebrationBadgeSummary[],
+  title = "太棒了！",
+  message = "新的成长印记已经点亮。",
+) {
+  if (!badges.length) {
+    return;
+  }
+  celebrationBadges.value = badges;
+  celebrationTitle.value = title;
+  celebrationMessage.value = message;
+  celebrationVisible.value = true;
+}
+
+function closeCelebration() {
+  celebrationVisible.value = false;
+}
+
+function openFragmentInsight(title: string, emoji: string, body: string) {
+  fragmentInsight.value = { title, emoji, body };
+}
+
+function closeFragmentInsight() {
+  fragmentInsight.value = null;
+}
+
+async function loadCalendar() {
+  calendarLoading.value = true;
+  try {
+    const [monthPayload, yearPayload, statsPayload] = await Promise.all([
+      fetchCalendarMonth(calendarYear.value, calendarMonth.value),
+      fetchCalendarYear(calendarYear.value),
+      fetchCalendarStats(calendarYear.value),
+    ]);
+    calendarMonthItems.value = monthPayload.items;
+    calendarYearItems.value = yearPayload.items;
+    calendarStats.value = statsPayload;
+  } finally {
+    calendarLoading.value = false;
+  }
 }
 
 function openReport(recordId: number) {
@@ -92,6 +305,18 @@ function openReport(recordId: number) {
 function goHome() {
   uni.switchTab({
     url: "/pages/home/index",
+  });
+}
+
+function goPersonaCard() {
+  uni.navigateTo({
+    url: "/pages/profile/persona-card",
+  });
+}
+
+function goSettings() {
+  uni.navigateTo({
+    url: "/pages/profile/settings",
   });
 }
 
@@ -107,9 +332,12 @@ async function loadProfile() {
       fetchMyProfileOverview(),
       fetchMyProfileReports(),
     ]);
+    await loadCalendar();
     overview.value = overviewPayload;
     reports.value = reportPayload;
     dailyQuestion.value = await fetchMyDailyQuestion();
+    capsules.value = (await fetchCapsules()).items;
+    profileSettings.value = await fetchMyProfileSettings();
   } catch (err) {
     if (
       err instanceof Error &&
@@ -125,7 +353,46 @@ async function loadProfile() {
   }
 }
 
-async function answerDailyQuestion(answerIndex: number) {
+async function toggleSoundSetting(value: boolean) {
+  if (savingSound.value) {
+    return;
+  }
+  savingSound.value = true;
+  try {
+    profileSettings.value = await updateMyProfileSettings({
+      sound_enabled: value,
+    });
+    uni.showToast({
+      title: value ? "声音已开启" : "声音已关闭",
+      icon: "success",
+    });
+  } catch (err) {
+    uni.showToast({
+      title: err instanceof Error ? err.message : "设置失败",
+      icon: "none",
+    });
+  } finally {
+    savingSound.value = false;
+  }
+}
+
+function onProfileSoundSwitchChange(event: { detail: { value: boolean } }) {
+  void toggleSoundSetting(Boolean(event.detail.value));
+}
+
+function formatRetroDate(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+  return `${date.getMonth() + 1}/${date.getDate()}`;
+}
+
+function badgeTierLabel(tier: number) {
+  return ["铜", "银", "金", "钻"][Math.max(0, Math.min(3, tier - 1))] || "铜";
+}
+
+async function answerDailyQuestion(answerIndex: number, answerDate?: string) {
   if (
     dailyQuestionSubmitting.value ||
     !dailyQuestion.value ||
@@ -135,13 +402,24 @@ async function answerDailyQuestion(answerIndex: number) {
   }
   dailyQuestionSubmitting.value = true;
   try {
-    dailyQuestion.value = await submitMyDailyQuestion(
+    const nextDailyQuestion = await submitMyDailyQuestion(
       dailyQuestion.value.question_id,
       answerIndex,
+      answerDate,
     );
+    dailyQuestion.value = nextDailyQuestion;
+    if (nextDailyQuestion.unlocked_badges?.length) {
+      showBadgeCelebration(
+        nextDailyQuestion.unlocked_badges,
+        "勋章已解锁",
+        answerDate
+          ? "补签成功，你的连续成长轨迹又被补上一块。"
+          : "今天的回答留下了新的印记，也点亮了一枚勋章。",
+      );
+    }
     await loadProfile();
     uni.showToast({
-      title: "今日心情已记录",
+      title: answerDate ? "补签已记录" : "今日心情已记录",
       icon: "success",
     });
   } catch (err) {
@@ -279,6 +557,13 @@ onShow(() => {
         </view>
       </view>
 
+      <view class="quick-actions">
+        <button class="quick-actions__button" @tap="goPersonaCard">我的人设名片</button>
+        <button class="quick-actions__button quick-actions__button--ghost" @tap="goSettings">
+          声音与触感
+        </button>
+      </view>
+
       <view class="panel" v-if="overview.badges.length">
         <text class="panel__title">已解锁勋章</text>
         <text class="panel__body">
@@ -292,17 +577,94 @@ onShow(() => {
           >
             <text class="badge-card__emoji">{{ item.emoji }}</text>
             <text class="badge-card__name">{{ item.name }}</text>
+            <text class="badge-card__tier">{{ badgeTierLabel(item.tier) }}阶 · {{ item.unlock_count }} 次</text>
             <text class="badge-card__time">{{ formatTime(item.unlocked_at) }}</text>
           </view>
         </view>
       </view>
 
       <view class="panel" v-if="overview.calendar_heatmap.length">
-        <text class="panel__title">近30天心动轨迹</text>
-        <text class="panel__body">
-          每完成一次测试，这里都会留下当天的活跃印记。颜色越深，代表当天互动越频繁。
-        </text>
-        <view class="heatmap">
+        <view class="calendar-panel__header">
+          <view>
+            <text class="panel__title">运势晴雨图</text>
+            <text class="panel__body">
+              日历会汇总测试完成、每日一问、手动心情和碎片收集等事件，点开单元格可查看详情并补记心情。
+            </text>
+          </view>
+          <view class="calendar-toggle">
+            <button
+              class="calendar-toggle__button"
+              :class="{ 'calendar-toggle__button--active': calendarView === 'month' }"
+              @tap="toggleCalendarView('month')"
+            >
+              月
+            </button>
+            <button
+              class="calendar-toggle__button"
+              :class="{ 'calendar-toggle__button--active': calendarView === 'year' }"
+              @tap="toggleCalendarView('year')"
+            >
+              年
+            </button>
+          </view>
+        </view>
+        <view class="calendar-stats">
+          <view v-for="item in miniStats" :key="item.label" class="calendar-stats__card">
+            <text class="calendar-stats__value">{{ item.value }}</text>
+            <text class="calendar-stats__label">{{ item.label }}</text>
+          </view>
+        </view>
+        <view class="calendar-toolbar">
+          <button class="calendar-toolbar__arrow" @tap="changeCalendarMonth(-1)">‹</button>
+          <text class="calendar-toolbar__title">{{ formatCalendarTitle() }}</text>
+          <button class="calendar-toolbar__arrow" @tap="changeCalendarMonth(1)">›</button>
+        </view>
+        <view v-if="calendarLoading" class="calendar-loading">
+          <text class="panel__body">正在整理你的日历轨迹...</text>
+        </view>
+        <view v-else-if="calendarView === 'month'" class="calendar-month">
+          <view class="calendar-weekdays">
+            <text v-for="weekday in ['日', '一', '二', '三', '四', '五', '六']" :key="weekday">
+              {{ weekday }}
+            </text>
+          </view>
+          <view class="calendar-month__grid">
+            <view
+              v-for="cell in calendarMonthGrid"
+              :key="cell.key"
+              class="calendar-month__cell"
+              :class="cell.empty ? 'calendar-month__cell--empty' : heatmapClass(cell.item?.intensity || 0)"
+              @tap="cell.item && openCalendarDay(cell.item)"
+            >
+              <template v-if="cell.item">
+                <text class="calendar-month__date">{{ formatCalendarCell(cell.item.date) }}</text>
+                <text class="calendar-month__emoji">{{ cell.item.mood_emoji || '·' }}</text>
+              </template>
+            </view>
+          </view>
+        </view>
+        <scroll-view v-else scroll-x class="calendar-year">
+          <view class="calendar-year__grid">
+            <view
+              v-for="(week, weekIndex) in calendarYearWeeks"
+              :key="`year-${weekIndex}`"
+              class="calendar-year__week"
+            >
+              <view
+                v-for="cell in week"
+                :key="cell.key"
+                class="calendar-year__cell"
+                :class="cell.empty ? 'calendar-year__cell--empty' : heatmapClass(cell.item?.intensity || 0)"
+                @tap="cell.item && openCalendarDay(cell.item)"
+              >
+                <text v-if="cell.item && cell.item.mood_emoji" class="calendar-year__emoji">
+                  {{ cell.item.mood_emoji }}
+                </text>
+              </view>
+            </view>
+          </view>
+        </scroll-view>
+        <view class="heatmap heatmap--mini">
           <view
             v-for="(week, weekIndex) in calendarHeatmapWeeks"
             :key="`week-${weekIndex}`"
@@ -350,6 +712,23 @@ onShow(() => {
           >
             {{ option }}
           </button>
+          <view
+            v-if="dailyQuestion.retroactive_dates && dailyQuestion.retroactive_dates.length"
+            class="daily-question-retro"
+          >
+            <text class="daily-question-retro__title">最近 3 天可补签</text>
+            <view class="daily-question-retro__chips">
+              <button
+                v-for="retroDate in dailyQuestion.retroactive_dates"
+                :key="retroDate"
+                class="daily-question-retro__chip"
+                :disabled="dailyQuestionSubmitting"
+                @tap="answerDailyQuestion(0, retroDate)"
+              >
+                补签 {{ formatRetroDate(retroDate) }}
+              </button>
+            </view>
+          </view>
         </view>
         <view v-else class="daily-question-result">
           <text class="daily-question-result__label">
@@ -377,20 +756,89 @@ onShow(() => {
       </view>
 
       <view class="panel" v-if="overview.fragment_progress.length">
-        <text class="panel__title">灵魂碎片进度</text>
+        <text class="panel__title">灵魂碎片地图</text>
         <text class="panel__body">
-          不同测试会点亮不同的内在切面。你收集到的碎片越多，个人中心就越像一张更完整的自我地图。
+          5 个类别会形成一张横向灵魂地图。每列都会显示收集进度，集齐后可以展开更深一层的洞察。
         </text>
-        <view class="rows rows--soft">
+        <scroll-view scroll-x class="fragment-map">
+          <view class="fragment-map__grid">
+            <view
+              v-for="category in fragmentColumns"
+              :key="category.category_code"
+              class="fragment-column"
+            >
+              <view
+                class="fragment-column__head"
+                @tap="
+                  category.completed &&
+                    category.complete_insight &&
+                    openFragmentInsight(
+                      `${category.category_name} 已完成`,
+                      category.emoji,
+                      category.complete_insight,
+                    )
+                "
+              >
+                <text class="fragment-column__emoji">{{ category.emoji }}</text>
+                <text class="fragment-column__name">{{ category.category_name }}</text>
+                <text class="fragment-column__meta">
+                  {{ category.unlocked_count }}/{{ category.total_count }}
+                </text>
+                <view class="fragment-column__track">
+                  <view
+                    class="fragment-column__progress"
+                    :style="{
+                      width: `${Math.min(100, (category.unlocked_count / Math.max(1, category.total_count)) * 100)}%`,
+                    }"
+                  />
+                </view>
+              </view>
+              <view class="fragment-column__list">
+                <view
+                  v-for="item in category.items"
+                  :key="item.fragment_key"
+                  class="fragment-column__item"
+                  :class="{ 'fragment-column__item--locked': !item.collected }"
+                  @tap="
+                    item.collected &&
+                      openFragmentInsight(item.name, item.emoji || '🧩', item.insight || '这片碎片已经被点亮。')
+                  "
+                >
+                  <text class="fragment-column__item-emoji">{{ item.collected ? item.emoji || '🧩' : '🔒' }}</text>
+                  <text class="fragment-column__item-name">{{ item.name }}</text>
+                </view>
+              </view>
+            </view>
+          </view>
+        </scroll-view>
+      </view>
+
+      <view class="panel" v-if="capsules.length">
+        <text class="panel__title">时光胶囊</text>
+        <text class="panel__body">
+          这里会保存你写给未来的信。锁定中的胶囊会显示剩余天数，已解锁的内容会在首页优先弹出揭示。
+        </text>
+        <view class="capsule-list">
           <view
-            v-for="item in overview.fragment_progress"
-            :key="item.category_code"
-            class="row row--soft"
+            v-for="item in capsules"
+            :key="item.id"
+            class="capsule-card"
+            :class="{ 'capsule-card--open': item.is_unlocked }"
           >
-            <text class="row__name">
-              {{ item.category_name }}{{ item.completed ? " · 已点亮" : "" }}
-            </text>
-            <text class="row__value">{{ item.unlocked_count }}/{{ item.total_count }}</text>
+            <text class="capsule-card__icon">{{ item.is_unlocked ? item.persona_icon || "💌" : "🔒" }}</text>
+            <view class="capsule-card__content">
+              <text class="capsule-card__title">{{ item.persona_title || "时光胶囊" }}</text>
+              <text class="capsule-card__meta">
+                {{
+                  item.is_unlocked
+                    ? `已到期 · ${formatDayLabel(item.unlock_date)}`
+                    : `锁定中 · 还剩 ${item.days_remaining} 天`
+                }}
+              </text>
+              <text class="capsule-card__body">
+                {{ item.is_unlocked ? item.message : "等时间到达后，首页会自动帮你揭开这封信。" }}
+              </text>
+            </view>
           </view>
         </view>
       </view>
@@ -475,6 +923,18 @@ onShow(() => {
           >
             {{ bindingPhone ? "绑定中..." : "绑定手机号" }}
           </button>
+          <view
+            v-if="profileSettings"
+            class="sound-setting"
+          >
+            <text class="sound-setting__label">声音反馈</text>
+            <switch
+              :checked="profileSettings.sound_enabled"
+              :disabled="savingSound"
+              color="#d96f3d"
+              @change="onProfileSoundSwitchChange"
+            />
+          </view>
         </view>
       </view>
 
@@ -535,6 +995,58 @@ onShow(() => {
         </view>
         <text v-else class="panel__body">你还没有可回看的历史报告。</text>
       </view>
+    </view>
+  </view>
+  <CelebrationOverlay
+    :visible="celebrationVisible"
+    :title="celebrationTitle"
+    :message="celebrationMessage"
+    :badges="celebrationBadges"
+    @close="closeCelebration"
+  />
+  <view v-if="calendarSelectedDay" class="sheet" @tap="closeCalendarDay">
+    <view class="sheet__mask" />
+    <view class="sheet__panel" @tap.stop>
+      <text class="sheet__title">{{ formatDayLabel(calendarSelectedDay.date) }}</text>
+      <text class="sheet__subtitle">
+        {{ calendarSelectedDay.mood_emoji || "🙂" }} {{ calendarSelectedDay.activity_count }} 次活动
+      </text>
+      <view class="sheet__events">
+        <view
+          v-for="(event, index) in calendarSelectedDay.events"
+          :key="`${calendarSelectedDay.date}-${event.source}-${index}`"
+          class="sheet__event"
+        >
+          <text class="sheet__event-emoji">{{ event.emoji || "•" }}</text>
+          <text class="sheet__event-label">{{ event.label }}</text>
+        </view>
+      </view>
+      <text class="sheet__block-title">记录这一天的心情</text>
+      <view class="sheet__moods">
+        <button
+          v-for="item in [
+            { emoji: '😶', value: 1 },
+            { emoji: '🙂', value: 2 },
+            { emoji: '😊', value: 3 },
+            { emoji: '😄', value: 4 },
+            { emoji: '🤩', value: 5 },
+          ]"
+          :key="item.value"
+          class="sheet__mood"
+          :disabled="moodSaving"
+          @tap="updateCalendarMood(item.value)"
+        >
+          {{ item.emoji }}
+        </button>
+      </view>
+    </view>
+  </view>
+  <view v-if="fragmentInsight" class="sheet" @tap="closeFragmentInsight">
+    <view class="sheet__mask sheet__mask--dreamy" />
+    <view class="sheet__panel sheet__panel--dreamy" @tap.stop>
+      <text class="fragment-reveal__emoji">{{ fragmentInsight.emoji }}</text>
+      <text class="sheet__title">{{ fragmentInsight.title }}</text>
+      <text class="fragment-reveal__body">{{ fragmentInsight.body }}</text>
     </view>
   </view>
 </template>
@@ -598,6 +1110,24 @@ onShow(() => {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16rpx;
+}
+
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14rpx;
+}
+
+.quick-actions__button {
+  border-radius: 22rpx;
+  background: linear-gradient(135deg, #d96f3d, #bf5321);
+  color: #fff8f0;
+  font-size: 24rpx;
+}
+
+.quick-actions__button--ghost {
+  background: rgba(255, 246, 237, 0.96);
+  color: $xc-accent;
 }
 
 .panel {
@@ -671,11 +1201,184 @@ onShow(() => {
   font-size: 24rpx;
 }
 
+.sound-setting {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 18rpx;
+  padding: 18rpx 20rpx;
+  border-radius: 18rpx;
+  background: rgba(255, 248, 238, 0.96);
+}
+
+.sound-setting__label {
+  font-size: 24rpx;
+  color: $xc-ink;
+}
+
 .badge-grid {
   margin-top: 18rpx;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14rpx;
+}
+
+.calendar-panel__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 20rpx;
+}
+
+.calendar-toggle {
+  display: flex;
+  gap: 10rpx;
+  align-items: flex-start;
+}
+
+.calendar-toggle__button {
+  min-width: 72rpx;
+  height: 64rpx;
+  padding: 0 18rpx;
+  border-radius: 999rpx;
+  background: rgba(217, 111, 61, 0.1);
+  color: $xc-accent;
+  font-size: 24rpx;
+}
+
+.calendar-toggle__button--active {
+  background: linear-gradient(135deg, #d96f3d, #bf5321);
+  color: #fff8f0;
+}
+
+.calendar-stats {
+  margin-top: 18rpx;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12rpx;
+}
+
+.calendar-stats__card {
+  padding: 18rpx 12rpx;
+  border-radius: 18rpx;
+  background: rgba(255, 247, 238, 0.96);
+  border: 2rpx solid rgba(217, 111, 61, 0.08);
+  text-align: center;
+}
+
+.calendar-stats__value {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 700;
+  color: $xc-accent;
+}
+
+.calendar-stats__label {
+  display: block;
+  margin-top: 6rpx;
+  font-size: 20rpx;
+  color: $xc-muted;
+}
+
+.calendar-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 18rpx;
+}
+
+.calendar-toolbar__arrow {
+  width: 72rpx;
+  height: 72rpx;
+  padding: 0;
+  border-radius: 50%;
+  background: rgba(255, 244, 233, 0.96);
+  color: $xc-accent;
+  font-size: 34rpx;
+}
+
+.calendar-toolbar__title {
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.calendar-loading {
+  margin-top: 18rpx;
+}
+
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  margin-top: 18rpx;
+  gap: 10rpx;
+  text-align: center;
+  font-size: 22rpx;
+  color: $xc-muted;
+}
+
+.calendar-month__grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 10rpx;
+  margin-top: 12rpx;
+}
+
+.calendar-month__cell {
+  min-height: 92rpx;
+  border-radius: 18rpx;
+  padding: 10rpx;
+  border: 2rpx solid rgba(217, 111, 61, 0.08);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.calendar-month__cell--empty {
+  border-style: dashed;
+  background: rgba(255, 252, 248, 0.58);
+}
+
+.calendar-month__date {
+  font-size: 22rpx;
+  color: $xc-ink;
+}
+
+.calendar-month__emoji {
+  text-align: right;
+  font-size: 22rpx;
+}
+
+.calendar-year {
+  margin-top: 18rpx;
+}
+
+.calendar-year__grid {
+  display: flex;
+  gap: 8rpx;
+  padding-bottom: 4rpx;
+}
+
+.calendar-year__week {
+  display: grid;
+  grid-template-rows: repeat(7, 22rpx);
+  gap: 8rpx;
+}
+
+.calendar-year__cell {
+  width: 22rpx;
+  height: 22rpx;
+  border-radius: 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.calendar-year__cell--empty {
+  background: transparent;
+}
+
+.calendar-year__emoji {
+  font-size: 14rpx;
+  line-height: 1;
 }
 
 .badge-card {
@@ -704,10 +1407,149 @@ onShow(() => {
   color: $xc-muted;
 }
 
+.badge-card__tier {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 20rpx;
+  color: $xc-accent;
+}
+
 .fragment-grid {
   margin-top: 18rpx;
   display: grid;
   gap: 14rpx;
+}
+
+.fragment-map {
+  margin-top: 18rpx;
+}
+
+.fragment-map__grid {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 220rpx;
+  gap: 14rpx;
+}
+
+.fragment-column {
+  padding: 18rpx;
+  border-radius: 22rpx;
+  background: rgba(255, 248, 238, 0.96);
+  border: 2rpx solid rgba(217, 111, 61, 0.08);
+}
+
+.fragment-column__head {
+  display: flex;
+  flex-direction: column;
+}
+
+.fragment-column__emoji {
+  font-size: 34rpx;
+}
+
+.fragment-column__name {
+  margin-top: 8rpx;
+  font-size: 26rpx;
+  font-weight: 600;
+}
+
+.fragment-column__meta {
+  margin-top: 4rpx;
+  font-size: 22rpx;
+  color: $xc-muted;
+}
+
+.fragment-column__track {
+  margin-top: 12rpx;
+  height: 10rpx;
+  border-radius: 999rpx;
+  background: rgba(217, 111, 61, 0.1);
+  overflow: hidden;
+}
+
+.fragment-column__progress {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #ffb16c, #d96f3d);
+}
+
+.fragment-column__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+  margin-top: 16rpx;
+}
+
+.fragment-column__item {
+  min-height: 92rpx;
+  padding: 14rpx 12rpx;
+  border-radius: 16rpx;
+  background: rgba(255, 255, 255, 0.72);
+  border: 2rpx solid rgba(217, 111, 61, 0.08);
+}
+
+.fragment-column__item--locked {
+  opacity: 0.55;
+}
+
+.fragment-column__item-emoji {
+  display: block;
+  font-size: 28rpx;
+}
+
+.fragment-column__item-name {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  line-height: 1.5;
+  color: $xc-ink;
+}
+
+.capsule-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14rpx;
+  margin-top: 18rpx;
+}
+
+.capsule-card {
+  display: grid;
+  grid-template-columns: 72rpx 1fr;
+  gap: 16rpx;
+  padding: 20rpx;
+  border-radius: 20rpx;
+  background: rgba(255, 247, 238, 0.96);
+  border: 2rpx solid rgba(217, 111, 61, 0.08);
+}
+
+.capsule-card--open {
+  background: linear-gradient(145deg, rgba(255, 245, 220, 0.96), rgba(255, 233, 193, 0.92));
+}
+
+.capsule-card__icon {
+  font-size: 40rpx;
+  text-align: center;
+}
+
+.capsule-card__title {
+  display: block;
+  font-size: 26rpx;
+  font-weight: 600;
+}
+
+.capsule-card__meta {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: $xc-accent;
+}
+
+.capsule-card__body {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 23rpx;
+  line-height: 1.7;
+  color: $xc-muted;
 }
 
 .fragment-card {
@@ -750,6 +1592,10 @@ onShow(() => {
   display: flex;
   flex-direction: column;
   gap: 10rpx;
+}
+
+.heatmap--mini {
+  margin-top: 24rpx;
 }
 
 .heatmap__week {
@@ -808,6 +1654,31 @@ onShow(() => {
   display: grid;
   gap: 12rpx;
   margin-top: 18rpx;
+}
+
+.daily-question-retro {
+  margin-top: 16rpx;
+}
+
+.daily-question-retro__title {
+  display: block;
+  font-size: 22rpx;
+  color: $xc-muted;
+}
+
+.daily-question-retro__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-top: 12rpx;
+}
+
+.daily-question-retro__chip {
+  padding: 0 20rpx;
+  border-radius: 999rpx;
+  background: rgba(217, 111, 61, 0.12);
+  color: $xc-accent;
+  font-size: 22rpx;
 }
 
 .daily-question-stats {
@@ -1030,5 +1901,147 @@ onShow(() => {
 .history-card__footer {
   display: block;
   margin-top: 14rpx;
+}
+
+.sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: flex-end;
+}
+
+.sheet__mask {
+  position: absolute;
+  inset: 0;
+  background: rgba(33, 20, 16, 0.46);
+}
+
+.sheet__mask--dreamy {
+  background: rgba(28, 18, 34, 0.58);
+  backdrop-filter: blur(10px);
+}
+
+.sheet__panel {
+  position: relative;
+  width: 100%;
+  padding: 34rpx 30rpx 42rpx;
+  border-radius: 32rpx 32rpx 0 0;
+  background: #fffaf5;
+  animation: sheet-rise 0.24s ease-out;
+}
+
+.sheet__panel--dreamy {
+  margin: auto 36rpx;
+  border-radius: 30rpx;
+  background: linear-gradient(180deg, rgba(255, 249, 241, 0.98), rgba(255, 235, 222, 0.94));
+}
+
+.sheet__title {
+  display: block;
+  font-size: 34rpx;
+  font-weight: 700;
+}
+
+.sheet__subtitle {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  color: $xc-muted;
+}
+
+.sheet__events {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+  margin-top: 20rpx;
+}
+
+.sheet__event {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 16rpx 18rpx;
+  border-radius: 16rpx;
+  background: rgba(255, 247, 238, 0.96);
+}
+
+.sheet__event-emoji {
+  font-size: 28rpx;
+}
+
+.sheet__event-label {
+  font-size: 24rpx;
+  color: $xc-ink;
+}
+
+.sheet__block-title {
+  display: block;
+  margin-top: 22rpx;
+  font-size: 24rpx;
+  color: $xc-accent;
+}
+
+.sheet__moods {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12rpx;
+  margin-top: 14rpx;
+}
+
+.sheet__mood {
+  min-width: 0;
+  padding: 18rpx 0;
+  border-radius: 18rpx;
+  background: rgba(255, 242, 228, 0.96);
+  font-size: 30rpx;
+}
+
+.fragment-reveal__emoji {
+  display: block;
+  font-size: 92rpx;
+  text-align: center;
+  animation: fragment-float 0.42s ease-out;
+}
+
+.fragment-reveal__body {
+  display: block;
+  margin-top: 18rpx;
+  font-size: 26rpx;
+  line-height: 1.8;
+  text-align: center;
+  color: $xc-muted;
+  animation: fragment-fade 0.5s ease-out;
+}
+
+@keyframes sheet-rise {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes fragment-float {
+  from {
+    opacity: 0;
+    transform: scale(0.7) translateY(24rpx);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes fragment-fade {
+  from {
+    opacity: 0;
+    transform: translateY(20rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>

@@ -2,14 +2,18 @@ import asyncio
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from app.core.database import get_metadata
 from app.core.yaml_loader import yaml_config
 from app.models import test as test_models
+from app.models.badge import UserBadge
+from app.models.record import TestRecord as RecordOrm
 from app.models.test import Option as OptionOrm
 from app.models.test import Question as QuestionOrm
 from app.models.test import TestVersion as VersionOrm
+from app.models.user import User
 from app.services.badge_unlock_service import BadgeUnlockService
 from app.services.test_submission_service import (
     TestSubmissionService as SubmissionService,
@@ -100,3 +104,111 @@ def test_time_range_rule_handles_cross_day_window() -> None:
 
     assert service._rule_matched({"type": "time_range", "start": 23, "end": 5}, 1, at_midnight)
     assert not service._rule_matched({"type": "time_range", "start": 23, "end": 5}, 1, at_noon)
+
+
+def test_badge_unlock_supports_category_completion_and_tier_upgrade() -> None:
+    asyncio.run(_test_badge_unlock_supports_category_completion_and_tier_upgrade())
+
+
+async def _test_badge_unlock_supports_category_completion_and_tier_upgrade() -> None:
+    engine = create_async_engine("sqlite+aiosqlite:///:memory:", future=True)
+    session_factory = async_sessionmaker(engine, expire_on_commit=False)
+
+    try:
+        async with engine.begin() as conn:
+            await conn.run_sync(get_metadata().create_all)
+
+        yaml_config.load_all()
+        async with session_factory() as session:
+            sync_service = YamlSyncService(session)
+            await sync_service.sync_dictionaries()
+
+            tests = [
+                test_models.Test(test_code="cat_a", title="A", category="personality"),
+                test_models.Test(test_code="cat_b", title="B", category="relationship"),
+                test_models.Test(test_code="cat_c", title="C", category="career"),
+            ]
+            user = User(nickname="badge-user", avatar_value="🧠")
+            session.add(user)
+            session.add_all(tests)
+            await session.flush()
+            versions = [
+                VersionOrm(test_id=tests[0].id, version=1, status="PUBLISHED"),
+                VersionOrm(test_id=tests[1].id, version=1, status="PUBLISHED"),
+                VersionOrm(test_id=tests[2].id, version=1, status="PUBLISHED"),
+            ]
+            session.add_all(versions)
+            await session.flush()
+
+            session.add_all(
+                [
+                    RecordOrm(user_id=user.id, test_id=tests[0].id, version_id=versions[0].id, scores={}, total_score=30, duration=80),
+                    RecordOrm(user_id=user.id, test_id=tests[1].id, version_id=versions[1].id, scores={}, total_score=40, duration=70),
+                    RecordOrm(user_id=user.id, test_id=tests[2].id, version_id=versions[2].id, scores={}, total_score=50, duration=60),
+                ]
+            )
+            await session.flush()
+
+            service = BadgeUnlockService(session)
+            unlocked = await service.unlock_for_user(
+                user_id=user.id,
+                metrics={"daily_streak": 3},
+            )
+            await session.flush()
+
+            assert any(item.badge_key == "category_wayfinder" for item in unlocked)
+
+            for _ in range(2):
+                await service.unlock_for_user(
+                    user_id=user.id,
+                    metrics={"daily_streak": 3},
+                    allowed_rule_types={"daily_streak"},
+                )
+            await session.flush()
+
+            streak_badge = await session.scalar(select(UserBadge).where(UserBadge.user_id == user.id))
+            assert streak_badge is not None
+            assert streak_badge.unlock_count >= 1
+
+            all_badges = list(await session.scalars(select(UserBadge).where(UserBadge.user_id == user.id)))
+            target = next(item for item in all_badges if item.unlock_count >= 3)
+            assert target.tier >= 2
+    finally:
+        await engine.dispose()
+
+
+def test_badge_unlock_supports_score_threshold_and_speed() -> None:
+    asyncio.run(_test_badge_unlock_supports_score_threshold_and_speed())
+
+
+async def _test_badge_unlock_supports_score_threshold_and_speed() -> None:
+    engine = create_async_engine("sqlite+aiosqlite:///:memory:", future=True)
+    session_factory = async_sessionmaker(engine, expire_on_commit=False)
+
+    try:
+        async with engine.begin() as conn:
+            await conn.run_sync(get_metadata().create_all)
+
+        yaml_config.load_all()
+        async with session_factory() as session:
+            sync_service = YamlSyncService(session)
+            await sync_service.sync_dictionaries()
+            user = User(nickname="speed-user", avatar_value="🧠")
+            session.add(user)
+            await session.flush()
+
+            service = BadgeUnlockService(session)
+            unlocked = await service.unlock_for_user(
+                user_id=user.id,
+                metrics={
+                    "score_threshold": 88,
+                    "duration_seconds": 45,
+                },
+                allowed_rule_types={"score_threshold", "speed"},
+            )
+
+            keys = {item.badge_key for item in unlocked}
+            assert "score_blaze" in keys
+            assert "speed_runner" in keys
+    finally:
+        await engine.dispose()

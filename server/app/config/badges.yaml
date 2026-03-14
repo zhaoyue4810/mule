@@ -28,6 +28,27 @@ badges:
     unlock_rule:
       type: daily_streak
       value: 7
+  - code: category_wayfinder
+    name: 多面探索者
+    emoji: 🧭
+    scope: personal
+    unlock_rule:
+      type: category_completion
+      value: 3
+  - code: score_blaze
+    name: 高光命中
+    emoji: 🔥
+    scope: personal
+    unlock_rule:
+      type: score_threshold
+      value: 80
+  - code: speed_runner
+    name: 闪电心流
+    emoji: ⚡
+    scope: personal
+    unlock_rule:
+      type: speed
+      value: 60
   - code: perfect_match
     name: 天作之合
     emoji: 💎

@@ -123,3 +123,36 @@ async def _test_daily_question_streak_counts_consecutive_days() -> None:
             )
     finally:
         await engine.dispose()
+
+
+def test_daily_question_supports_recent_backfill() -> None:
+    asyncio.run(_test_daily_question_supports_recent_backfill())
+
+
+async def _test_daily_question_supports_recent_backfill() -> None:
+    engine = create_async_engine("sqlite+aiosqlite:///:memory:", future=True)
+    session_factory = async_sessionmaker(engine, expire_on_commit=False)
+
+    try:
+        async with engine.begin() as conn:
+            await conn.run_sync(get_metadata().create_all)
+
+        yaml_config.load_all()
+        async with session_factory() as session:
+            service = DailyQuestionService(session)
+            state = await service.get_today_question(user_id=4, today=date(2026, 3, 14))
+            assert state.retroactive_dates == ["2026-03-13", "2026-03-12", "2026-03-11"]
+
+            retro_question = await service.get_today_question(user_id=4, today=date(2026, 3, 13))
+            answered = await service.submit_answer(
+                user_id=4,
+                question_id=retro_question.question_id,
+                answer_index=0,
+                answer_date=date(2026, 3, 13),
+                today=date(2026, 3, 14),
+            )
+
+            assert "2026-03-13" not in answered.retroactive_dates
+            assert "2026-03-12" in answered.retroactive_dates
+    finally:
+        await engine.dispose()

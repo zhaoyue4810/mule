@@ -69,6 +69,7 @@ export interface ReportPersonaPayload {
 }
 
 export interface AppReportDetail {
+  report_id: number;
   record_id: number;
   test_code: string;
   test_name: string;

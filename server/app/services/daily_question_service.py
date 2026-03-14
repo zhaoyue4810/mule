@@ -27,6 +27,7 @@ class DailyQuestionState:
     current_streak: int
     best_streak: int
     recent_answered_days: int
+    retroactive_dates: list[str]
     unlocked_badges: list[dict]
 
 
@@ -72,6 +73,10 @@ class DailyQuestionService:
             user_id=user_id,
             today=current_date,
         )
+        retroactive_dates = await self._build_retroactive_dates(
+            user_id=user_id,
+            today=current_date,
+        )
 
         return DailyQuestionState(
             question_id=question.id,
@@ -84,6 +89,7 @@ class DailyQuestionService:
             current_streak=current_streak,
             best_streak=best_streak,
             recent_answered_days=recent_answered_days,
+            retroactive_dates=retroactive_dates,
             unlocked_badges=[],
         )
 
@@ -93,20 +99,26 @@ class DailyQuestionService:
         user_id: int,
         question_id: int,
         answer_index: int,
+        answer_date: date | None = None,
         today: date | None = None,
     ) -> DailyQuestionState:
-        current_state = await self.get_today_question(user_id=user_id, today=today)
+        current_date = today or datetime.now(LOCAL_TZ).date()
+        target_date = answer_date or current_date
+        if target_date > current_date:
+            raise ValueError("Answer date cannot be in the future")
+        if (current_date - target_date).days > 3:
+            raise ValueError("Only the most recent 3 days can be backfilled")
+
+        current_state = await self.get_today_question(user_id=user_id, today=target_date)
         if current_state.question_id != question_id:
-            raise ValueError("Only today's question can be answered")
+            raise ValueError("Only the question assigned to that day can be answered")
         if answer_index < 0 or answer_index >= len(current_state.options):
             raise ValueError("Answer index is out of range")
-
-        current_date = today or datetime.now(LOCAL_TZ).date()
         answer = await self.db.scalar(
             select(DailySoulAnswer).where(
                 DailySoulAnswer.user_id == user_id,
                 DailySoulAnswer.question_id == question_id,
-                DailySoulAnswer.answer_date == current_date,
+                DailySoulAnswer.answer_date == target_date,
             )
         )
         if answer is None:
@@ -114,7 +126,7 @@ class DailyQuestionService:
                 user_id=user_id,
                 question_id=question_id,
                 answer_index=answer_index,
-                answer_date=current_date,
+                answer_date=target_date,
             )
             self.db.add(answer)
         else:
@@ -122,7 +134,7 @@ class DailyQuestionService:
 
         await self._record_calendar_activity(
             user_id=user_id,
-            activity_date=current_date,
+            activity_date=target_date,
             mood_level=answer_index + 1,
         )
         current_streak, best_streak, recent_answered_days = await self._build_streak_stats(
@@ -192,6 +204,25 @@ class DailyQuestionService:
             1 for item in unique_dates if 0 <= today.toordinal() - item.toordinal() < 7
         )
         return current_streak, best_streak, recent_answered_days
+
+    async def _build_retroactive_dates(
+        self,
+        *,
+        user_id: int,
+        today: date,
+    ) -> list[str]:
+        answered_dates = set(
+            await self.db.scalars(
+                select(DailySoulAnswer.answer_date).where(DailySoulAnswer.user_id == user_id)
+            )
+        )
+        pending: list[str] = []
+        for offset in range(1, 4):
+            target_date = date.fromordinal(today.toordinal() - offset)
+            if target_date in answered_dates:
+                continue
+            pending.append(target_date.isoformat())
+        return pending
 
     async def _record_calendar_activity(
         self,

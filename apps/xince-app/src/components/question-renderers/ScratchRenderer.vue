@@ -2,6 +2,7 @@
 import { computed, getCurrentInstance, nextTick, onMounted, ref, watch } from "vue";
 
 import type { PublishedQuestionPayload } from "@/shared/models/tests";
+import { SoundManager } from "@/shared/utils/sound-manager";
 
 const props = defineProps<{
   modelValue: string;
@@ -52,6 +53,16 @@ function resetScratchMask() {
   clearedCells.value = Array.from({ length: totalCells }, () => false);
   maskRect.value = null;
 }
+
+watch(
+  revealed,
+  (value, previous) => {
+    if (value && !previous) {
+      SoundManager.haptic(50);
+      SoundManager.play("ding");
+    }
+  },
+);
 
 watch(
   () => props.question.seq,

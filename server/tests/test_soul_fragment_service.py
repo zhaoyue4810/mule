@@ -61,3 +61,29 @@ async def _test_list_user_fragments_returns_unlock_history() -> None:
             assert fragments[0]["unlocked_at"] is not None
     finally:
         await engine.dispose()
+
+
+def test_fragment_map_and_category_completion_insight() -> None:
+    asyncio.run(_test_fragment_map_and_category_completion_insight())
+
+
+async def _test_fragment_map_and_category_completion_insight() -> None:
+    engine = create_async_engine("sqlite+aiosqlite:///:memory:", future=True)
+    session_factory = async_sessionmaker(engine, expire_on_commit=False)
+
+    try:
+        async with engine.begin() as conn:
+            await conn.run_sync(get_metadata().create_all)
+
+        yaml_config.load_all()
+        async with session_factory() as session:
+            service = SoulFragmentService(session)
+            await service.unlock_for_user(user_id=3, test_code="bigfive")
+            fragment_map = await service.build_fragment_map(3)
+            progress = await service.build_category_progress(3)
+
+            assert any(item["collected"] for item in fragment_map)
+            personality_progress = next(item for item in progress if item["category_code"] == "personality")
+            assert personality_progress["complete_insight"]
+    finally:
+        await engine.dispose()

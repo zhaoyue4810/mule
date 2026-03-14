@@ -104,6 +104,7 @@ class UnlockedBadgeSummary(BaseModel):
     badge_key: str
     name: str
     emoji: str
+    tier: int = 1
 
 
 class UnlockedSoulFragmentSummary(BaseModel):

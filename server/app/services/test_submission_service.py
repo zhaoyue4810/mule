@@ -10,6 +10,7 @@ from app.models.user import User
 from app.schemas.app_content import TestSubmitRequest
 from app.services.badge_unlock_service import BadgeUnlockService
 from app.services.calendar_activity_service import CalendarActivityService
+from app.services.memory_service import MemoryService
 from app.services.score_engine import ScoreEngine
 from app.services.soul_fragment_service import SoulFragmentService
 
@@ -225,11 +226,21 @@ class TestSubmissionService:
         )
 
         badge_service = BadgeUnlockService(self.db)
-        unlocked_badges = await badge_service.unlock_for_user(user_id=user.id)
+        unlocked_badges = await badge_service.unlock_for_user(
+            user_id=user.id,
+            metrics={
+                "score_threshold": int(total_score),
+                "duration_seconds": payload.duration_seconds or 0,
+            },
+        )
         soul_fragment_service = SoulFragmentService(self.db)
         unlocked_fragments = await soul_fragment_service.unlock_for_user(
             user_id=user.id,
             test_code=test.test_code,
+        )
+        await MemoryService(self.db).update_memory_for_record(
+            user_id=user.id,
+            record_id=record.id,
         )
 
         await self.db.commit()
@@ -270,6 +281,7 @@ class TestSubmissionService:
                     "badge_key": item.badge_key,
                     "name": item.name,
                     "emoji": item.emoji,
+                    "tier": item.tier,
                 }
                 for item in unlocked_badges
             ],

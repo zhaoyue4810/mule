@@ -65,6 +65,7 @@ class ReportPersonaPayload(BaseModel):
 
 
 class AppReportDetail(BaseModel):
+    report_id: int
     record_id: int
     test_code: str
     test_name: str

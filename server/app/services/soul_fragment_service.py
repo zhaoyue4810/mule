@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.yaml_loader import yaml_config
 from app.models.soul import SoulFragmentDefinition, UserSoulFragment
+from app.services.calendar_activity_service import CalendarActivityService
 
 
 @dataclass
@@ -60,6 +61,10 @@ class SoulFragmentService:
                     user_id=user_id,
                     fragment_id=definition.id,
                 )
+            )
+            await CalendarActivityService(self.db).record_activity(
+                user_id=user_id,
+                source="fragment",
             )
             unlocked.append(
                 UnlockedSoulFragment(
@@ -145,6 +150,7 @@ class SoulFragmentService:
                     "unlocked_count": unlocked_count,
                     "total_count": total_count,
                     "completed": total_count > 0 and unlocked_count >= total_count,
+                    "complete_insight": item.get("complete_insight"),
                 }
             )
             seen_categories.add(category_code)
@@ -160,9 +166,39 @@ class SoulFragmentService:
                     "unlocked_count": unlocked_count,
                     "total_count": total_count,
                     "completed": total_count > 0 and unlocked_count >= total_count,
+                    "complete_insight": None,
                 }
             )
         return progress
+
+    async def build_fragment_map(self, user_id: int) -> list[dict]:
+        await self._ensure_default_definitions()
+        definitions = list(
+            await self.db.scalars(
+                select(SoulFragmentDefinition).order_by(
+                    SoulFragmentDefinition.sort_order.asc(),
+                    SoulFragmentDefinition.id.asc(),
+                )
+            )
+        )
+        unlocked_rows = {
+            item.fragment_id: item
+            for item in (
+                await self.db.scalars(select(UserSoulFragment).where(UserSoulFragment.user_id == user_id))
+            )
+        }
+        return [
+            {
+                "fragment_key": definition.fragment_key,
+                "name": definition.name,
+                "emoji": definition.emoji,
+                "category": definition.category,
+                "insight": definition.insight,
+                "collected": definition.id in unlocked_rows,
+                "unlocked_at": unlocked_rows.get(definition.id).created_at if definition.id in unlocked_rows else None,
+            }
+            for definition in definitions
+        ]
 
     async def _ensure_default_definitions(self) -> None:
         definition_count = int(

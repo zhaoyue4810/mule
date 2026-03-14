@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+from datetime import date
 
 from app.core.auth import get_current_user
 from app.core.database import get_db
@@ -11,7 +12,9 @@ from app.schemas.app_profile import (
     DailyQuestionAnswerRequest,
     DailyQuestionStatePayload,
     OnboardingProfilePayload,
+    ProfileSettingsPayload,
     ProfileReportHistoryItem,
+    UpdateProfileSettingsRequest,
     UpdateOnboardingProfileRequest,
 )
 from app.services.app_profile_service import AppProfileService
@@ -54,6 +57,25 @@ async def get_my_profile_overview(
     return AppProfileOverview(**overview)
 
 
+@router.get("/profile/me/settings", response_model=ProfileSettingsPayload)
+async def get_my_profile_settings(
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> ProfileSettingsPayload:
+    service = AppProfileService(db)
+    return ProfileSettingsPayload(**(await service.get_settings(user.id)))
+
+
+@router.put("/profile/me/settings", response_model=ProfileSettingsPayload)
+async def update_my_profile_settings(
+    payload: UpdateProfileSettingsRequest,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> ProfileSettingsPayload:
+    service = AppProfileService(db)
+    return ProfileSettingsPayload(**(await service.update_settings(user.id, payload)))
+
+
 @router.get("/profile/me/reports", response_model=list[ProfileReportHistoryItem])
 async def list_my_profile_reports(
     user: User = Depends(get_current_user),
@@ -86,6 +108,7 @@ async def submit_my_daily_question(
             user_id=user.id,
             question_id=payload.question_id,
             answer_index=payload.answer_index,
+            answer_date=date.fromisoformat(payload.answer_date) if payload.answer_date else None,
         )
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc

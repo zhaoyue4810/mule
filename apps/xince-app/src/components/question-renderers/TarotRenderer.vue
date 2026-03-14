@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { PublishedQuestionPayload } from "@/shared/models/tests";
+import { SoundManager } from "@/shared/utils/sound-manager";
 
 defineProps<{
   modelValue: string;
@@ -9,6 +10,12 @@ defineProps<{
 const emit = defineEmits<{
   "update:modelValue": [value: string];
 }>();
+
+function choose(value: string) {
+  SoundManager.play("ambient");
+  SoundManager.haptic(40);
+  emit("update:modelValue", value);
+}
 </script>
 
 <template>
@@ -18,7 +25,7 @@ const emit = defineEmits<{
       :key="option.option_code || option.seq"
       class="tarot__card"
       :class="{ 'tarot__card--active': modelValue === (option.option_code || String(option.seq)) }"
-      @tap="emit('update:modelValue', option.option_code || String(option.seq))"
+      @tap="choose(option.option_code || String(option.seq))"
     >
       <text class="tarot__glyph">{{ option.emoji || "✦" }}</text>
       <text class="tarot__label">{{ option.label }}</text>

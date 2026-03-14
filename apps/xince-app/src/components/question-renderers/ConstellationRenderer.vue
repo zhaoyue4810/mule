@@ -2,6 +2,7 @@
 import { computed } from "vue";
 
 import type { PublishedQuestionPayload } from "@/shared/models/tests";
+import { SoundManager } from "@/shared/utils/sound-manager";
 
 const props = defineProps<{
   modelValue: string;
@@ -11,6 +12,12 @@ const props = defineProps<{
 const emit = defineEmits<{
   "update:modelValue": [value: string];
 }>();
+
+function choose(value: string) {
+  SoundManager.play("ambient");
+  SoundManager.haptic(32);
+  emit("update:modelValue", value);
+}
 
 const fallbackPositions = [
   { x: 14, y: 28 },
@@ -100,7 +107,7 @@ const lineSegments = computed(() => {
         class="constellation__star"
         :class="{ 'constellation__star--active': modelValue === point.optionCode }"
         :style="{ left: point.left, top: point.top }"
-        @tap="emit('update:modelValue', point.optionCode)"
+        @tap="choose(point.optionCode)"
       >
         <text class="constellation__glyph">{{ point.emoji }}</text>
         <text class="constellation__label">{{ point.label }}</text>

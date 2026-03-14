@@ -13,6 +13,8 @@ export interface ProfileBadgeItem {
   badge_key: string;
   name: string;
   emoji: string;
+  tier: number;
+  unlock_count: number;
   unlocked_at: string;
 }
 
@@ -37,6 +39,17 @@ export interface ProfileSoulFragmentCategoryProgress {
   unlocked_count: number;
   total_count: number;
   completed: boolean;
+  complete_insight?: string | null;
+}
+
+export interface ProfileSoulFragmentMapItem {
+  fragment_key: string;
+  name: string;
+  emoji?: string | null;
+  category: string;
+  insight?: string | null;
+  collected: boolean;
+  unlocked_at?: string | null;
 }
 
 export interface DailyQuestionStatePayload {
@@ -50,11 +63,16 @@ export interface DailyQuestionStatePayload {
   current_streak: number;
   best_streak: number;
   recent_answered_days: number;
+  retroactive_dates: string[];
   unlocked_badges: Array<{
     badge_key: string;
     name: string;
     emoji: string;
   }>;
+}
+
+export interface ProfileSettingsPayload {
+  sound_enabled: boolean;
 }
 
 export interface OnboardingProfilePayload {
@@ -93,5 +111,6 @@ export interface AppProfileOverview {
   calendar_heatmap: ProfileCalendarHeatmapItem[];
   soul_fragments: ProfileSoulFragmentItem[];
   fragment_progress: ProfileSoulFragmentCategoryProgress[];
+  fragment_map: ProfileSoulFragmentMapItem[];
   recent_reports: ProfileReportHistoryItem[];
 }

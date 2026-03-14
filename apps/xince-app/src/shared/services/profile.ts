@@ -2,6 +2,7 @@ import type {
   AppProfileOverview,
   DailyQuestionStatePayload,
   OnboardingProfilePayload,
+  ProfileSettingsPayload,
   ProfileReportHistoryItem,
 } from "@/shared/models/profile";
 import { request } from "@/shared/services/http";
@@ -17,6 +18,16 @@ export interface UpdateOnboardingProfileRequest {
 
 export function fetchMyProfileOverview() {
   return request<AppProfileOverview>("/profile/me/overview");
+}
+
+export function fetchMyProfileSettings() {
+  return request<ProfileSettingsPayload>("/profile/me/settings");
+}
+
+export function updateMyProfileSettings(payload: ProfileSettingsPayload) {
+  return request<ProfileSettingsPayload>("/profile/me/settings", "PUT", {
+    ...payload,
+  });
 }
 
 export function fetchMyOnboardingProfile() {
@@ -37,13 +48,18 @@ export function fetchMyDailyQuestion() {
   return request<DailyQuestionStatePayload>("/profile/me/daily-question");
 }
 
-export function submitMyDailyQuestion(questionId: number, answerIndex: number) {
+export function submitMyDailyQuestion(
+  questionId: number,
+  answerIndex: number,
+  answerDate?: string,
+) {
   return request<DailyQuestionStatePayload>(
     "/profile/me/daily-question",
     "POST",
     {
       question_id: questionId,
       answer_index: answerIndex,
+      answer_date: answerDate,
     },
   );
 }

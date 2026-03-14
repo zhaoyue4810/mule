@@ -3,16 +3,21 @@ import { computed, ref } from "vue";
 import { onLoad, onUnload } from "@dcloudio/uni-app";
 
 import type { AppReportDetail } from "@/shared/models/reports";
+import { createTimeCapsule } from "@/shared/services/capsule";
 import {
   fetchReportAiStatus,
   fetchReportDetail,
   retryReportAi,
 } from "@/shared/services/reports";
+import { SoundManager } from "@/shared/utils/sound-manager";
 
 const report = ref<AppReportDetail | null>(null);
 const loading = ref(true);
 const error = ref("");
 const aiRefreshing = ref(false);
+const capsuleMessage = ref("");
+const capsuleDuration = ref(30);
+const capsuleSaving = ref(false);
 let currentRecordId = 0;
 let pollTimer: ReturnType<typeof setInterval> | null = null;
 
@@ -34,12 +39,12 @@ function goProfile() {
   });
 }
 
-function openSharePoster() {
+function openSharePoster(mode: "report" | "challenge" = "report") {
   if (!currentRecordId) {
     return;
   }
   uni.navigateTo({
-    url: `/pages/test/share-poster?recordId=${currentRecordId}`,
+    url: `/pages/test/share-poster?recordId=${currentRecordId}&mode=${mode}`,
   });
 }
 
@@ -58,6 +63,13 @@ function shareCardThemeClass(theme: string) {
   return `share-card--${theme || "sunset"}`;
 }
 
+const capsulePrompt = computed(() => {
+  if (!report.value?.persona.persona_name) {
+    return "把今天的感受写给未来的自己，等时间把答案慢慢发酵。";
+  }
+  return `如果未来的你再读到这份「${report.value.persona.persona_name}」的时刻，会想对今天的自己说什么？`;
+});
+
 async function copyShareText() {
   if (!report.value?.share_card?.share_text) {
     return;
@@ -75,6 +87,41 @@ async function copyShareText() {
       title: err instanceof Error ? err.message : "复制失败",
       icon: "none",
     });
+  }
+}
+
+async function createCapsule() {
+  if (!report.value || capsuleSaving.value) {
+    return;
+  }
+  if (!capsuleMessage.value.trim()) {
+    uni.showToast({
+      title: "先写下一句话吧",
+      icon: "none",
+    });
+    return;
+  }
+  capsuleSaving.value = true;
+  try {
+    await createTimeCapsule({
+      message: capsuleMessage.value.trim(),
+      duration_days: capsuleDuration.value,
+      report_id: report.value.report_id,
+    });
+    capsuleMessage.value = "";
+    SoundManager.play("chime");
+    SoundManager.haptic(50);
+    uni.showToast({
+      title: "时光胶囊已封存",
+      icon: "success",
+    });
+  } catch (err) {
+    uni.showToast({
+      title: err instanceof Error ? err.message : "封存失败",
+      icon: "none",
+    });
+  } finally {
+    capsuleSaving.value = false;
   }
 }
 
@@ -247,8 +294,11 @@ onUnload(() => {
           <text class="share-card__footer">{{ report.share_card.footer }}</text>
         </view>
         <button class="mini-button" @tap="copyShareText">复制分享文案</button>
-        <button class="mini-button mini-button--ghost" @tap="openSharePoster">
+        <button class="mini-button mini-button--ghost" @tap="openSharePoster('report')">
           打开海报预览
+        </button>
+        <button class="mini-button mini-button--ghost" @tap="openSharePoster('challenge')">
+          发起好友挑战
         </button>
       </view>
 
@@ -362,6 +412,31 @@ onUnload(() => {
           @tap="handleRetryAi"
         >
           {{ aiRefreshing ? "处理中..." : "重新生成 AI 解读" }}
+        </button>
+      </view>
+
+      <view class="panel">
+        <text class="panel__title">写给未来的自己</text>
+        <text class="panel__body">{{ capsulePrompt }}</text>
+        <textarea
+          v-model="capsuleMessage"
+          class="capsule-input"
+          maxlength="1000"
+          placeholder="写下此刻的心情、想记住的答案，或者一句想留给未来的提醒。"
+        />
+        <view class="capsule-durations">
+          <button
+            v-for="value in [30, 90, 365]"
+            :key="value"
+            class="capsule-duration"
+            :class="{ 'capsule-duration--active': capsuleDuration === value }"
+            @tap="capsuleDuration = value"
+          >
+            {{ value }} 天
+          </button>
+        </view>
+        <button class="mini-button" :loading="capsuleSaving" @tap="createCapsule">
+          {{ capsuleSaving ? "封存中..." : "封存到时光胶囊" }}
         </button>
       </view>
 
@@ -733,6 +808,37 @@ onUnload(() => {
   margin-top: 18rpx;
   font-size: 20rpx;
   color: rgba(43, 33, 24, 0.58);
+}
+
+.capsule-input {
+  width: 100%;
+  min-height: 220rpx;
+  margin-top: 18rpx;
+  padding: 20rpx;
+  border-radius: 22rpx;
+  background: rgba(255, 249, 242, 0.96);
+  border: 2rpx solid rgba(217, 111, 61, 0.1);
+  font-size: 24rpx;
+  line-height: 1.7;
+}
+
+.capsule-durations {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12rpx;
+  margin-top: 18rpx;
+}
+
+.capsule-duration {
+  border-radius: 18rpx;
+  background: rgba(255, 243, 231, 0.96);
+  color: $xc-accent;
+  font-size: 24rpx;
+}
+
+.capsule-duration--active {
+  background: linear-gradient(135deg, #d96f3d, #bf5321);
+  color: #fff9f3;
 }
 
 .actions {

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { SoundManager } from "@/shared/utils/sound-manager";
+
 const props = defineProps<{
   modelValue: number | null;
   leftLabel?: string;
@@ -8,6 +10,12 @@ const props = defineProps<{
 const emit = defineEmits<{
   "update:modelValue": [value: number];
 }>();
+
+function choose(value: number) {
+  SoundManager.haptic(24);
+  SoundManager.play("whoosh");
+  emit("update:modelValue", value);
+}
 </script>
 
 <template>
@@ -15,14 +23,14 @@ const emit = defineEmits<{
     <view
       class="swipe__side"
       :class="{ 'swipe__side--active': props.modelValue === 0 }"
-      @tap="emit('update:modelValue', 0)"
+      @tap="choose(0)"
     >
       <text class="swipe__label">{{ leftLabel || "不认同" }}</text>
     </view>
     <view
       class="swipe__side"
       :class="{ 'swipe__side--active': props.modelValue === 1 }"
-      @tap="emit('update:modelValue', 1)"
+      @tap="choose(1)"
     >
       <text class="swipe__label">{{ rightLabel || "认同" }}</text>
     </view>

@@ -16,9 +16,15 @@ class TimeCapsule(TimestampMixin, Base):
         BIGINT_ID, ForeignKey("xc_user.id", ondelete="CASCADE"), nullable=False
     )
     message: Mapped[str] = mapped_column(Text, nullable=False)
-    persona_name: Mapped[str | None] = mapped_column(String(100))
-    persona_emoji: Mapped[str | None] = mapped_column(String(10))
-    lock_days: Mapped[int] = mapped_column(Integer, nullable=False)
+    persona_title: Mapped[str | None] = mapped_column(String(100))
+    persona_icon: Mapped[str | None] = mapped_column(String(10))
+    test_id: Mapped[int | None] = mapped_column(
+        BIGINT_ID, ForeignKey("xc_test.id", ondelete="SET NULL")
+    )
+    report_id: Mapped[int | None] = mapped_column(
+        BIGINT_ID, ForeignKey("xc_report_snapshot.id", ondelete="SET NULL")
+    )
+    duration_days: Mapped[int] = mapped_column(Integer, nullable=False)
     unlock_date: Mapped[date] = mapped_column(Date, nullable=False)
     is_read: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 

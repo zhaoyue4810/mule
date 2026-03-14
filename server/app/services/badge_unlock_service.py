@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.yaml_loader import yaml_config
 from app.models.badge import BadgeDefinition, UserBadge
+from app.models.test import Test
 from app.models.record import TestRecord
 
 
@@ -20,6 +21,7 @@ class UnlockedBadge:
     badge_key: str
     name: str
     emoji: str
+    tier: int = 1
 
 
 class BadgeUnlockService:
@@ -46,23 +48,30 @@ class BadgeUnlockService:
         existing_badges = list(
             await self.db.scalars(select(UserBadge).where(UserBadge.user_id == user_id))
         )
-        existing_badge_ids = {item.badge_id for item in existing_badges}
+        existing_badges_by_id = {item.badge_id: item for item in existing_badges}
         test_count = int(
             await self.db.scalar(
                 select(func.count(TestRecord.id)).where(TestRecord.user_id == user_id)
             )
             or 0
         )
+        category_rows = (
+            await self.db.execute(
+                select(Test.category)
+                .join(TestRecord, TestRecord.test_id == Test.id)
+                .where(TestRecord.user_id == user_id)
+                .group_by(Test.category)
+            )
+        ).all()
         now_local = (unlock_time or datetime.now()).astimezone(LOCAL_TZ)
         merged_metrics = {
             "test_count": test_count,
+            "category_count": len(category_rows),
         }
         merged_metrics.update(metrics or {})
 
         unlocked: list[UnlockedBadge] = []
         for definition in definitions:
-            if definition.id in existing_badge_ids:
-                continue
             rule_type = str((definition.unlock_rule or {}).get("type") or "").strip().lower()
             if allowed_rule_types is not None and rule_type not in allowed_rule_types:
                 continue
@@ -72,21 +81,40 @@ class BadgeUnlockService:
                 now_local,
             ):
                 continue
-            self.db.add(
-                UserBadge(
-                    user_id=user_id,
-                    badge_id=definition.id,
-                    tier=1,
-                    unlock_count=1,
+            existing_badge = existing_badges_by_id.get(definition.id)
+            if existing_badge is None:
+                self.db.add(
+                    UserBadge(
+                        user_id=user_id,
+                        badge_id=definition.id,
+                        tier=1,
+                        unlock_count=1,
+                    )
                 )
-            )
-            unlocked.append(
-                UnlockedBadge(
-                    badge_key=definition.badge_key,
-                    name=definition.name,
-                    emoji=definition.emoji,
+                unlocked.append(
+                    UnlockedBadge(
+                        badge_key=definition.badge_key,
+                        name=definition.name,
+                        emoji=definition.emoji,
+                        tier=1,
+                    )
                 )
-            )
+                continue
+
+            next_unlock_count = existing_badge.unlock_count + 1
+            next_tier = self._resolve_tier(next_unlock_count)
+            if next_unlock_count != existing_badge.unlock_count:
+                existing_badge.unlock_count = next_unlock_count
+            if next_tier > existing_badge.tier:
+                existing_badge.tier = next_tier
+                unlocked.append(
+                    UnlockedBadge(
+                        badge_key=definition.badge_key,
+                        name=definition.name,
+                        emoji=definition.emoji,
+                        tier=next_tier,
+                    )
+                )
         return unlocked
 
     async def _ensure_default_definitions(self) -> None:
@@ -153,6 +181,19 @@ class BadgeUnlockService:
             end_hour = int(rule.get("end") or 0)
             return self._hour_in_range(now_local.hour, start_hour, end_hour)
 
+        if rule_type == "category_completion":
+            target = int(rule.get("value") or 0)
+            return int(metrics.get("category_count") or 0) >= target > 0
+
+        if rule_type == "score_threshold":
+            target = int(rule.get("value") or 0)
+            return float(metrics.get("score_threshold") or 0) >= target > 0
+
+        if rule_type == "speed":
+            target = int(rule.get("value") or 0)
+            duration = int(metrics.get("duration_seconds") or 0)
+            return 0 < duration <= target
+
         if rule_type == "match_score_above":
             target = int(rule.get("value") or 0)
             return int(metrics.get("match_score") or 0) >= target > 0
@@ -197,3 +238,13 @@ class BadgeUnlockService:
         if start < end:
             return start <= hour < end
         return hour >= start or hour < end
+
+    @staticmethod
+    def _resolve_tier(unlock_count: int) -> int:
+        if unlock_count >= 10:
+            return 4
+        if unlock_count >= 6:
+            return 3
+        if unlock_count >= 3:
+            return 2
+        return 1

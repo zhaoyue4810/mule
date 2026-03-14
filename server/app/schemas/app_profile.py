@@ -20,6 +20,8 @@ class ProfileBadgeItem(BaseModel):
     badge_key: str
     name: str
     emoji: str
+    tier: int = 1
+    unlock_count: int = 1
     unlocked_at: datetime
 
 
@@ -44,6 +46,17 @@ class ProfileSoulFragmentCategoryProgress(BaseModel):
     unlocked_count: int
     total_count: int
     completed: bool
+    complete_insight: str | None = None
+
+
+class ProfileSoulFragmentMapItem(BaseModel):
+    fragment_key: str
+    name: str
+    emoji: str | None = None
+    category: str
+    insight: str | None = None
+    collected: bool
+    unlocked_at: datetime | None = None
 
 
 class DailyQuestionBadgeSummary(BaseModel):
@@ -63,12 +76,14 @@ class DailyQuestionStatePayload(BaseModel):
     current_streak: int = 0
     best_streak: int = 0
     recent_answered_days: int = 0
+    retroactive_dates: list[str] = Field(default_factory=list)
     unlocked_badges: list[DailyQuestionBadgeSummary] = Field(default_factory=list)
 
 
 class DailyQuestionAnswerRequest(BaseModel):
     question_id: int
     answer_index: int
+    answer_date: str | None = None
 
 
 class OnboardingProfilePayload(BaseModel):
@@ -88,6 +103,14 @@ class UpdateOnboardingProfileRequest(BaseModel):
     gender: int = 0
     birth_year: int | None = None
     birth_month: int | None = None
+
+
+class ProfileSettingsPayload(BaseModel):
+    sound_enabled: bool = True
+
+
+class UpdateProfileSettingsRequest(BaseModel):
+    sound_enabled: bool
 
 
 class ProfileReportHistoryItem(BaseModel):
@@ -116,4 +139,5 @@ class AppProfileOverview(BaseModel):
     calendar_heatmap: list[ProfileCalendarHeatmapItem] = Field(default_factory=list)
     soul_fragments: list[ProfileSoulFragmentItem] = Field(default_factory=list)
     fragment_progress: list[ProfileSoulFragmentCategoryProgress] = Field(default_factory=list)
+    fragment_map: list[ProfileSoulFragmentMapItem] = Field(default_factory=list)
     recent_reports: list[ProfileReportHistoryItem] = Field(default_factory=list)
