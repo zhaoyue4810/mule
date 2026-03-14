@@ -5,9 +5,17 @@ import { ensureAppSession } from "@/shared/services/auth";
 
 onLaunch(() => {
   console.log("XinCe app launched");
-  ensureAppSession().catch((error) => {
-    console.warn("Failed to establish session on launch", error);
-  });
+  ensureAppSession()
+    .then((user) => {
+      if (!user.onboarding_completed) {
+        uni.reLaunch({
+          url: "/pages/profile/onboarding",
+        });
+      }
+    })
+    .catch((error) => {
+      console.warn("Failed to establish session on launch", error);
+    });
 });
 
 onShow(() => {

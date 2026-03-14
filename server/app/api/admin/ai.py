@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.schemas.admin_ai import (
+    AdminAiTaskMetrics,
     AdminAiTaskDetail,
     AdminAiTaskOverview,
     AdminAiPromptTemplateSummary,
@@ -40,6 +41,14 @@ async def get_ai_task_overview(
 ) -> AdminAiTaskOverview:
     service = AdminAiService(db)
     return AdminAiTaskOverview(**(await service.get_task_overview()))
+
+
+@router.get("/task/metrics", response_model=AdminAiTaskMetrics)
+async def get_ai_task_metrics(
+    db: AsyncSession = Depends(get_db),
+) -> AdminAiTaskMetrics:
+    service = AdminAiService(db)
+    return AdminAiTaskMetrics(**(await service.get_task_metrics()))
 
 
 @router.get("/task/{task_id}", response_model=AdminAiTaskDetail)

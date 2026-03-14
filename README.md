@@ -47,6 +47,15 @@ bash scripts/run_pytest.sh
 
 这样可以避免不同 shell / Python PATH 差异导致的 `pytest` 不可用问题。
 
+如果你平时用 Conda，也可以直接使用当前的 `hjll_zy` 环境：
+
+```bash
+conda activate hjll_zy
+cd /Users/zhaoyue/pythonProject/mule/server
+python -m pip install -e ".[dev]"
+bash scripts/run_pytest.sh
+```
+
 启动后可访问：
 
 - `http://127.0.0.1:8080/health`
@@ -74,6 +83,7 @@ python3 scripts/extract_demo_inventory.py \
 - 项目总计划：[docs/master-development-plan.md](/Users/zhaoyue/pythonProject/mule/docs/master-development-plan.md)
 - 动态状态板：[docs/project-status.md](/Users/zhaoyue/pythonProject/mule/docs/project-status.md)
 - 开工背景说明：[docs/project-start.md](/Users/zhaoyue/pythonProject/mule/docs/project-start.md)
+- 发布清单：[docs/release-checklist.md](/Users/zhaoyue/pythonProject/mule/docs/release-checklist.md)
 
 ## 接下来最值得继续做的 4 件事
 

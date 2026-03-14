@@ -1060,7 +1060,85 @@ def test_submit_rejects_non_integer_discrete_numeric_answers() -> None:
             },
         )
         assert submit_response.status_code == 409
-        assert "requires integer steps" in submit_response.json()["detail"]
+        assert "requires step 1.0" in submit_response.json()["detail"]
+    finally:
+        app.dependency_overrides.clear()
+        import asyncio
+
+        asyncio.run(engine.dispose())
+
+
+def test_submit_rejects_invalid_numeric_step_value() -> None:
+    engine = create_async_engine("sqlite+aiosqlite:///:memory:", future=True)
+    session_factory = async_sessionmaker(engine, expire_on_commit=False)
+
+    async def override_get_db():
+        async with session_factory() as session:
+            yield session
+
+    app.dependency_overrides[get_db] = override_get_db
+
+    try:
+        import asyncio
+
+        asyncio.run(_prepare_db(engine))
+        client = TestClient(app)
+
+        task_id = client.post(
+            "/api/admin/import/tasks",
+            json={"file_type": "html", "file_path": str(REPO_ROOT / "index.html")},
+        ).json()["id"]
+        client.post(f"/api/admin/import/tasks/{task_id}/parse", json={"force": True})
+        client.post(f"/api/admin/import/tasks/{task_id}/apply", json={"note": "apply"})
+
+        versions = client.get("/api/admin/content/tests/mbti/versions").json()
+        version_id = versions[0]["id"]
+        client.put(
+            f"/api/admin/content/tests/mbti/versions/{version_id}/content",
+            json={
+                "title": "MBTI 步进校验版",
+                "category": "personality",
+                "is_match_enabled": False,
+                "participant_count": 300,
+                "sort_order": 1,
+                "description": "数值题步进校验",
+                "duration_hint": "5分钟",
+                "cover_gradient": "dawn",
+                "report_template_code": "mbti_public_v1",
+                "dimensions": [
+                    {
+                        "dim_code": "ei",
+                        "dim_name": "外倾-内倾",
+                        "max_score": 100,
+                        "sort_order": 1,
+                    }
+                ],
+                "questions": [
+                    {
+                        "question_code": "q1",
+                        "seq": 1,
+                        "question_text": "你会给今天的社交状态打多少分？",
+                        "interaction_type": "slider",
+                        "config": {"min": 1, "max": 5, "step": 0.5},
+                        "dim_weights": {"ei": 1},
+                        "options": [],
+                    }
+                ],
+                "personas": [],
+            },
+        )
+        client.post("/api/admin/content/tests/mbti/publish", json={"version": 1})
+
+        submit_response = client.post(
+            "/api/app/tests/mbti/submit",
+            json={
+                "nickname": "步进用户",
+                "duration_seconds": 14,
+                "answers": [{"question_seq": 1, "numeric_value": 1.3}],
+            },
+        )
+        assert submit_response.status_code == 409
+        assert "requires step 0.5" in submit_response.json()["detail"]
     finally:
         app.dependency_overrides.clear()
         import asyncio

@@ -39,6 +39,7 @@ async def get_auth_me(
         user_id=user.id,
         nickname=user.nickname,
         avatar_value=user.avatar_value,
+        onboarding_completed=user.onboarding_completed,
         is_guest=not bool(user.openid or user.phone),
         has_openid=bool(user.openid),
         has_phone=bool(user.phone),
@@ -53,6 +54,7 @@ async def get_auth_me(
 @router.post("/auth/wechat/mini-program", response_model=AuthSessionResponse)
 async def wechat_mini_program_login(
     payload: WechatMiniProgramLoginRequest,
+    current_user: User | None = Depends(get_current_user_optional),
     db: AsyncSession = Depends(get_db),
 ) -> AuthSessionResponse:
     service = AuthService(db)
@@ -61,6 +63,7 @@ async def wechat_mini_program_login(
             code=payload.code,
             nickname=payload.nickname,
             avatar_value=payload.avatar_value,
+            current_user=current_user,
         )
     except RuntimeError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
@@ -70,9 +73,10 @@ async def wechat_mini_program_login(
 @router.post("/auth/wx-login", response_model=AuthSessionResponse)
 async def wechat_mini_program_login_alias(
     payload: WechatMiniProgramLoginRequest,
+    current_user: User | None = Depends(get_current_user_optional),
     db: AsyncSession = Depends(get_db),
 ) -> AuthSessionResponse:
-    return await wechat_mini_program_login(payload, db)
+    return await wechat_mini_program_login(payload, current_user, db)
 
 
 @router.post("/auth/phone/send-code", response_model=PhoneSendCodeResponse)

@@ -71,6 +71,25 @@ class DailyQuestionAnswerRequest(BaseModel):
     answer_index: int
 
 
+class OnboardingProfilePayload(BaseModel):
+    nickname: str
+    avatar_value: str
+    bio: str = ""
+    gender: int = 0
+    birth_year: int | None = None
+    birth_month: int | None = None
+    onboarding_completed: bool
+
+
+class UpdateOnboardingProfileRequest(BaseModel):
+    nickname: str
+    avatar_value: str
+    bio: str = ""
+    gender: int = 0
+    birth_year: int | None = None
+    birth_month: int | None = None
+
+
 class ProfileReportHistoryItem(BaseModel):
     record_id: int
     test_code: str

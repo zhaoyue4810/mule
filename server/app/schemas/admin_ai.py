@@ -46,6 +46,21 @@ class AdminAiTaskOverview(BaseModel):
     providers: dict[str, int]
 
 
+class AdminAiTaskMetrics(BaseModel):
+    total: int
+    completed: int
+    failed: int
+    running: int
+    pending: int
+    success_rate: float
+    failure_rate: float
+    fallback_rate: float
+    avg_duration_ms: int
+    p95_duration_ms: int
+    tasks_last_24h: int
+    failures_last_24h: int
+
+
 class AdminAiPromptTemplateSummary(BaseModel):
     id: int
     template_code: str

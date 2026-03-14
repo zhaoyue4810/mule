@@ -57,6 +57,16 @@ export interface DailyQuestionStatePayload {
   }>;
 }
 
+export interface OnboardingProfilePayload {
+  nickname: string;
+  avatar_value: string;
+  bio: string;
+  gender: number;
+  birth_year?: number | null;
+  birth_month?: number | null;
+  onboarding_completed: boolean;
+}
+
 export interface ProfileReportHistoryItem {
   record_id: number;
   test_code: string;

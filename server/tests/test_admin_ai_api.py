@@ -109,6 +109,15 @@ def test_admin_ai_task_and_prompt_management() -> None:
         assert overview["total"] >= 1
         assert "providers" in overview
 
+        metrics_response = client.get("/api/admin/ai/task/metrics")
+        assert metrics_response.status_code == 200
+        metrics = metrics_response.json()
+        assert metrics["total"] >= 1
+        assert "success_rate" in metrics
+        assert "failure_rate" in metrics
+        assert "avg_duration_ms" in metrics
+        assert "tasks_last_24h" in metrics
+
         detail_response = client.get(
             f"/api/admin/ai/task/{task_page['items'][0]['id']}"
         )

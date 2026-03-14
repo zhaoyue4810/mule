@@ -9,6 +9,7 @@ class AuthUserPayload(BaseModel):
     user_id: int
     nickname: str
     avatar_value: str
+    onboarding_completed: bool
     is_guest: bool
     has_openid: bool
     has_phone: bool

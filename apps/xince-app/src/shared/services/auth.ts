@@ -34,11 +34,15 @@ export function getAccessToken() {
 
 export function setAuthSession(session: AuthSessionResponse) {
   uni.setStorageSync(ACCESS_TOKEN_STORAGE_KEY, session.access_token);
-  uni.setStorageSync(SESSION_USER_STORAGE_KEY, JSON.stringify(session.user));
+  setSessionUser(session.user);
 }
 
 export function getSessionUser() {
   return readStoredUser();
+}
+
+export function setSessionUser(user: AuthUserPayload) {
+  uni.setStorageSync(SESSION_USER_STORAGE_KEY, JSON.stringify(user));
 }
 
 export function clearAuthSession() {

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from datetime import datetime
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -17,6 +18,53 @@ from app.services.soul_fragment_service import SoulFragmentService
 class AppProfileService:
     def __init__(self, db: AsyncSession) -> None:
         self.db = db
+
+    async def get_onboarding_profile(self, user_id: int) -> dict:
+        user = await self._get_user(user_id)
+        return {
+            "nickname": user.nickname,
+            "avatar_value": user.avatar_value,
+            "bio": user.bio,
+            "gender": user.gender,
+            "birth_year": user.birth_year,
+            "birth_month": user.birth_month,
+            "onboarding_completed": user.onboarding_completed,
+        }
+
+    async def update_onboarding_profile(self, user_id: int, payload) -> dict:
+        user = await self._get_user(user_id)
+        nickname = payload.nickname.strip()
+        avatar_value = payload.avatar_value.strip()
+        bio = payload.bio.strip()
+
+        if not nickname:
+            raise ValueError("Nickname is required")
+        if len(nickname) > 20:
+            raise ValueError("Nickname must be 20 characters or fewer")
+        if not avatar_value:
+            raise ValueError("Avatar value is required")
+        if len(bio) > 80:
+            raise ValueError("Bio must be 80 characters or fewer")
+        if payload.gender not in {0, 1, 2}:
+            raise ValueError("Gender must be 0, 1 or 2")
+        if payload.birth_year is not None:
+            current_year = datetime.now().year
+            if payload.birth_year < 1900 or payload.birth_year > current_year:
+                raise ValueError("Birth year is out of range")
+        if payload.birth_month is not None and not 1 <= payload.birth_month <= 12:
+            raise ValueError("Birth month must be between 1 and 12")
+
+        user.nickname = nickname
+        user.avatar_value = avatar_value
+        user.bio = bio
+        user.gender = payload.gender
+        user.birth_year = payload.birth_year
+        user.birth_month = payload.birth_month
+        user.onboarding_completed = True
+
+        await self.db.commit()
+        await self.db.refresh(user)
+        return await self.get_onboarding_profile(user_id)
 
     async def get_overview(self, user_id: int) -> dict:
         user = await self._get_user(user_id)

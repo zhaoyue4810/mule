@@ -29,6 +29,7 @@ def root() -> dict[str, str]:
         "name": settings.app_name,
         "docs": "/docs",
         "health": "/health",
+        "readiness": "/health/ready",
         "bootstrap": "/api/app/bootstrap",
     }
 

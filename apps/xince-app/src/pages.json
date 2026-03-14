@@ -25,6 +25,12 @@
       }
     },
     {
+      "path": "pages/profile/onboarding",
+      "style": {
+        "navigationBarTitleText": "欢迎来到心测"
+      }
+    },
+    {
       "path": "pages/test/detail",
       "style": {
         "navigationBarTitleText": "测试详情"

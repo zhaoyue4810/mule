@@ -19,6 +19,14 @@ class ScoreEngine:
             raise ValueError(f"{field_name} must be a finite number")
 
     @staticmethod
+    def _validate_step(field_name: str, value: float, min_value: float, step: float) -> None:
+        if step <= 0:
+            return
+        quotient = (value - min_value) / step
+        if not math.isclose(quotient, round(quotient), rel_tol=1e-9, abs_tol=1e-9):
+            raise ValueError(f"{field_name} requires step {step}")
+
+    @staticmethod
     def normalize_numeric_answer(
         interaction_type: str,
         numeric_value: float,
@@ -133,8 +141,13 @@ class ScoreEngine:
                 raise ValueError(
                     f"Question type {interaction_type} requires value between {min_value} and {max_value}"
                 )
-            if interaction_type == "hotcold" and not float(numeric_value).is_integer():
-                raise ValueError("Question type hotcold requires integer steps")
+            step = float(config.get("step", 1))
+            cls._validate_step(
+                f"Question type {interaction_type}",
+                numeric_value,
+                min_value,
+                step,
+            )
 
         if interaction_type == "star":
             config = config or {}
@@ -144,8 +157,8 @@ class ScoreEngine:
                 raise ValueError(
                     f"Question type star requires value between {min_value} and {max_value}"
                 )
-            if not float(numeric_value).is_integer():
-                raise ValueError("Question type star requires integer steps")
+            step = float(config.get("step", 1))
+            cls._validate_step("Question type star", numeric_value, min_value, step)
 
         if interaction_type == "pressure":
             config = config or {}
@@ -155,8 +168,13 @@ class ScoreEngine:
                 raise ValueError(
                     f"Question type pressure requires value between {min_value} and {max_value}"
                 )
-            if not float(numeric_value).is_integer():
-                raise ValueError("Question type pressure requires integer milliseconds")
+            step = float(config.get("step", 1))
+            cls._validate_step(
+                "Question type pressure",
+                numeric_value,
+                min_value,
+                step,
+            )
 
         if interaction_type == "colorpick":
             config = config or {}
@@ -166,6 +184,13 @@ class ScoreEngine:
                 raise ValueError(
                     f"Question type colorpick requires value between {min_value} and {max_value}"
                 )
+            step = float(config.get("step", 1))
+            cls._validate_step(
+                "Question type colorpick",
+                numeric_value,
+                min_value,
+                step,
+            )
 
     @staticmethod
     def normalize_rank_position(index: int, total: int) -> float:

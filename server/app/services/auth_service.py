@@ -103,6 +103,7 @@ class AuthService:
         code: str,
         nickname: str | None = None,
         avatar_value: str | None = None,
+        current_user: User | None = None,
     ) -> dict:
         if not self.settings.wx_appid or not self.settings.wx_secret:
             raise RuntimeError(
@@ -116,7 +117,13 @@ class AuthService:
 
         unionid = str(session_data.get("unionid") or "").strip() or None
 
-        user = await self.db.scalar(select(User).where(User.openid == openid))
+        user = await self._find_wechat_user(openid=openid, unionid=unionid)
+        if current_user is not None:
+            if user is None:
+                user = current_user
+            elif user.id != current_user.id:
+                await self._merge_user_assets(source_user=current_user, target_user=user)
+
         if user is None:
             user = User(
                 openid=openid,
@@ -127,7 +134,8 @@ class AuthService:
             )
             self.db.add(user)
         else:
-            if unionid and user.unionid != unionid:
+            user.openid = openid
+            if unionid:
                 user.unionid = unionid
             if nickname and nickname.strip():
                 user.nickname = nickname.strip()
@@ -137,6 +145,18 @@ class AuthService:
         await self.db.commit()
         await self.db.refresh(user)
         return self._build_session_payload(user)
+
+    async def _find_wechat_user(
+        self,
+        *,
+        openid: str,
+        unionid: str | None,
+    ) -> User | None:
+        if unionid:
+            user = await self.db.scalar(select(User).where(User.unionid == unionid))
+            if user is not None:
+                return user
+        return await self.db.scalar(select(User).where(User.openid == openid))
 
     async def _exchange_wechat_code(self, code: str) -> dict:
         async with httpx.AsyncClient(timeout=15.0) as client:
@@ -268,6 +288,7 @@ class AuthService:
                 "user_id": user.id,
                 "nickname": user.nickname,
                 "avatar_value": user.avatar_value,
+                "onboarding_completed": user.onboarding_completed,
                 "is_guest": not bool(user.openid or user.phone),
                 "has_openid": bool(user.openid),
                 "has_phone": bool(user.phone),

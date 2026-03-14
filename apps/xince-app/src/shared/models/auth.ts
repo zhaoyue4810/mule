@@ -2,6 +2,7 @@ export interface AuthUserPayload {
   user_id: number;
   nickname: string;
   avatar_value: string;
+  onboarding_completed: boolean;
   is_guest: boolean;
   has_openid: boolean;
   has_phone: boolean;

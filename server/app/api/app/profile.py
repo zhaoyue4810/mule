@@ -10,12 +10,38 @@ from app.schemas.app_profile import (
     AppProfileOverview,
     DailyQuestionAnswerRequest,
     DailyQuestionStatePayload,
+    OnboardingProfilePayload,
     ProfileReportHistoryItem,
+    UpdateOnboardingProfileRequest,
 )
 from app.services.app_profile_service import AppProfileService
 from app.services.daily_question_service import DailyQuestionService
 
 router = APIRouter(tags=["app-profile"])
+
+
+@router.get("/profile/me/onboarding", response_model=OnboardingProfilePayload)
+async def get_my_onboarding_profile(
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> OnboardingProfilePayload:
+    service = AppProfileService(db)
+    payload = await service.get_onboarding_profile(user.id)
+    return OnboardingProfilePayload(**payload)
+
+
+@router.put("/profile/me/onboarding", response_model=OnboardingProfilePayload)
+async def update_my_onboarding_profile(
+    payload: UpdateOnboardingProfileRequest,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> OnboardingProfilePayload:
+    service = AppProfileService(db)
+    try:
+        result = await service.update_onboarding_profile(user.id, payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return OnboardingProfilePayload(**result)
 
 
 @router.get("/profile/me/overview", response_model=AppProfileOverview)

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections import Counter
+from datetime import UTC, datetime, timedelta
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -76,6 +77,56 @@ class AdminAiService:
             "fallback_runs": fallback_runs,
             "failed_runs": failed_runs,
             "providers": dict(provider_counter),
+        }
+
+    async def get_task_metrics(self) -> dict:
+        items = list(await self.db.scalars(select(AiAnalysis)))
+        status_counter = Counter(self._status_label(item.status) for item in items)
+        total = len(items)
+        completed = status_counter.get("COMPLETED", 0)
+        failed = status_counter.get("FAILED", 0)
+        running = status_counter.get("RUNNING", 0)
+        pending = status_counter.get("PENDING", 0)
+        fallback_runs = sum(1 for item in items if (item.provider or "").lower() == "fallback")
+
+        durations = sorted(
+            int(max(0.0, (item.completed_at - item.started_at).total_seconds() * 1000))
+            for item in items
+            if item.started_at and item.completed_at
+        )
+        avg_duration_ms = int(sum(durations) / len(durations)) if durations else 0
+        p95_duration_ms = 0
+        if durations:
+            percentile_index = min(len(durations) - 1, max(0, int(len(durations) * 0.95) - 1))
+            p95_duration_ms = durations[percentile_index]
+
+        cutoff = datetime.now(UTC) - timedelta(hours=24)
+        tasks_last_24h = sum(
+            1
+            for item in items
+            if item.created_at and self._as_utc(item.created_at) >= cutoff
+        )
+        failures_last_24h = sum(
+            1
+            for item in items
+            if item.created_at
+            and self._as_utc(item.created_at) >= cutoff
+            and self._status_label(item.status) == "FAILED"
+        )
+
+        return {
+            "total": total,
+            "completed": completed,
+            "failed": failed,
+            "running": running,
+            "pending": pending,
+            "success_rate": round(completed / total, 4) if total else 0.0,
+            "failure_rate": round(failed / total, 4) if total else 0.0,
+            "fallback_rate": round(fallback_runs / total, 4) if total else 0.0,
+            "avg_duration_ms": avg_duration_ms,
+            "p95_duration_ms": p95_duration_ms,
+            "tasks_last_24h": tasks_last_24h,
+            "failures_last_24h": failures_last_24h,
         }
 
     async def list_prompt_templates(self) -> list[dict]:
@@ -183,3 +234,8 @@ class AdminAiService:
             "completed_at": item.completed_at,
             "duration_ms": duration_ms,
         }
+
+    def _as_utc(self, value: datetime) -> datetime:
+        if value.tzinfo is None:
+            return value.replace(tzinfo=UTC)
+        return value.astimezone(UTC)

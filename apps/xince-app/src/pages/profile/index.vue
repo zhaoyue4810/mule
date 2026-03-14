@@ -12,6 +12,7 @@ import {
   bindPhone,
   ensureAppSession,
   getSessionUser,
+  loginWithWechatMiniProgram,
   sendPhoneCode,
 } from "@/shared/services/auth";
 import {
@@ -30,9 +31,15 @@ const phone = ref("");
 const code = ref("");
 const sendingCode = ref(false);
 const bindingPhone = ref(false);
+const linkingWechat = ref(false);
 const debugCode = ref("");
 const dailyQuestion = ref<DailyQuestionStatePayload | null>(null);
 const dailyQuestionSubmitting = ref(false);
+const isWechatMiniProgram = ref(false);
+
+// #ifdef MP-WEIXIN
+isWechatMiniProgram.value = true;
+// #endif
 
 const hasProfile = computed(() => Boolean(overview.value));
 const canSubmitPhoneBind = computed(
@@ -191,6 +198,32 @@ async function submitPhoneBind() {
     });
   } finally {
     bindingPhone.value = false;
+  }
+}
+
+async function linkWechatIdentity() {
+  if (linkingWechat.value) {
+    return;
+  }
+  linkingWechat.value = true;
+  try {
+    const session = await loginWithWechatMiniProgram(
+      sessionUser.value?.nickname || "微信用户",
+      sessionUser.value?.avatar_value || "🧠",
+    );
+    sessionUser.value = session.user;
+    await loadProfile();
+    uni.showToast({
+      title: "已升级为微信身份",
+      icon: "success",
+    });
+  } catch (err) {
+    uni.showToast({
+      title: err instanceof Error ? err.message : "微信升级失败",
+      icon: "none",
+    });
+  } finally {
+    linkingWechat.value = false;
   }
 }
 
@@ -385,6 +418,27 @@ onShow(() => {
 
       <view class="panel">
         <text class="panel__title">账号与登录</text>
+        <text
+          v-if="isWechatMiniProgram && sessionUser?.has_openid"
+          class="panel__body panel__body--accent"
+        >
+          当前已绑定微信身份，小程序重新登录时会优先复用这个账号。
+        </text>
+        <view
+          v-else-if="isWechatMiniProgram && sessionUser && !sessionUser.has_openid"
+          class="account-form"
+        >
+          <text class="panel__body">
+            当前还是访客身份。你可以先继续使用，也可以立即升级为微信身份并保留已有测试记录。
+          </text>
+          <button
+            class="panel__button panel__button--wechat"
+            :disabled="linkingWechat"
+            @tap="linkWechatIdentity"
+          >
+            {{ linkingWechat ? "升级中..." : "升级为微信身份" }}
+          </button>
+        </view>
         <text class="panel__body" v-if="sessionUser?.has_phone">
           当前账号已绑定手机号 {{ sessionUser.masked_phone || "已绑定" }}，后续可直接用验证码登录并同步历史记录。
         </text>
@@ -576,6 +630,10 @@ onShow(() => {
   border-radius: 999rpx;
   background: linear-gradient(135deg, #d96f3d, #bf5321);
   color: #fff8f0;
+}
+
+.panel__button--wechat {
+  background: linear-gradient(135deg, #2f8b61, #206848);
 }
 
 .account-form {
