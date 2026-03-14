@@ -3,6 +3,7 @@ from __future__ import annotations
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.yaml_loader import yaml_config
 from app.models.test import Dimension, Option, Question, Test, TestPersona, TestVersion
 
 
@@ -159,7 +160,10 @@ class AppContentService:
                     "question_text": item.question_text,
                     "interaction_type": item.interaction_type,
                     "emoji": item.emoji,
-                    "config": item.config,
+                    "config": self._build_runtime_question_config(
+                        item.interaction_type,
+                        item.config,
+                    ),
                     "dim_weights": item.dim_weights,
                     "options": [
                         {
@@ -175,3 +179,20 @@ class AppContentService:
                 for item in questions
             ],
         }
+
+    @staticmethod
+    def _build_runtime_question_config(
+        interaction_type: str,
+        question_config: dict | None,
+    ) -> dict | None:
+        interaction_types = yaml_config.get_interaction_types()
+        type_meta = interaction_types.get(interaction_type, {})
+        default_config = type_meta.get("default_config")
+
+        merged: dict = {}
+        if isinstance(default_config, dict):
+            merged.update(default_config)
+        if isinstance(question_config, dict):
+            merged.update(question_config)
+
+        return merged or None

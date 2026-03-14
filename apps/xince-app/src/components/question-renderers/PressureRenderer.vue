@@ -3,7 +3,9 @@ import { ref } from "vue";
 
 const props = defineProps<{
   modelValue: number | null;
+  min?: number;
   maxDuration?: number;
+  step?: number;
 }>();
 
 const emit = defineEmits<{
@@ -21,10 +23,16 @@ function onPressEnd() {
   if (!startedAt.value) {
     return;
   }
-  const duration = Math.min(
+  const maxDuration = props.maxDuration ?? 3000;
+  const minDuration = props.min ?? 0;
+  const rawDuration = Math.min(
     Math.max(Date.now() - startedAt.value, 0),
-    props.maxDuration ?? 3000,
+    maxDuration,
   );
+  const step = props.step && props.step > 0 ? props.step : 1;
+  const snapped =
+    Math.round((rawDuration - minDuration) / step) * step + minDuration;
+  const duration = Math.min(maxDuration, Math.max(minDuration, snapped));
   currentDuration.value = duration;
   startedAt.value = 0;
   emit("update:modelValue", duration);

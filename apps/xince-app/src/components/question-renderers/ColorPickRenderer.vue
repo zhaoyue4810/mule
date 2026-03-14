@@ -1,7 +1,12 @@
 <script setup lang="ts">
+import { computed } from "vue";
+
 const props = defineProps<{
   modelValue: number | null;
   hueMap?: Record<string, unknown>;
+  minHue?: number;
+  maxHue?: number;
+  step?: number;
 }>();
 
 const emit = defineEmits<{
@@ -17,10 +22,28 @@ const defaultHueMap = {
   300: "神秘",
 };
 
-const entries = Object.entries(props.hueMap || defaultHueMap);
+const entries = computed(() => {
+  const configured = props.hueMap || defaultHueMap;
+  const parsedConfigured = Object.entries(configured)
+    .map(([hue, label]) => [Number(hue), String(label)] as const)
+    .filter(([hue]) => Number.isFinite(hue))
+    .sort((a, b) => a[0] - b[0]);
+  if (parsedConfigured.length) {
+    return parsedConfigured;
+  }
+  const minHue = Number.isFinite(props.minHue) ? Number(props.minHue) : 0;
+  const maxHue = Number.isFinite(props.maxHue) ? Number(props.maxHue) : 360;
+  const step = Number.isFinite(props.step) && Number(props.step) > 0 ? Number(props.step) : 60;
+  const generated: Array<readonly [number, string]> = [];
+  for (let hue = minHue; hue <= maxHue + step / 1000; hue += step) {
+    const normalized = Number(hue.toFixed(6));
+    generated.push([normalized, `${normalized}°`] as const);
+  }
+  return generated;
+});
 
-function swatchColor(hue: string) {
-  return `hsl(${Number(hue)}, 78%, 62%)`;
+function swatchColor(hue: number) {
+  return `hsl(${hue}, 78%, 62%)`;
 }
 </script>
 
@@ -30,8 +53,8 @@ function swatchColor(hue: string) {
       v-for="[hue, label] in entries"
       :key="hue"
       class="palette__item"
-      :class="{ 'palette__item--active': modelValue === Number(hue) }"
-      @tap="emit('update:modelValue', Number(hue))"
+      :class="{ 'palette__item--active': modelValue === hue }"
+      @tap="emit('update:modelValue', hue)"
     >
       <view class="palette__swatch" :style="{ background: swatchColor(hue) }" />
       <text class="palette__label">{{ String(label) }}</text>

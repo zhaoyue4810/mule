@@ -83,19 +83,25 @@ function updatePoint(value: { x: number; y: number }) {
     :model-value="numericValue"
     :min="Number(config.min || 1)"
     :max="Number(config.max || 5)"
+    :step="Number(config.step || 1)"
     :labels="(config.labels as string[] | undefined)"
     @update:model-value="updateNumeric"
   />
   <StarRenderer
     v-else-if="question.interaction_type === 'star'"
     :model-value="numericValue"
+    :min="Number(config.min || 1)"
     :max="Number(config.max_stars || 5)"
+    :step="Number(config.step || 1)"
     :labels="(config.labels as string[] | undefined)"
     @update:model-value="updateNumeric"
   />
   <HotColdRenderer
     v-else-if="question.interaction_type === 'hotcold'"
     :model-value="numericValue"
+    :min="Number(config.min || 1)"
+    :max="Number(config.max || 5)"
+    :step="Number(config.step || 1)"
     :emojis="(config.emojis as string[] | undefined)"
     :labels="(config.labels as string[] | undefined)"
     :min-label="String(config.min_label || '冰冷')"
@@ -129,7 +135,9 @@ function updatePoint(value: { x: number; y: number }) {
   <PressureRenderer
     v-else-if="question.interaction_type === 'pressure'"
     :model-value="numericValue"
+    :min="Number(config.min || 0)"
     :max-duration="Number(config.max_duration || 3000)"
+    :step="Number(config.step || 1)"
     @update:model-value="updateNumeric"
   />
   <RankRenderer
@@ -150,6 +158,9 @@ function updatePoint(value: { x: number; y: number }) {
   <ColorPickRenderer
     v-else-if="question.interaction_type === 'colorpick'"
     :model-value="numericValue"
+    :min-hue="Number(config.min_hue || 0)"
+    :max-hue="Number(config.max_hue || 360)"
+    :step="Number(config.step || 1)"
     :hue-map="(config.hue_map as Record<string, unknown> | undefined)"
     @update:model-value="updateNumeric"
   />

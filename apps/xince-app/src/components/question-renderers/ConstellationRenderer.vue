@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import { computed } from "vue";
+
 import type { PublishedQuestionPayload } from "@/shared/models/tests";
 
-defineProps<{
+const props = defineProps<{
   modelValue: string;
   question: PublishedQuestionPayload;
 }>();
@@ -11,30 +13,97 @@ const emit = defineEmits<{
 }>();
 
 const fallbackPositions = [
-  { left: "14%", top: "28%" },
-  { left: "62%", top: "12%" },
-  { left: "36%", top: "58%" },
-  { left: "78%", top: "48%" },
-  { left: "18%", top: "78%" },
+  { x: 14, y: 28 },
+  { x: 62, y: 12 },
+  { x: 36, y: 58 },
+  { x: 78, y: 48 },
+  { x: 18, y: 78 },
 ];
+
+function normalizePercent(value: unknown, fallback: number): number {
+  if (typeof value === "number") {
+    if (!Number.isFinite(value)) {
+      return fallback;
+    }
+    if (value >= 0 && value <= 1) {
+      return value * 100;
+    }
+    return Math.min(100, Math.max(0, value));
+  }
+  if (typeof value === "string") {
+    const raw = value.trim();
+    const parsed = Number(raw.replace("%", ""));
+    if (!Number.isFinite(parsed)) {
+      return fallback;
+    }
+    if (raw.endsWith("%")) {
+      return Math.min(100, Math.max(0, parsed));
+    }
+    if (parsed >= 0 && parsed <= 1) {
+      return parsed * 100;
+    }
+    return Math.min(100, Math.max(0, parsed));
+  }
+  return fallback;
+}
+
+const starPoints = computed(() => {
+  const config = (props.question.config || {}) as Record<string, unknown>;
+  const configured = Array.isArray(config.positions) ? config.positions : [];
+  return props.question.options.map((option, index) => {
+    const fallback = fallbackPositions[index % fallbackPositions.length];
+    const point = configured[index] as Record<string, unknown> | undefined;
+    const x = normalizePercent(point?.x, fallback.x);
+    const y = normalizePercent(point?.y, fallback.y);
+    return {
+      optionCode: option.option_code || String(option.seq),
+      label: option.label,
+      emoji: option.emoji || "✦",
+      left: `${x}%`,
+      top: `${y}%`,
+      x,
+      y,
+    };
+  });
+});
+
+const lineSegments = computed(() => {
+  const points = starPoints.value;
+  return points.slice(1).map((point, index) => {
+    const prev = points[index];
+    const dx = point.x - prev.x;
+    const dy = point.y - prev.y;
+    const length = Math.sqrt(dx * dx + dy * dy);
+    const angle = Math.atan2(dy, dx);
+    return {
+      left: `${prev.x}%`,
+      top: `${prev.y}%`,
+      width: `${length}%`,
+      transform: `rotate(${angle}rad)`,
+    };
+  });
+});
 </script>
 
 <template>
   <view class="constellation">
     <view class="constellation__board">
       <view
-        v-for="(option, index) in question.options"
-        :key="option.option_code || option.seq"
+        v-for="(line, index) in lineSegments"
+        :key="`line-${index}`"
+        class="constellation__line"
+        :style="line"
+      />
+      <view
+        v-for="point in starPoints"
+        :key="point.optionCode"
         class="constellation__star"
-        :class="{ 'constellation__star--active': modelValue === (option.option_code || String(option.seq)) }"
-        :style="{
-          left: fallbackPositions[index % fallbackPositions.length].left,
-          top: fallbackPositions[index % fallbackPositions.length].top,
-        }"
-        @tap="emit('update:modelValue', option.option_code || String(option.seq))"
+        :class="{ 'constellation__star--active': modelValue === point.optionCode }"
+        :style="{ left: point.left, top: point.top }"
+        @tap="emit('update:modelValue', point.optionCode)"
       >
-        <text class="constellation__glyph">{{ option.emoji || "✦" }}</text>
-        <text class="constellation__label">{{ option.label }}</text>
+        <text class="constellation__glyph">{{ point.emoji }}</text>
+        <text class="constellation__label">{{ point.label }}</text>
       </view>
     </view>
     <text class="constellation__tip">点亮最像你此刻轨迹的那颗星。</text>
@@ -70,6 +139,21 @@ const fallbackPositions = [
   pointer-events: none;
 }
 
+.constellation__line {
+  position: absolute;
+  height: 2rpx;
+  margin-left: 0;
+  margin-top: 0;
+  transform-origin: left center;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0.65),
+    rgba(255, 223, 196, 0.45)
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
 .constellation__star {
   position: absolute;
   width: 132rpx;
@@ -83,6 +167,7 @@ const fallbackPositions = [
   border: 2rpx solid rgba(255, 255, 255, 0.2);
   color: #fffaf3;
   backdrop-filter: blur(8rpx);
+  z-index: 2;
 }
 
 .constellation__star--active {

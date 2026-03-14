@@ -26,21 +26,6 @@ const startedAt = ref(Date.now());
 const currentQuestion = computed(
   () => questionnaire.value?.questions[currentIndex.value] || null,
 );
-const selectedOptionCode = computed(() => {
-  const question = currentQuestion.value;
-  if (!question) {
-    return "";
-  }
-  return answers.value[question.seq]?.option_code || "";
-});
-const selectedNumericValue = computed(() => {
-  const question = currentQuestion.value;
-  if (!question) {
-    return null;
-  }
-  const value = answers.value[question.seq]?.numeric_value;
-  return typeof value === "number" ? value : null;
-});
 const isCurrentAnswered = computed(() => {
   if (!currentQuestion.value) {
     return false;
@@ -93,78 +78,71 @@ function previousQuestion() {
 }
 
 async function goNext() {
-  if (!questionnaire.value || !currentQuestion.value || !selectedOptionCode.value) {
-    if (
-      !questionnaire.value ||
-      !currentQuestion.value ||
-      !isCurrentAnswered.value
-    ) {
-      return;
-    }
-
-    if (currentIndex.value < questionnaire.value.question_count - 1) {
-      currentIndex.value += 1;
-      return;
-    }
-
-    submitting.value = true;
-    try {
-      const currentUser = await ensureAppSession();
-      const payload = {
-        user_id: currentUser.user_id,
-        nickname: "心测访客",
-        duration_seconds: Math.max(
-          1,
-          Math.round((Date.now() - startedAt.value) / 1000),
-        ),
-        answers: questionnaire.value.questions.map((item) => ({
-          question_seq: item.seq,
-          option_code: answers.value[item.seq]?.option_code || null,
-          numeric_value:
-            typeof answers.value[item.seq]?.numeric_value === "number"
-              ? answers.value[item.seq]?.numeric_value || null
-              : null,
-          ordered_option_codes: answers.value[item.seq]?.ordered_option_codes || null,
-          point: answers.value[item.seq]?.point || null,
-        })),
-      };
-      let response;
-      try {
-        response = await submitTestAnswers(questionnaire.value.test_code, payload);
-      } catch (err) {
-        if (
-          err instanceof Error &&
-          (err.message.includes("User not found") ||
-            err.message.includes("Authorization required") ||
-            err.message.includes("Token"))
-        ) {
-          clearAuthSession();
-          const fallbackUser = await ensureAppSession();
-          response = await submitTestAnswers(questionnaire.value.test_code, {
-            ...payload,
-            user_id: fallbackUser.user_id,
-          });
-        } else {
-          throw err;
-        }
-      }
-      const storedUser = getSessionUser();
-      if (!storedUser || storedUser.user_id !== response.user_id) {
-        await ensureAppSession();
-      }
-
-      uni.redirectTo({
-        url: `/pages/test/result?recordId=${response.record_id}`,
-      });
-    } catch (err) {
-      uni.showToast({
-        title: err instanceof Error ? err.message : "提交失败",
-        icon: "none",
-      });
-    } finally {
-      submitting.value = false;
-    }
+  if (!questionnaire.value || !currentQuestion.value || !isCurrentAnswered.value) {
     return;
+  }
+
+  if (currentIndex.value < questionnaire.value.question_count - 1) {
+    currentIndex.value += 1;
+    return;
+  }
+
+  submitting.value = true;
+  try {
+    const currentUser = await ensureAppSession();
+    const payload = {
+      user_id: currentUser.user_id,
+      nickname: "心测访客",
+      duration_seconds: Math.max(
+        1,
+        Math.round((Date.now() - startedAt.value) / 1000),
+      ),
+      answers: questionnaire.value.questions.map((item) => ({
+        question_seq: item.seq,
+        option_code: answers.value[item.seq]?.option_code || null,
+        numeric_value:
+          typeof answers.value[item.seq]?.numeric_value === "number"
+            ? answers.value[item.seq]?.numeric_value || null
+            : null,
+        ordered_option_codes: answers.value[item.seq]?.ordered_option_codes || null,
+        point: answers.value[item.seq]?.point || null,
+      })),
+    };
+    let response;
+    try {
+      response = await submitTestAnswers(questionnaire.value.test_code, payload);
+    } catch (err) {
+      if (
+        err instanceof Error &&
+        (err.message.includes("User not found") ||
+          err.message.includes("Authorization required") ||
+          err.message.includes("Token"))
+      ) {
+        clearAuthSession();
+        const fallbackUser = await ensureAppSession();
+        response = await submitTestAnswers(questionnaire.value.test_code, {
+          ...payload,
+          user_id: fallbackUser.user_id,
+        });
+      } else {
+        throw err;
+      }
+    }
+    const storedUser = getSessionUser();
+    if (!storedUser || storedUser.user_id !== response.user_id) {
+      await ensureAppSession();
+    }
+
+    uni.redirectTo({
+      url: `/pages/test/result?recordId=${response.record_id}`,
+    });
+  } catch (err) {
+    uni.showToast({
+      title: err instanceof Error ? err.message : "提交失败",
+      icon: "none",
+    });
+  } finally {
+    submitting.value = false;
   }
 }
 

@@ -1,17 +1,31 @@
 <script setup lang="ts">
+import { computed } from "vue";
+
 const props = defineProps<{
   modelValue: number | null;
   labels?: string[];
   emojis?: string[];
   minLabel?: string;
   maxLabel?: string;
+  min?: number;
+  max?: number;
+  step?: number;
 }>();
 
 const emit = defineEmits<{
   "update:modelValue": [value: number];
 }>();
 
-const scaleValues = [1, 2, 3, 4, 5];
+const scaleValues = computed(() => {
+  const min = Number.isFinite(props.min) ? Number(props.min) : 1;
+  const max = Number.isFinite(props.max) ? Number(props.max) : 5;
+  const step = Number.isFinite(props.step) && Number(props.step) > 0 ? Number(props.step) : 1;
+  const values: number[] = [];
+  for (let value = min; value <= max + step / 1000; value += step) {
+    values.push(Number(value.toFixed(6)));
+  }
+  return values;
+});
 </script>
 
 <template>
@@ -22,14 +36,14 @@ const scaleValues = [1, 2, 3, 4, 5];
     </view>
     <view class="hotcold__row">
       <view
-        v-for="value in scaleValues"
+        v-for="(value, index) in scaleValues"
         :key="value"
         class="hotcold__item"
         :class="{ 'hotcold__item--active': modelValue === value }"
         @tap="emit('update:modelValue', value)"
       >
-        <text class="hotcold__emoji">{{ emojis?.[value - 1] || "•" }}</text>
-        <text class="hotcold__caption">{{ labels?.[value - 1] || value }}</text>
+        <text class="hotcold__emoji">{{ emojis?.[index] || "•" }}</text>
+        <text class="hotcold__caption">{{ labels?.[index] || value }}</text>
       </view>
     </view>
   </view>
@@ -51,7 +65,7 @@ const scaleValues = [1, 2, 3, 4, 5];
 
 .hotcold__row {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(96rpx, 1fr));
   gap: 12rpx;
 }
 

@@ -3,6 +3,7 @@ const props = defineProps<{
   modelValue: number | null;
   min?: number;
   max?: number;
+  step?: number;
   labels?: string[];
 }>();
 
@@ -25,6 +26,7 @@ function onChange(event: { detail: { value: number } }) {
       :value="modelValue ?? min ?? 1"
       :min="min ?? 1"
       :max="max ?? 5"
+      :step="step ?? 1"
       activeColor="#d96f3d"
       backgroundColor="#f1ddd0"
       block-color="#bf5321"

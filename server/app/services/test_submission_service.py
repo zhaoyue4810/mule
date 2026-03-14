@@ -331,6 +331,42 @@ class TestSubmissionService:
         await self.db.flush()
         return user
 
+    @staticmethod
+    def _normalize_dimension_code(raw_dim_code: object, *, field_name: str) -> str:
+        dim_code = "" if raw_dim_code is None else str(raw_dim_code).strip()
+        if not dim_code:
+            raise ValueError(f"{field_name} must not be blank")
+        return dim_code
+
+    @staticmethod
+    def _parse_finite_number(raw_value: object, *, field_name: str) -> float:
+        try:
+            parsed = float(raw_value)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"{field_name} must be a finite number") from exc
+        ScoreEngine._ensure_finite_number(field_name, parsed)
+        return parsed
+
+    def _iter_validated_dim_weights(self, question: Question) -> list[tuple[str, float]]:
+        validated: list[tuple[str, float]] = []
+        seen_dim_codes: set[str] = set()
+        for raw_dim_code, raw_weight in (question.dim_weights or {}).items():
+            dim_code = self._normalize_dimension_code(
+                raw_dim_code,
+                field_name=f"Question seq {question.seq} dim_weights key",
+            )
+            if dim_code in seen_dim_codes:
+                raise ValueError(
+                    f"Question seq {question.seq} has duplicate dim_weights key: {dim_code}"
+                )
+            seen_dim_codes.add(dim_code)
+            weight_value = self._parse_finite_number(
+                raw_weight,
+                field_name=f"Question seq {question.seq} dim_weights[{dim_code}]",
+            )
+            validated.append((dim_code, weight_value))
+        return validated
+
     def _apply_option_score(
         self,
         question: Question,
@@ -351,20 +387,32 @@ class TestSubmissionService:
         dimension_scores: dict[str, float],
         resolved_value: float,
     ) -> None:
+        resolved_value = self._parse_finite_number(
+            resolved_value,
+            field_name=f"Question seq {question.seq} option score value",
+        )
         score_rules = option.score_rules or {}
-        if score_rules.get("dimension_code"):
-            dim_code = str(score_rules["dimension_code"])
-            dimension_scores[dim_code] = dimension_scores.get(dim_code, 0.0) + float(
-                score_rules.get("value", resolved_value)
+        if "dimension_code" in score_rules:
+            option_key = option.option_code or str(option.seq)
+            dim_code = self._normalize_dimension_code(
+                score_rules.get("dimension_code"),
+                field_name=(
+                    f"Question seq {question.seq} option {option_key} "
+                    "score_rules.dimension_code"
+                ),
             )
+            score_value = self._parse_finite_number(
+                score_rules.get("value", resolved_value),
+                field_name=(
+                    f"Question seq {question.seq} option {option_key} "
+                    "score_rules.value"
+                ),
+            )
+            dimension_scores[dim_code] = dimension_scores.get(dim_code, 0.0) + score_value
             return
 
-        for dim_code, weight in (question.dim_weights or {}).items():
-            try:
-                weight_value = float(weight)
-            except (TypeError, ValueError):
-                weight_value = 0.0
-            dimension_scores[str(dim_code)] = dimension_scores.get(str(dim_code), 0.0) + (
+        for dim_code, weight_value in self._iter_validated_dim_weights(question):
+            dimension_scores[dim_code] = dimension_scores.get(dim_code, 0.0) + (
                 resolved_value * weight_value
             )
 
@@ -374,12 +422,12 @@ class TestSubmissionService:
         normalized_value: float,
         dimension_scores: dict[str, float],
     ) -> None:
-        for dim_code, weight in (question.dim_weights or {}).items():
-            try:
-                weight_value = float(weight)
-            except (TypeError, ValueError):
-                weight_value = 0.0
-            dimension_scores[str(dim_code)] = dimension_scores.get(str(dim_code), 0.0) + (
+        normalized_value = self._parse_finite_number(
+            normalized_value,
+            field_name=f"Question seq {question.seq} normalized_value",
+        )
+        for dim_code, weight_value in self._iter_validated_dim_weights(question):
+            dimension_scores[dim_code] = dimension_scores.get(dim_code, 0.0) + (
                 normalized_value * weight_value
             )
 
@@ -423,20 +471,28 @@ class TestSubmissionService:
         point: dict[str, float],
         dimension_scores: dict[str, float],
     ) -> float:
-        dims = list((question.dim_weights or {}).keys())
-        x_value = float(point["x"])
-        y_value = float(point["y"])
+        validated_dim_weights = self._iter_validated_dim_weights(question)
+        dims = [item[0] for item in validated_dim_weights]
+        dim_weight_map = dict(validated_dim_weights)
+        x_value = self._parse_finite_number(
+            point["x"],
+            field_name=f"Question seq {question.seq} point.x",
+        )
+        y_value = self._parse_finite_number(
+            point["y"],
+            field_name=f"Question seq {question.seq} point.y",
+        )
 
         if dims:
-            x_dim = str(dims[0])
-            x_weight = float(question.dim_weights.get(x_dim, 1) or 1)
+            x_dim = dims[0]
+            x_weight = dim_weight_map[x_dim]
             dimension_scores[x_dim] = dimension_scores.get(x_dim, 0.0) + (
                 x_value * x_weight
             )
 
         if len(dims) > 1:
-            y_dim = str(dims[1])
-            y_weight = float(question.dim_weights.get(y_dim, 1) or 1)
+            y_dim = dims[1]
+            y_weight = dim_weight_map[y_dim]
             dimension_scores[y_dim] = dimension_scores.get(y_dim, 0.0) + (
                 y_value * y_weight
             )
