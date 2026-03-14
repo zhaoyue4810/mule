@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from app.core.config import get_settings
 from app.core.database import get_db, get_metadata
+from app.models.badge import UserBadge
 from app.main import app
 from app.models.record import TestRecord as RecordOrm
 from app.models.user import User
@@ -313,13 +314,17 @@ def test_wechat_mini_program_login_merges_guest_assets_into_wechat_user() -> Non
         )
         assert submit_response.status_code == 200
         record_id = submit_response.json()["record_id"]
+        assert any(
+            item["badge_key"] == "first_test"
+            for item in submit_response.json()["unlocked_badges"]
+        )
 
         with patch(
             "app.services.auth_service.AuthService._exchange_wechat_code",
             new=AsyncMock(return_value={"openid": "openid-a", "unionid": "unionid-a"}),
         ):
             login_response = client.post(
-                "/api/app/auth/wechat/mini-program",
+                "/api/app/auth/wx-login",
                 json={
                     "code": "mock-code",
                     "nickname": "微信昵称",
@@ -342,8 +347,12 @@ def test_wechat_mini_program_login_merges_guest_assets_into_wechat_user() -> Non
                 user = await session.scalar(
                     select(User).where(User.id == login_payload["user"]["user_id"])
                 )
+                badge = await session.scalar(
+                    select(UserBadge).where(UserBadge.user_id == login_payload["user"]["user_id"])
+                )
                 assert record is not None
                 assert user is not None
+                assert badge is not None
                 assert record.user_id == user.id
                 assert user.openid == "openid-a"
                 assert user.unionid == "unionid-a"

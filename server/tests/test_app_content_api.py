@@ -1378,6 +1378,161 @@ def test_submit_rejects_invalid_dimension_weight_value() -> None:
         asyncio.run(engine.dispose())
 
 
+def test_submit_rejects_numeric_question_without_dim_weights() -> None:
+    engine = create_async_engine("sqlite+aiosqlite:///:memory:", future=True)
+    session_factory = async_sessionmaker(engine, expire_on_commit=False)
+
+    async def override_get_db():
+        async with session_factory() as session:
+            yield session
+
+    app.dependency_overrides[get_db] = override_get_db
+
+    try:
+        import asyncio
+
+        asyncio.run(_prepare_db(engine))
+        client = TestClient(app)
+
+        task_id = client.post(
+            "/api/admin/import/tasks",
+            json={"file_type": "html", "file_path": str(REPO_ROOT / "index.html")},
+        ).json()["id"]
+        client.post(f"/api/admin/import/tasks/{task_id}/parse", json={"force": True})
+        client.post(f"/api/admin/import/tasks/{task_id}/apply", json={"note": "apply"})
+
+        versions = client.get("/api/admin/content/tests/mbti/versions").json()
+        version_id = versions[0]["id"]
+        client.put(
+            f"/api/admin/content/tests/mbti/versions/{version_id}/content",
+            json={
+                "title": "MBTI 空维度权重校验版",
+                "category": "personality",
+                "is_match_enabled": False,
+                "participant_count": 300,
+                "sort_order": 1,
+                "description": "numeric 题型空 dim_weights 校验",
+                "duration_hint": "5分钟",
+                "cover_gradient": "dawn",
+                "report_template_code": "mbti_public_v1",
+                "dimensions": [
+                    {
+                        "dim_code": "ei",
+                        "dim_name": "外倾-内倾",
+                        "max_score": 100,
+                        "sort_order": 1,
+                    }
+                ],
+                "questions": [
+                    {
+                        "question_code": "q1",
+                        "seq": 1,
+                        "question_text": "今天的社交状态如何？",
+                        "interaction_type": "slider",
+                        "config": {"min": 1, "max": 5, "step": 1},
+                        "dim_weights": {},
+                        "options": [],
+                    }
+                ],
+                "personas": [],
+            },
+        )
+        client.post("/api/admin/content/tests/mbti/publish", json={"version": 1})
+
+        submit_response = client.post(
+            "/api/app/tests/mbti/submit",
+            json={
+                "nickname": "空维度用户",
+                "duration_seconds": 10,
+                "answers": [{"question_seq": 1, "numeric_value": 3}],
+            },
+        )
+        assert submit_response.status_code == 409
+        assert "requires non-empty dim_weights" in submit_response.json()["detail"]
+    finally:
+        app.dependency_overrides.clear()
+        import asyncio
+
+        asyncio.run(engine.dispose())
+
+
+def test_submit_rejects_plot2d_with_single_dimension_weight() -> None:
+    engine = create_async_engine("sqlite+aiosqlite:///:memory:", future=True)
+    session_factory = async_sessionmaker(engine, expire_on_commit=False)
+
+    async def override_get_db():
+        async with session_factory() as session:
+            yield session
+
+    app.dependency_overrides[get_db] = override_get_db
+
+    try:
+        import asyncio
+
+        asyncio.run(_prepare_db(engine))
+        client = TestClient(app)
+
+        task_id = client.post(
+            "/api/admin/import/tasks",
+            json={"file_type": "html", "file_path": str(REPO_ROOT / "index.html")},
+        ).json()["id"]
+        client.post(f"/api/admin/import/tasks/{task_id}/parse", json={"force": True})
+        client.post(f"/api/admin/import/tasks/{task_id}/apply", json={"note": "apply"})
+
+        versions = client.get("/api/admin/content/tests/mbti/versions").json()
+        version_id = versions[0]["id"]
+        client.put(
+            f"/api/admin/content/tests/mbti/versions/{version_id}/content",
+            json={
+                "title": "MBTI 单维坐标校验版",
+                "category": "personality",
+                "is_match_enabled": False,
+                "participant_count": 300,
+                "sort_order": 1,
+                "description": "plot2d 至少两个维度校验",
+                "duration_hint": "5分钟",
+                "cover_gradient": "dawn",
+                "report_template_code": "mbti_public_v1",
+                "dimensions": [
+                    {
+                        "dim_code": "social",
+                        "dim_name": "社交",
+                        "max_score": 100,
+                        "sort_order": 1,
+                    }
+                ],
+                "questions": [
+                    {
+                        "question_code": "q1",
+                        "seq": 1,
+                        "question_text": "在二维坐标中选一个位置",
+                        "interaction_type": "plot2d",
+                        "dim_weights": {"social": 1},
+                        "options": [],
+                    }
+                ],
+                "personas": [],
+            },
+        )
+        client.post("/api/admin/content/tests/mbti/publish", json={"version": 1})
+
+        submit_response = client.post(
+            "/api/app/tests/mbti/submit",
+            json={
+                "nickname": "坐标用户",
+                "duration_seconds": 20,
+                "answers": [{"question_seq": 1, "point": {"x": 0.4, "y": 0.6}}],
+            },
+        )
+        assert submit_response.status_code == 409
+        assert "requires at least two dim_weights" in submit_response.json()["detail"]
+    finally:
+        app.dependency_overrides.clear()
+        import asyncio
+
+        asyncio.run(engine.dispose())
+
+
 def test_submit_rejects_non_finite_score_rule_value() -> None:
     engine = create_async_engine("sqlite+aiosqlite:///:memory:", future=True)
     session_factory = async_sessionmaker(engine, expire_on_commit=False)
@@ -1456,6 +1611,93 @@ def test_submit_rejects_non_finite_score_rule_value() -> None:
         )
         assert submit_response.status_code == 409
         assert "score_rules.value must be a finite number" in submit_response.json()["detail"]
+    finally:
+        app.dependency_overrides.clear()
+        import asyncio
+
+        asyncio.run(engine.dispose())
+
+
+def test_submit_rejects_score_rules_without_dimension_code() -> None:
+    engine = create_async_engine("sqlite+aiosqlite:///:memory:", future=True)
+    session_factory = async_sessionmaker(engine, expire_on_commit=False)
+
+    async def override_get_db():
+        async with session_factory() as session:
+            yield session
+
+    app.dependency_overrides[get_db] = override_get_db
+
+    try:
+        import asyncio
+
+        asyncio.run(_prepare_db(engine))
+        client = TestClient(app)
+
+        task_id = client.post(
+            "/api/admin/import/tasks",
+            json={"file_type": "html", "file_path": str(REPO_ROOT / "index.html")},
+        ).json()["id"]
+        client.post(f"/api/admin/import/tasks/{task_id}/parse", json={"force": True})
+        client.post(f"/api/admin/import/tasks/{task_id}/apply", json={"note": "apply"})
+
+        versions = client.get("/api/admin/content/tests/mbti/versions").json()
+        version_id = versions[0]["id"]
+        client.put(
+            f"/api/admin/content/tests/mbti/versions/{version_id}/content",
+            json={
+                "title": "MBTI 缺失 score_rules 维度校验版",
+                "category": "personality",
+                "is_match_enabled": False,
+                "participant_count": 300,
+                "sort_order": 1,
+                "description": "score_rules 缺失 dimension_code 校验",
+                "duration_hint": "5分钟",
+                "cover_gradient": "dawn",
+                "report_template_code": "mbti_public_v1",
+                "dimensions": [
+                    {
+                        "dim_code": "ei",
+                        "dim_name": "外倾-内倾",
+                        "max_score": 100,
+                        "sort_order": 1,
+                    }
+                ],
+                "questions": [
+                    {
+                        "question_code": "q1",
+                        "seq": 1,
+                        "question_text": "你更喜欢哪种聚会？",
+                        "interaction_type": "bubble",
+                        "dim_weights": {},
+                        "options": [
+                            {
+                                "option_code": "a",
+                                "seq": 1,
+                                "label": "热闹局",
+                                "value": 2,
+                                "score_rules": {"value": 2},
+                            }
+                        ],
+                    }
+                ],
+                "personas": [],
+            },
+        )
+        client.post("/api/admin/content/tests/mbti/publish", json={"version": 1})
+
+        submit_response = client.post(
+            "/api/app/tests/mbti/submit",
+            json={
+                "nickname": "分值校验用户",
+                "duration_seconds": 10,
+                "answers": [{"question_seq": 1, "option_code": "a"}],
+            },
+        )
+        assert submit_response.status_code == 409
+        assert "score_rules.dimension_code must not be blank" in submit_response.json()[
+            "detail"
+        ]
     finally:
         app.dependency_overrides.clear()
         import asyncio

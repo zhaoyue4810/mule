@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, onBeforeUnmount, ref } from "vue";
 
 import type { PublishedQuestionPayload } from "@/shared/models/tests";
 
@@ -14,6 +14,7 @@ const emit = defineEmits<{
 
 const spinning = ref(false);
 const rotation = ref(0);
+let spinTimer: ReturnType<typeof setTimeout> | null = null;
 
 const options = computed(() => props.question.options || []);
 const sectorAngle = computed(() =>
@@ -89,11 +90,23 @@ function spinWheel() {
   const extraSpins = 5 * 360;
   spinning.value = true;
   rotation.value += extraSpins + delta;
-  setTimeout(() => {
+  if (spinTimer) {
+    clearTimeout(spinTimer);
+  }
+  spinTimer = setTimeout(() => {
     spinning.value = false;
+    rotation.value = ((rotation.value % 360) + 360) % 360;
     emit("update:modelValue", pickedCode);
+    spinTimer = null;
   }, 4300);
 }
+
+onBeforeUnmount(() => {
+  if (spinTimer) {
+    clearTimeout(spinTimer);
+    spinTimer = null;
+  }
+});
 </script>
 
 <template>
@@ -171,6 +184,8 @@ function spinWheel() {
   width: 100%;
   height: 100%;
   border-radius: 50%;
+  transform-origin: center;
+  will-change: transform;
 }
 
 .fortune__surface {

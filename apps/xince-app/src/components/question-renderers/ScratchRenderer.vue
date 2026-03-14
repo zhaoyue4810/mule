@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, getCurrentInstance, ref, watch } from "vue";
+import { computed, getCurrentInstance, nextTick, onMounted, ref, watch } from "vue";
 
 import type { PublishedQuestionPayload } from "@/shared/models/tests";
 
@@ -57,9 +57,18 @@ watch(
   () => props.question.seq,
   () => {
     resetScratchMask();
+    void nextTick(() => {
+      void ensureMaskRect();
+    });
   },
   { immediate: true },
 );
+
+onMounted(() => {
+  void nextTick(() => {
+    void ensureMaskRect();
+  });
+});
 
 function markCell(row: number, col: number) {
   if (row < 0 || row >= gridRows || col < 0 || col >= gridCols) {
@@ -169,6 +178,8 @@ async function onScratch(event: {
         class="scratch__mask"
         @touchstart.prevent="onScratch"
         @touchmove.prevent="onScratch"
+        @touchend.prevent="onScratch"
+        @touchcancel.prevent="onScratch"
       >
         <view
           v-for="(_, index) in clearedCells"

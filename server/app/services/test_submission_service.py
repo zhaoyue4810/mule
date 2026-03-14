@@ -392,24 +392,33 @@ class TestSubmissionService:
             field_name=f"Question seq {question.seq} option score value",
         )
         score_rules = option.score_rules or {}
-        if "dimension_code" in score_rules:
+        if score_rules:
+            if not isinstance(score_rules, dict):
+                raise ValueError(
+                    f"Question seq {question.seq} option {option.option_code or option.seq} "
+                    "score_rules must be an object"
+                )
+
             option_key = option.option_code or str(option.seq)
-            dim_code = self._normalize_dimension_code(
-                score_rules.get("dimension_code"),
-                field_name=(
-                    f"Question seq {question.seq} option {option_key} "
-                    "score_rules.dimension_code"
-                ),
-            )
-            score_value = self._parse_finite_number(
-                score_rules.get("value", resolved_value),
-                field_name=(
-                    f"Question seq {question.seq} option {option_key} "
-                    "score_rules.value"
-                ),
-            )
-            dimension_scores[dim_code] = dimension_scores.get(dim_code, 0.0) + score_value
-            return
+            if "dimension_code" in score_rules or "value" in score_rules:
+                dim_code = self._normalize_dimension_code(
+                    score_rules.get("dimension_code"),
+                    field_name=(
+                        f"Question seq {question.seq} option {option_key} "
+                        "score_rules.dimension_code"
+                    ),
+                )
+                score_value = self._parse_finite_number(
+                    score_rules.get("value", resolved_value),
+                    field_name=(
+                        f"Question seq {question.seq} option {option_key} "
+                        "score_rules.value"
+                    ),
+                )
+                dimension_scores[dim_code] = (
+                    dimension_scores.get(dim_code, 0.0) + score_value
+                )
+                return
 
         for dim_code, weight_value in self._iter_validated_dim_weights(question):
             dimension_scores[dim_code] = dimension_scores.get(dim_code, 0.0) + (
@@ -426,7 +435,12 @@ class TestSubmissionService:
             normalized_value,
             field_name=f"Question seq {question.seq} normalized_value",
         )
-        for dim_code, weight_value in self._iter_validated_dim_weights(question):
+        validated_dim_weights = self._iter_validated_dim_weights(question)
+        if not validated_dim_weights:
+            raise ValueError(
+                f"Question seq {question.seq} requires non-empty dim_weights"
+            )
+        for dim_code, weight_value in validated_dim_weights:
             dimension_scores[dim_code] = dimension_scores.get(dim_code, 0.0) + (
                 normalized_value * weight_value
             )
@@ -472,6 +486,10 @@ class TestSubmissionService:
         dimension_scores: dict[str, float],
     ) -> float:
         validated_dim_weights = self._iter_validated_dim_weights(question)
+        if len(validated_dim_weights) < 2:
+            raise ValueError(
+                f"Question seq {question.seq} plot2d requires at least two dim_weights"
+            )
         dims = [item[0] for item in validated_dim_weights]
         dim_weight_map = dict(validated_dim_weights)
         x_value = self._parse_finite_number(
