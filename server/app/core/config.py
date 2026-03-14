@@ -29,6 +29,8 @@ class Settings(BaseSettings):
     jwt_secret_key: str = "change-me"
     jwt_algorithm: str = "HS256"
     jwt_expire_minutes: int = 10080
+    admin_username: str = "admin"
+    admin_password_hash: str = "$2y$12$oflUxOU84gxXVSYVVziA1.2D9YxSfiZK5WRNKCiT6gy6N1jM82ZbS"
 
     dashscope_api_key: str = Field(
         default="",

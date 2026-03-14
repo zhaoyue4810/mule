@@ -42,7 +42,7 @@ async def test_create_and_parse_html_import_task() -> None:
 
         parsed = await service.parse_task(task.id)
 
-        assert parsed.status == "DRAFT_READY"
+        assert parsed.status == "PREVIEW"
         assert parsed.preview_json is not None
         assert parsed.preview_json["summary"]["test_count"] == 8
         assert parsed.preview_json["draft"]["kind"] == "test_catalog"
@@ -90,7 +90,7 @@ async def test_apply_import_task_creates_imported_draft_versions() -> None:
 
         applied = await service.apply_task(task.id, note="applied to content")
 
-        assert applied.status == "APPLIED"
+        assert applied.status == "APPROVED"
         assert applied.preview_json is not None
         assert applied.preview_json["apply_result"]["applied"] is True
         assert applied.preview_json["apply_result"]["created_versions"] == 8

@@ -42,7 +42,7 @@ def test_admin_import_task_flow() -> None:
         )
         assert parse_response.status_code == 200
         payload = parse_response.json()
-        assert payload["status"] == "DRAFT_READY"
+        assert payload["status"] == "PREVIEW"
         assert payload["preview_json"]["summary"]["test_count"] == 8
         assert payload["preview_json"]["draft"]["kind"] == "test_catalog"
     finally:
@@ -85,7 +85,7 @@ def test_admin_import_apply_flow() -> None:
         )
         assert apply_response.status_code == 200
         payload = apply_response.json()
-        assert payload["status"] == "APPLIED"
+        assert payload["status"] == "APPROVED"
         assert payload["preview_json"]["apply_result"]["created_versions"] == 8
     finally:
         app.dependency_overrides.clear()

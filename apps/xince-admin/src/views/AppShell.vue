@@ -14,7 +14,7 @@ const menus = [
 ];
 
 function logout() {
-  window.sessionStorage.removeItem("xc_admin_authed");
+  window.localStorage.removeItem("xc_admin_token");
   router.push("/login");
 }
 </script>

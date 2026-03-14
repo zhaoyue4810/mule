@@ -6,7 +6,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.core.security import decode_access_token
+from app.core.config import get_settings
+from app.core.security import decode_access_token, decode_admin_token
 from app.models.user import User
 
 _bearer_scheme = HTTPBearer(auto_error=False)
@@ -37,3 +38,20 @@ async def get_current_user(
     if user is None:
         raise HTTPException(status_code=401, detail="Authorization required")
     return user
+
+
+async def get_admin_user(
+    credentials: HTTPAuthorizationCredentials | None = Depends(_bearer_scheme),
+) -> dict[str, str]:
+    if credentials is None or credentials.scheme.lower() != "bearer":
+        raise HTTPException(status_code=401, detail="Admin authorization required")
+    try:
+        payload = decode_admin_token(credentials.credentials)
+        username = str(payload["sub"])
+    except (ValueError, KeyError, TypeError) as exc:
+        raise HTTPException(status_code=401, detail=str(exc)) from exc
+
+    settings = get_settings()
+    if username != settings.admin_username:
+        raise HTTPException(status_code=401, detail="Invalid admin account")
+    return {"username": username, "role": "admin"}

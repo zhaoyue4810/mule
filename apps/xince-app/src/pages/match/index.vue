@@ -19,6 +19,40 @@ const matchEnabledTests = computed(() =>
   tests.value.filter((item) => item.is_match_enabled),
 );
 
+const rankedCP = computed(() =>
+  history.value.items
+    .filter((item) => item.compatibility_score != null && item.partner)
+    .sort((a, b) => (b.compatibility_score || 0) - (a.compatibility_score || 0))
+    .slice(0, 3),
+);
+
+const featuredModes = computed(() => {
+  const first = matchEnabledTests.value[0] || null;
+  const second = matchEnabledTests.value[1] || first;
+  return [
+    {
+      key: "exclusive",
+      title: "专属匹配测试",
+      desc: first
+        ? `推荐「${first.name}」，做完即可生成专属双人报告`
+        : "选择任意支持匹配的测试，生成专属报告",
+      testCode: first?.test_code || "",
+      button: "开始匹配",
+      className: "mode-card--purple",
+    },
+    {
+      key: "share",
+      title: "分享匹配",
+      desc: second
+        ? `邀请好友挑战「${second.name}」，解锁双人徽章`
+        : "发出邀请链接，好友加入后自动匹配",
+      testCode: second?.test_code || "",
+      button: "发起邀请",
+      className: "mode-card--pink",
+    },
+  ];
+});
+
 function formatTime(value?: string | null) {
   if (!value) {
     return "刚刚";
@@ -30,6 +64,46 @@ function formatTime(value?: string | null) {
   return `${date.getMonth() + 1}/${date.getDate()} ${`${date.getHours()}`.padStart(2, "0")}:${`${date.getMinutes()}`.padStart(2, "0")}`;
 }
 
+function formatStatus(status: string) {
+  if (status === "COMPLETED") {
+    return "完成";
+  }
+  if (status === "WAITING_PARTNER") {
+    return "等待中";
+  }
+  if (status === "RUNNING") {
+    return "进行中";
+  }
+  return status;
+}
+
+function statusClass(status: string) {
+  if (status === "WAITING_PARTNER") {
+    return "status--waiting";
+  }
+  if (status === "RUNNING") {
+    return "status--running";
+  }
+  return "status--done";
+}
+
+function tierBadge(tier?: string | null) {
+  if (!tier) {
+    return "默契搭档";
+  }
+  return tier;
+}
+
+function rankStyle(index: number) {
+  if (index === 0) {
+    return "rank--gold";
+  }
+  if (index === 1) {
+    return "rank--silver";
+  }
+  return "rank--bronze";
+}
+
 function openSession(sessionId: number, status: string) {
   if (status === "COMPLETED") {
     uni.navigateTo({ url: `/pages/match/report?sessionId=${sessionId}` });
@@ -39,7 +113,7 @@ function openSession(sessionId: number, status: string) {
 }
 
 async function createInvite(testCode: string) {
-  if (creatingTestCode.value) {
+  if (!testCode || creatingTestCode.value) {
     return;
   }
   creatingTestCode.value = testCode;
@@ -84,15 +158,12 @@ onShow(load);
   <view class="page">
     <view class="hero">
       <view class="hero__avatars">
-        <view class="hero__avatar">🪐</view>
-        <view class="hero__pulse">❤</view>
-        <view class="hero__avatar hero__avatar--alt">🌙</view>
+        <view class="hero__avatar">{{ history.items[0]?.partner?.avatar_value || "🧠" }}</view>
+        <view class="hero__heart">❤</view>
+        <view class="hero__avatar hero__avatar--alt">💫</view>
       </view>
-      <text class="hero__eyebrow">Soul Match Hub</text>
-      <text class="hero__title">把同一套测试，变成两个人的默契实验。</text>
-      <text class="hero__body">
-        发起邀请后，好友完成同一测试即可生成匹配报告，查看你们的共振与互补维度。
-      </text>
+      <text class="hero__title">灵魂匹配中心</text>
+      <text class="hero__body">把同一套测试变成双人默契实验，看看你们是天作之合还是互补搭档。</text>
     </view>
 
     <view v-if="loading" class="panel">
@@ -106,51 +177,47 @@ onShow(load);
 
     <template v-else>
       <view class="section-head">
-        <text class="section-head__title">发起灵魂匹配</text>
-        <text class="section-head__meta">{{ matchEnabledTests.length }} 套支持</text>
+        <text class="section-head__title">匹配模式</text>
       </view>
-      <view class="test-list">
+      <view class="mode-grid">
         <view
-          v-for="item in matchEnabledTests"
-          :key="item.test_code"
-          class="test-card"
+          v-for="mode in featuredModes"
+          :key="mode.key"
+          class="mode-card"
+          :class="mode.className"
         >
-          <view>
-            <text class="test-card__title">{{ item.name }}</text>
-            <text class="test-card__meta">{{ item.question_count }} 题 · {{ item.duration_hint || "待补时长" }}</text>
-          </view>
+          <text class="mode-card__title">{{ mode.title }}</text>
+          <text class="mode-card__desc">{{ mode.desc }}</text>
           <button
-            class="test-card__button"
-            :loading="creatingTestCode === item.test_code"
-            @tap="createInvite(item.test_code)"
+            class="mode-card__button"
+            :loading="creatingTestCode === mode.testCode"
+            @tap="createInvite(mode.testCode)"
           >
-            邀请好友
+            {{ mode.button }}
           </button>
         </view>
       </view>
 
-      <view class="section-head">
-        <text class="section-head__title">双人勋章</text>
-        <text class="section-head__meta">{{ history.duo_badges.length }} 枚已点亮</text>
+      <view v-if="rankedCP.length" class="section-head">
+        <text class="section-head__title">最佳 CP 排行榜</text>
       </view>
-      <view v-if="history.duo_badges.length" class="badge-grid">
-        <view
-          v-for="badge in history.duo_badges"
-          :key="badge.badge_key"
-          class="badge-card"
-        >
-          <text class="badge-card__emoji">{{ badge.emoji }}</text>
-          <text class="badge-card__name">{{ badge.name }}</text>
-          <text class="badge-card__time">{{ formatTime(badge.unlocked_at) }}</text>
+      <view v-if="rankedCP.length" class="cp-list">
+        <view v-for="(item, index) in rankedCP" :key="`cp-${item.session_id}`" class="cp-item">
+          <text class="cp-item__rank" :class="rankStyle(index)">{{ index + 1 }}</text>
+          <view class="cp-item__avatars">
+            <text class="cp-item__avatar">🙂</text>
+            <text class="cp-item__avatar">{{ item.partner?.avatar_value || "✨" }}</text>
+          </view>
+          <view class="cp-item__body">
+            <text class="cp-item__name">{{ item.partner?.nickname || "匿名搭档" }}</text>
+            <text class="cp-item__meta">{{ item.compatibility_score }} 分 · {{ tierBadge(item.tier) }}</text>
+          </view>
         </view>
-      </view>
-      <view v-else class="panel">
-        <text class="panel__text">完成第一次双人匹配后，这里会点亮属于你们的双人勋章。</text>
       </view>
 
       <view class="section-head">
-        <text class="section-head__title">匹配历史</text>
-        <text class="section-head__meta">{{ history.items.length }} 条记录</text>
+        <text class="section-head__title">我的匹配记录</text>
+        <text class="section-head__meta">{{ history.items.length }} 条</text>
       </view>
       <view v-if="history.items.length" class="history-list">
         <view
@@ -166,14 +233,45 @@ onShow(load);
             </text>
           </view>
           <text class="history-card__meta">
-            {{ item.partner?.nickname || "等待加入" }} · {{ item.tier || item.status }}
+            {{ item.partner?.nickname || "等待加入" }} · {{ tierBadge(item.tier) }}
           </text>
-          <text class="history-card__time">{{ formatTime(item.completed_at || item.created_at) }}</text>
+          <view class="history-card__foot">
+            <text class="history-card__time">{{ formatTime(item.completed_at || item.created_at) }}</text>
+            <text class="status" :class="statusClass(item.status)">{{ formatStatus(item.status) }}</text>
+          </view>
         </view>
       </view>
       <view v-else class="panel">
-        <text class="panel__text">还没有匹配记录。选一套支持匹配的测试，邀请好友一起完成吧。</text>
+        <text class="panel__text">还没有匹配记录。先发起一次邀请，和朋友一起完成测试吧。</text>
       </view>
+
+      <view class="section-head">
+        <text class="section-head__title">双人徽章</text>
+        <text class="section-head__meta">{{ history.duo_badges.length }} 枚</text>
+      </view>
+      <view v-if="history.duo_badges.length" class="badge-grid">
+        <view
+          v-for="badge in history.duo_badges"
+          :key="badge.badge_key"
+          class="badge-card"
+        >
+          <text class="badge-card__emoji">{{ badge.emoji }}</text>
+          <text class="badge-card__name">{{ badge.name }}</text>
+          <text class="badge-card__time">{{ formatTime(badge.unlocked_at) }}</text>
+        </view>
+      </view>
+      <view v-else class="panel">
+        <text class="panel__text">完成首次双人报告后，这里会点亮专属徽章。</text>
+      </view>
+
+      <button
+        class="invite-cta"
+        :loading="creatingTestCode === (featuredModes[0]?.testCode || '')"
+        @tap="createInvite(featuredModes[0]?.testCode || '')"
+      >
+        <text class="invite-cta__shine" />
+        邀请朋友来匹配
+      </button>
     </template>
     <TabBuddy />
   </view>
@@ -181,88 +279,67 @@ onShow(load);
 
 <style lang="scss" scoped>
 .page {
-  padding: 28rpx 24rpx 40rpx;
+  padding: 28rpx 24rpx calc(48rpx + env(safe-area-inset-bottom, 0rpx));
 }
 
 .hero {
-  padding: 34rpx 30rpx;
+  padding: 34rpx 28rpx;
   border-radius: 30rpx;
-  background:
-    radial-gradient(circle at top, rgba(255, 238, 225, 0.95), rgba(255, 220, 197, 0.92)),
-    linear-gradient(145deg, rgba(255, 252, 246, 0.96), rgba(255, 241, 226, 0.9));
-  box-shadow: $xc-shadow;
+  @include gradient-hero;
+  color: #fff;
+  box-shadow: $xc-sh-lg;
 }
 
 .hero__avatars {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 18rpx;
+  gap: 16rpx;
 }
 
 .hero__avatar {
-  width: 94rpx;
-  height: 94rpx;
+  width: 96rpx;
+  height: 96rpx;
   border-radius: 50%;
+  background: rgba(255, 255, 255, 0.82);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.8);
   font-size: 42rpx;
+  color: $xc-ink;
 }
 
 .hero__avatar--alt {
-  background: rgba(255, 248, 243, 0.9);
+  background: rgba(255, 255, 255, 0.68);
 }
 
-.hero__pulse {
-  font-size: 34rpx;
-  color: #9B7ED8;
-  animation: beat 1.5s ease-in-out infinite;
-}
-
-.hero__eyebrow,
-.hero__body,
-.section-head__meta,
-.panel__text,
-.test-card__meta,
-.badge-card__time,
-.history-card__meta,
-.history-card__time {
-  color: $xc-muted;
-}
-
-.hero__eyebrow {
-  display: block;
-  margin-top: 18rpx;
-  font-size: 22rpx;
-  letter-spacing: 3rpx;
-  text-transform: uppercase;
-  text-align: center;
+.hero__heart {
+  font-size: 36rpx;
+  animation: heartbeat 1.2s ease-in-out infinite;
 }
 
 .hero__title {
   display: block;
-  margin-top: 16rpx;
-  font-size: 40rpx;
-  line-height: 1.35;
-  font-weight: 700;
+  margin-top: 18rpx;
   text-align: center;
+  font-size: 40rpx;
+  font-weight: 700;
 }
 
 .hero__body {
   display: block;
-  margin-top: 14rpx;
-  font-size: 25rpx;
-  line-height: 1.7;
+  margin-top: 12rpx;
   text-align: center;
+  font-size: 24rpx;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.92);
 }
 
 .section-head {
+  margin: 28rpx 6rpx 14rpx;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin: 30rpx 6rpx 16rpx;
+  justify-content: space-between;
 }
 
 .section-head__title {
@@ -272,128 +349,278 @@ onShow(load);
 
 .section-head__meta {
   font-size: 22rpx;
+  color: $xc-muted;
 }
 
 .panel,
-.test-card,
+.mode-card,
+.history-card,
 .badge-card,
-.history-card {
-  border-radius: 24rpx;
-  background: rgba(255, 253, 248, 0.96);
-  border: 2rpx solid rgba(155, 126, 216, 0.08);
+.cp-item {
+  @include card-base;
 }
 
 .panel {
-  padding: 28rpx;
+  padding: 26rpx;
 }
 
 .panel--error {
-  background: rgba(255, 240, 235, 0.96);
+  border-color: rgba(232, 114, 154, 0.25);
+}
+
+.panel__text {
+  font-size: 24rpx;
+  line-height: 1.7;
+  color: $xc-muted;
 }
 
 .panel__button {
-  margin-top: 18rpx;
+  margin-top: 14rpx;
   border-radius: 999rpx;
-  background: #9B7ED8;
+  background: linear-gradient(135deg, #9b7ed8, #e8729a);
   color: #fff;
 }
 
-.test-list,
+.mode-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12rpx;
+}
+
+.mode-card {
+  padding: 20rpx;
+}
+
+.mode-card--purple {
+  background:
+    linear-gradient(135deg, rgba(155, 126, 216, 0.22), rgba(201, 181, 240, 0.12)),
+    rgba(255, 255, 255, 0.88);
+}
+
+.mode-card--pink {
+  background:
+    linear-gradient(135deg, rgba(232, 114, 154, 0.18), rgba(244, 165, 191, 0.1)),
+    rgba(255, 255, 255, 0.88);
+}
+
+.mode-card__title {
+  display: block;
+  font-size: 26rpx;
+  font-weight: 700;
+}
+
+.mode-card__desc {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  line-height: 1.6;
+  color: $xc-muted;
+}
+
+.mode-card__button {
+  margin-top: 14rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.85);
+  color: $xc-purple;
+  font-size: 22rpx;
+  border: 1px solid rgba(155, 126, 216, 0.2);
+}
+
+.cp-list,
 .history-list {
   display: flex;
   flex-direction: column;
-  gap: 18rpx;
+  gap: 12rpx;
 }
 
-.test-card,
-.history-card {
-  padding: 24rpx;
-  box-shadow: $xc-shadow;
-}
-
-.test-card {
+.cp-item {
+  padding: 16rpx;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 20rpx;
+  gap: 14rpx;
 }
 
-.test-card__title,
-.history-card__title {
-  display: block;
-  font-size: 30rpx;
-  font-weight: 600;
-}
-
-.test-card__meta {
-  display: block;
-  margin-top: 10rpx;
-  font-size: 22rpx;
-}
-
-.test-card__button {
-  min-width: 180rpx;
-  border-radius: 999rpx;
-  background: linear-gradient(135deg, #E8729A, #9B7ED8);
-  color: #fff9f4;
-  font-size: 24rpx;
-}
-
-.badge-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16rpx;
-}
-
-.badge-card {
-  padding: 22rpx;
+.cp-item__rank {
+  width: 44rpx;
+  font-size: 34rpx;
+  font-weight: 700;
   text-align: center;
 }
 
-.badge-card__emoji {
-  display: block;
-  font-size: 42rpx;
+.rank--gold {
+  color: #d4a853;
 }
 
-.badge-card__name {
+.rank--silver {
+  color: #c0c0c0;
+}
+
+.rank--bronze {
+  color: #cd7f32;
+}
+
+.cp-item__avatars {
+  display: flex;
+}
+
+.cp-item__avatar {
+  width: 42rpx;
+  height: 42rpx;
+  border-radius: 50%;
+  background: rgba(155, 126, 216, 0.16);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: -6rpx;
+}
+
+.cp-item__body {
+  flex: 1;
+}
+
+.cp-item__name {
   display: block;
-  margin-top: 12rpx;
   font-size: 24rpx;
   font-weight: 600;
 }
 
-.badge-card__time {
+.cp-item__meta {
   display: block;
-  margin-top: 8rpx;
-  font-size: 20rpx;
+  margin-top: 4rpx;
+  font-size: 21rpx;
+  color: $xc-muted;
 }
 
-.history-card__top {
+.history-card {
+  padding: 20rpx;
+}
+
+.history-card__top,
+.history-card__foot {
   display: flex;
   justify-content: space-between;
-  gap: 16rpx;
+  align-items: center;
+  gap: 14rpx;
+}
+
+.history-card__title {
+  font-size: 28rpx;
+  font-weight: 600;
 }
 
 .history-card__score {
-  font-size: 28rpx;
+  color: $xc-purple;
+  font-size: 26rpx;
   font-weight: 700;
-  color: #9B7ED8;
 }
 
 .history-card__meta,
 .history-card__time {
   display: block;
-  margin-top: 10rpx;
+  margin-top: 8rpx;
   font-size: 22rpx;
+  color: $xc-muted;
 }
 
-@keyframes beat {
-  0%,
-  100% {
+.status {
+  margin-top: 8rpx;
+  padding: 6rpx 14rpx;
+  border-radius: 999rpx;
+  font-size: 20rpx;
+}
+
+.status--waiting {
+  background: rgba(232, 114, 154, 0.14);
+  color: $xc-pink;
+  animation: pulse 1.8s ease-in-out infinite;
+}
+
+.status--running {
+  background: rgba(124, 197, 178, 0.2);
+  color: #4d9f89;
+}
+
+.status--done {
+  background: rgba(155, 126, 216, 0.14);
+  color: $xc-purple;
+}
+
+.badge-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12rpx;
+}
+
+.badge-card {
+  padding: 16rpx 10rpx;
+  text-align: center;
+  background:
+    linear-gradient(140deg, rgba(253, 230, 239, 0.56), rgba(255, 255, 255, 0.86));
+}
+
+.badge-card__emoji {
+  display: block;
+  font-size: 38rpx;
+}
+
+.badge-card__name {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  font-weight: 600;
+}
+
+.badge-card__time {
+  display: block;
+  margin-top: 6rpx;
+  font-size: 19rpx;
+  color: $xc-muted;
+}
+
+.invite-cta {
+  position: relative;
+  margin-top: 22rpx;
+  border-radius: $xc-r-btn;
+  overflow: hidden;
+  color: #fff;
+  background: linear-gradient(135deg, #9b7ed8, #e8729a);
+}
+
+.invite-cta__shine {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.65), transparent);
+  animation: ctaShimmer 1.8s linear infinite;
+}
+
+@keyframes heartbeat {
+  0% {
+    transform: scale(1);
+  }
+  20% {
+    transform: scale(1.15);
+  }
+  35% {
     transform: scale(1);
   }
   50% {
-    transform: scale(1.18);
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes ctaShimmer {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(320%);
   }
 }
 </style>

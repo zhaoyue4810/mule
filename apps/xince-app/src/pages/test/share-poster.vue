@@ -21,6 +21,8 @@ const selectedTemplateId = ref("");
 const posterMode = ref<"report" | "challenge">("report");
 const challengeInvite = ref<MatchCreateResponse | null>(null);
 const challengeLoading = ref(false);
+const POSTER_W = 640;
+const POSTER_H = 900;
 
 const activeTemplate = computed(() =>
   resolveSharePosterTemplate(selectedTemplateId.value || report.value?.share_card.theme),
@@ -281,98 +283,127 @@ async function generatePosterImage() {
     const ctx = uni.createCanvasContext("posterCanvas");
     const theme = activeTemplate.value;
 
-    ctx.setFillStyle(theme.backgroundStart);
-    ctx.fillRect(0, 0, 720, 1280);
-    ctx.setFillStyle(theme.backgroundEnd);
-    ctx.globalAlpha = 0.72;
-    ctx.fillRect(0, 320, 720, 960);
-    ctx.globalAlpha = 1;
+    const personaEmoji = report.value.persona?.persona_name?.includes("星")
+      ? "🌟"
+      : report.value.persona?.persona_name?.includes("月")
+        ? "🌙"
+        : "✨";
 
-    ctx.setFillStyle("rgba(255,255,255,0.72)");
-    drawRoundedRect(ctx, 36, 36, 648, 1208, 28);
+    const grd = ctx.createLinearGradient(0, 0, POSTER_W, POSTER_H);
+    grd.addColorStop(0, "#9B7ED8");
+    grd.addColorStop(0.55, "#E8729A");
+    grd.addColorStop(1, "#F2A68B");
+    ctx.setFillStyle(grd);
+    ctx.fillRect(0, 0, POSTER_W, POSTER_H);
+
+    ctx.setFillStyle("rgba(255,255,255,0.94)");
+    drawRoundedRect(ctx, 26, 24, POSTER_W - 52, POSTER_H - 48, 26);
 
     ctx.setFillStyle(theme.accent);
-    ctx.setFontSize(24);
-    ctx.fillText(
-      posterMode.value === "challenge" ? "心测 Challenge Card" : "心测 Share Poster",
-      68,
-      100,
-    );
-
+    ctx.setFontSize(18);
+    ctx.fillText(posterMode.value === "challenge" ? "好友挑战" : "报告分享", 48, 58);
+    ctx.setFillStyle("#3A2E42");
+    ctx.setFontSize(26);
+    wrapText(ctx, report.value.test_name, 48, 92, 380, 34, 1);
     ctx.setFillStyle(theme.secondary);
     ctx.setFontSize(22);
-    ctx.fillText(posterSubtitle.value, 68, 162);
+    ctx.fillText(personaEmoji, 48, 132);
+    wrapText(ctx, report.value.persona.persona_name || "灵魂旅人", 78, 132, 260, 30, 1);
 
+    ctx.setFillStyle("rgba(155,126,216,0.08)");
+    drawRoundedRect(ctx, 46, 152, 548, 206, 18);
     ctx.setFillStyle("#3A2E42");
-    ctx.setFontSize(46);
-    wrapText(ctx, posterTitle.value, 68, 238, 584, 60, 2);
+    ctx.setFontSize(20);
+    wrapText(ctx, posterTitle.value, 64, 184, 512, 30, 2);
 
-    ctx.setFillStyle(theme.accent);
-    ctx.setFontSize(24);
-    ctx.fillText(
-      posterMode.value === "challenge"
-        ? `挑战维度：${report.value.share_card.accent}`
-        : `主导标签：${report.value.share_card.accent}`,
-      68,
-      358,
-    );
-
-    let chipX = 68;
-    let chipY = 424;
-    ctx.setFontSize(22);
-    for (const chip of report.value.share_card.stat_chips.slice(0, 4)) {
-      const width = Math.min(220, Math.max(120, chip.length * 24 + 36));
-      if (chipX + width > 620) {
-        chipX = 68;
-        chipY += 58;
-      }
-      ctx.setFillStyle("rgba(255,255,255,0.82)");
-      drawRoundedRect(ctx, chipX, chipY - 28, width, 42, 21);
-      ctx.setFillStyle(theme.secondary);
-      ctx.fillText(chip, chipX + 18, chipY);
-      chipX += width + 12;
+    const radarDims = report.value.radar_dimensions.slice(0, 5);
+    const cx = 150;
+    const cy = 278;
+    const radius = 64;
+    const pointAt = (angle: number, value: number) => ({
+      x: cx + Math.cos(angle) * radius * Math.max(0, Math.min(1, value)),
+      y: cy + Math.sin(angle) * radius * Math.max(0, Math.min(1, value)),
+    });
+    for (let ring = 1; ring <= 3; ring += 1) {
+      ctx.beginPath();
+      radarDims.forEach((_, index) => {
+        const angle = -Math.PI / 2 + (Math.PI * 2 * index) / radarDims.length;
+        const p = pointAt(angle, ring / 3);
+        if (index === 0) {
+          ctx.moveTo(p.x, p.y);
+        } else {
+          ctx.lineTo(p.x, p.y);
+        }
+      });
+      ctx.closePath();
+      ctx.setStrokeStyle("rgba(155,126,216,0.22)");
+      ctx.stroke();
     }
+    ctx.beginPath();
+    radarDims.forEach((item, index) => {
+      const angle = -Math.PI / 2 + (Math.PI * 2 * index) / radarDims.length;
+      const p = pointAt(angle, item.normalized_score || 0);
+      if (index === 0) {
+        ctx.moveTo(p.x, p.y);
+      } else {
+        ctx.lineTo(p.x, p.y);
+      }
+    });
+    ctx.closePath();
+    ctx.setStrokeStyle("#9B7ED8");
+    ctx.setFillStyle("rgba(155,126,216,0.24)");
+    ctx.stroke();
+    ctx.fill();
+
+    const bars = report.value.share_card.stat_chips.slice(0, 3);
+    let barY = 216;
+    bars.forEach((item) => {
+      ctx.setFillStyle("rgba(155,126,216,0.12)");
+      drawRoundedRect(ctx, 268, barY, 300, 22, 11);
+      ctx.setFillStyle(theme.accent);
+      drawRoundedRect(ctx, 268, barY, Math.max(90, Math.min(300, item.length * 18)), 22, 11);
+      ctx.setFillStyle("#3A2E42");
+      ctx.setFontSize(18);
+      ctx.fillText(item, 272, barY + 44);
+      barY += 58;
+    });
 
     ctx.setFillStyle(theme.panel);
-    drawRoundedRect(ctx, 68, 522, 584, 306, 24);
+    drawRoundedRect(ctx, 46, 380, 548, 210, 18);
     ctx.setFillStyle("#3A2E42");
-    ctx.setFontSize(30);
+    ctx.setFontSize(20);
     if (posterMode.value === "challenge" && challengeInvite.value) {
-      wrapText(ctx, "我已经完成这套测试，现在轮到你了。", 96, 590, 528, 44, 2);
-      wrapText(ctx, "扫码或搜索邀请码，直接加入同一份灵魂挑战。", 96, 660, 528, 44, 2);
+      wrapText(ctx, "我已经完成这套测试，来看看我们有多默契。", 64, 414, 340, 32, 3);
       ctx.setFillStyle(theme.accent);
-      ctx.setFontSize(34);
-      ctx.fillText(`邀请码 ${challengeInvite.value.invite_code}`, 96, 754);
+      ctx.setFontSize(26);
+      ctx.fillText(`邀请码 ${challengeInvite.value.invite_code}`, 64, 542);
     } else {
-      let lineY = 590;
-      for (const line of report.value.share_card.highlight_lines) {
-        wrapText(ctx, line, 96, lineY, 528, 48, 2);
-        lineY += 78;
-      }
+      wrapText(ctx, report.value.share_card.highlight_lines.join(" · "), 64, 414, 340, 32, 4);
     }
 
+    ctx.setFillStyle("rgba(255,255,255,0.95)");
+    drawRoundedRect(ctx, 428, 404, 148, 148, 14);
     if (posterMode.value === "challenge" && challengeInvite.value) {
-      ctx.setFillStyle(theme.qrFrame);
-      drawRoundedRect(ctx, 184, 856, 352, 352, 28);
-      drawQrBlock(ctx, 216, 888, 288, challengeInvite.value.invite_link || challengeInvite.value.invite_code);
-      ctx.setFillStyle(theme.secondary);
-      ctx.setFontSize(22);
-      wrapText(
-        ctx,
-        challengeInvite.value.invite_link || challengeInvite.value.invite_code,
-        92,
-        1238,
-        536,
-        28,
-        1,
-      );
+      drawQrBlock(ctx, 440, 416, 124, challengeInvite.value.invite_link || challengeInvite.value.invite_code);
     } else {
-      ctx.setFillStyle("#7B6E85");
-      ctx.setFontSize(22);
-      wrapText(ctx, report.value.share_card.footer, 68, 1032, 584, 34, 2);
-      ctx.setFillStyle("rgba(58, 46, 66, 0.52)");
-      ctx.setFontSize(20);
-      ctx.fillText("模板可切换，当前海报由前端即时生成。", 68, 1110);
+      ctx.setFillStyle("rgba(58,46,66,0.28)");
+      ctx.setFontSize(16);
+      ctx.fillText("二维码", 474, 488);
+    }
+
+    ctx.setFillStyle("rgba(58,46,66,0.74)");
+    ctx.setFontSize(18);
+    wrapText(ctx, report.value.share_card.footer, 46, 636, 548, 28, 2);
+    ctx.setFillStyle("rgba(58,46,66,0.45)");
+    ctx.setFontSize(16);
+    ctx.fillText("心测 XinCe", 46, 680);
+    ctx.fillText("灵魂说明书", 122, 680);
+    if (posterMode.value === "challenge") {
+      ctx.setFillStyle("rgba(232,114,154,0.22)");
+      drawRoundedRect(ctx, 430, 646, 164, 36, 18);
+      ctx.setFillStyle("#E8729A");
+      ctx.setFontSize(18);
+      ctx.fillText("挑战模式", 476, 670);
     }
 
     await new Promise<void>((resolve) => {
@@ -383,10 +414,10 @@ async function generatePosterImage() {
       uni.canvasToTempFilePath(
         {
           canvasId: "posterCanvas",
-          width: 720,
-          height: 1280,
-          destWidth: 1080,
-          destHeight: 1920,
+          width: POSTER_W,
+          height: POSTER_H,
+          destWidth: POSTER_W * 2,
+          destHeight: POSTER_H * 2,
           success: (res) => resolve(res.tempFilePath),
           fail: reject,
         },
@@ -566,7 +597,7 @@ onShareTimeline(() => ({
         canvas-id="posterCanvas"
         id="posterCanvas"
         class="poster-canvas"
-        style="width: 720px; height: 1280px"
+        style="width: 640px; height: 900px"
       />
     </view>
   </view>

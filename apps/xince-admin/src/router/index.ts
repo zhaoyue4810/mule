@@ -22,7 +22,7 @@ const router = createRouter({
 });
 
 router.beforeEach((to) => {
-  const authed = window.sessionStorage.getItem("xc_admin_authed") === "1";
+  const authed = Boolean(window.localStorage.getItem("xc_admin_token"));
   if (to.path !== "/login" && !authed) {
     return "/login";
   }

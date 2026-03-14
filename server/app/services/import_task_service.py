@@ -57,6 +57,9 @@ class ImportTaskService:
             await self.db.refresh(task)
             return task
 
+        task.status = "PARSING"
+        await self.db.commit()
+
         try:
             if task.file_type == "html":
                 preview = self.import_service.parse_html_demo(path)
@@ -65,7 +68,7 @@ class ImportTaskService:
             else:
                 raise ValueError(f"Unsupported file type: {task.file_type}")
 
-            task.status = "DRAFT_READY"
+            task.status = "PREVIEW"
             task.parse_log = "preview_generated"
             task.preview_json = {
                 "file_type": preview.file_type,
@@ -86,8 +89,8 @@ class ImportTaskService:
         task = await self.get_task(task_id)
         if task is None:
             raise LookupError(f"Import task not found: {task_id}")
-        if task.status not in {"DRAFT_READY", "APPLIED"}:
-            raise ValueError("Import task must be in DRAFT_READY before apply")
+        if task.status not in {"PREVIEW", "APPROVED"}:
+            raise ValueError("Import task must be in PREVIEW before apply")
         if not task.preview_json:
             raise ValueError("Import task has no parsed preview")
 
@@ -108,9 +111,19 @@ class ImportTaskService:
         preview_json = dict(task.preview_json)
         preview_json["apply_result"] = apply_result
         task.preview_json = preview_json
-        task.status = "APPLIED"
+        task.status = "APPROVED"
         task.ai_log = note or "applied"
 
+        await self.db.commit()
+        await self.db.refresh(task)
+        return task
+
+    async def reject_task(self, task_id: int, reason: str | None = None) -> ImportTask:
+        task = await self.get_task(task_id)
+        if task is None:
+            raise LookupError(f"Import task not found: {task_id}")
+        task.status = "REJECTED"
+        task.ai_log = reason or "rejected"
         await self.db.commit()
         await self.db.refresh(task)
         return task

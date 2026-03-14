@@ -1,13 +1,19 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import { onShow } from "@dcloudio/uni-app";
+import { computed, getCurrentInstance, ref } from "vue";
+import { onReady, onShow, onUnload } from "@dcloudio/uni-app";
 
 import CelebrationOverlay from "@/components/feedback/CelebrationOverlay.vue";
 import TabBuddy from "@/components/mascot/TabBuddy.vue";
+import XiaoCe from "@/components/mascot/XiaoCe.vue";
+import PersonaRadarCanvas from "@/components/profile/PersonaRadarCanvas.vue";
+import ProfileBadgesPanel from "@/components/profile/ProfileBadgesPanel.vue";
+import ProfileHeaderStats from "@/components/profile/ProfileHeaderStats.vue";
+import ProfileHistoryPanel from "@/components/profile/ProfileHistoryPanel.vue";
 import type { TimeCapsuleItem } from "@/shared/models/capsule";
 import type {
   AppProfileOverview,
   DailyQuestionStatePayload,
+  ProfileBadgeItem,
   ProfileSettingsPayload,
   ProfileReportHistoryItem,
 } from "@/shared/models/profile";
@@ -32,6 +38,8 @@ import {
   updateMyProfileSettings,
 } from "@/shared/services/profile";
 import { fetchTimeCapsules as fetchCapsules } from "@/shared/services/capsule";
+import type { MemoryGreetingPayload, MemorySuggestPayload } from "@/shared/models/memory";
+import { fetchMemoryGreeting, fetchMemorySuggest } from "@/shared/services/memory";
 import {
   fetchCalendarMonth,
   fetchCalendarStats,
@@ -73,6 +81,18 @@ const moodSaving = ref(false);
 const capsules = ref<TimeCapsuleItem[]>([]);
 const profileSettings = ref<ProfileSettingsPayload | null>(null);
 const savingSound = ref(false);
+const greeting = ref<MemoryGreetingPayload | null>(null);
+const memorySuggest = ref<MemorySuggestPayload | null>(null);
+const soulExpanded = ref(false);
+const statsAnimated = ref(false);
+const statDisplay = ref({
+  testCount: 0,
+  matchCount: 0,
+  pendingCount: 0,
+});
+const selectedBadge = ref<ProfileBadgeItem | null>(null);
+let statsObserver: UniApp.IntersectionObserver | null = null;
+const instance = getCurrentInstance();
 
 // #ifdef MP-WEIXIN
 isWechatMiniProgram.value = true;
@@ -158,6 +178,78 @@ const miniStats = computed(() => [
     value: `${calendarStats.value?.best_streak || 0}`,
   },
 ]);
+const todayDateText = `${new Date().getFullYear()}-${`${new Date().getMonth() + 1}`.padStart(2, "0")}-${`${new Date().getDate()}`.padStart(2, "0")}`;
+const matchReports = computed(() =>
+  reports.value.filter(
+    (item) =>
+      item.test_name.includes("匹配") ||
+      item.test_name.toLowerCase().includes("match") ||
+      item.test_code.toLowerCase().includes("match"),
+  ),
+);
+const pendingUnlockCount = computed(() => {
+  if (!overview.value?.fragment_progress?.length) {
+    return 0;
+  }
+  return overview.value.fragment_progress.reduce(
+    (total, item) => total + Math.max(0, item.total_count - item.unlocked_count),
+    0,
+  );
+});
+const statTargets = computed(() => ({
+  testCount: overview.value?.test_count || 0,
+  matchCount: matchReports.value.length,
+  pendingCount: pendingUnlockCount.value,
+}));
+const soulRadarDimensions = computed(() => {
+  const source = overview.value?.dominant_dimensions || [];
+  if (!source.length) {
+    return [];
+  }
+  const max = Math.max(...source.map((item) => item.total_score), 1);
+  return source.slice(0, 5).map((item) => ({
+    dim_code: item.dim_code,
+    label: item.dim_code.toUpperCase(),
+    score: Math.round((item.total_score / max) * 100),
+  }));
+});
+const soulLevel = computed(() => {
+  const score = (overview.value?.test_count || 0) * 12 + (overview.value?.distinct_test_count || 0) * 8;
+  return Math.max(1, Math.min(99, Math.floor(score / 10) + 1));
+});
+const soulProgress = computed(() => Math.max(6, Math.min(98, ((overview.value?.test_count || 0) % 8) * 12 + 8)));
+const soloBadges = computed(() =>
+  (overview.value?.badges || []).filter((item) => {
+    const key = item.badge_key.toLowerCase();
+    return !key.includes("match") && !key.includes("duo") && !key.includes("pair") && !key.includes("cp");
+  }),
+);
+const duoBadges = computed(() =>
+  (overview.value?.badges || []).filter((item) => {
+    const key = item.badge_key.toLowerCase();
+    return key.includes("match") || key.includes("duo") || key.includes("pair") || key.includes("cp");
+  }),
+);
+const memoryLevel = computed(() => {
+  const value = greeting.value?.know_level || 0;
+  if (value >= 85) {
+    return "灵魂挚友";
+  }
+  if (value >= 60) {
+    return "熟悉同路人";
+  }
+  if (value >= 35) {
+    return "正在了解你";
+  }
+  return "初识心动";
+});
+const memoryRecent = computed(() => {
+  const latest = reports.value[0];
+  if (!latest) {
+    return "最近互动：还没有新的记录";
+  }
+  return `最近互动：${formatTime(latest.completed_at)} · ${latest.test_name}`;
+});
 
 function formatTime(value?: string | null) {
   if (!value) {
@@ -194,6 +286,10 @@ function formatCalendarCell(value: string) {
     return value;
   }
   return `${date.getDate()}`;
+}
+
+function isToday(value?: string) {
+  return Boolean(value && value === todayDateText);
 }
 
 function heatmapClass(intensity: number) {
@@ -281,6 +377,14 @@ function closeFragmentInsight() {
   fragmentInsight.value = null;
 }
 
+function openBadgeDetail(item: ProfileBadgeItem) {
+  selectedBadge.value = item;
+}
+
+function closeBadgeDetail() {
+  selectedBadge.value = null;
+}
+
 async function loadCalendar() {
   calendarLoading.value = true;
   try {
@@ -333,9 +437,15 @@ async function loadProfile() {
       fetchMyProfileOverview(),
       fetchMyProfileReports(),
     ]);
+    const [memoryGreetingPayload, memorySuggestPayload] = await Promise.all([
+      fetchMemoryGreeting().catch(() => null),
+      fetchMemorySuggest().catch(() => null),
+    ]);
     await loadCalendar();
     overview.value = overviewPayload;
     reports.value = reportPayload;
+    greeting.value = memoryGreetingPayload;
+    memorySuggest.value = memorySuggestPayload;
     dailyQuestion.value = await fetchMyDailyQuestion();
     capsules.value = (await fetchCapsules()).items;
     profileSettings.value = await fetchMyProfileSettings();
@@ -506,9 +616,66 @@ async function linkWechatIdentity() {
   }
 }
 
+function startStatsCountUp() {
+  if (statsAnimated.value) {
+    return;
+  }
+  statsAnimated.value = true;
+  const targets = statTargets.value;
+  const keys: Array<keyof typeof targets> = ["testCount", "matchCount", "pendingCount"];
+  keys.forEach((key, index) => {
+    const timer = setInterval(() => {
+      const now = statDisplay.value[key];
+      const target = targets[key];
+      if (now >= target) {
+        clearInterval(timer);
+        return;
+      }
+      const step = Math.max(1, Math.ceil((target - now) / 8));
+      statDisplay.value = {
+        ...statDisplay.value,
+        [key]: Math.min(target, now + step),
+      };
+    }, 28 + index * 12);
+  });
+}
+
+function initStatsObserver() {
+  if (!instance?.proxy) {
+    return;
+  }
+  statsObserver?.disconnect();
+  statsObserver = uni.createIntersectionObserver(instance.proxy, { observeAll: false });
+  statsObserver.relativeToViewport({ bottom: 0 }).observe(".stats", (res) => {
+    if (res.intersectionRatio > 0.3) {
+      startStatsCountUp();
+    }
+  });
+}
+
+function openSettingItem(type: "edit" | "sound" | "notify" | "privacy" | "about") {
+  if (type === "edit" || type === "sound") {
+    goSettings();
+    return;
+  }
+  uni.showToast({
+    title: "即将上线",
+    icon: "none",
+  });
+}
+
 onShow(() => {
   sessionUser.value = getSessionUser();
   loadProfile();
+});
+
+onReady(() => {
+  initStatsObserver();
+});
+
+onUnload(() => {
+  statsObserver?.disconnect();
+  statsObserver = null;
 });
 </script>
 
@@ -533,56 +700,76 @@ onShow(() => {
     </view>
 
     <view v-else-if="overview" class="profile">
-      <view class="hero">
-        <text class="hero__avatar">{{ overview.avatar_value }}</text>
-        <text class="hero__eyebrow">Memory Profile</text>
-        <text class="hero__title">{{ overview.nickname }}</text>
-        <text class="hero__meta">
-          已完成 {{ overview.test_count }} 次测试 · 覆盖 {{ overview.distinct_test_count }} 套内容
-        </text>
-        <text class="hero__submeta">
-          最近一次：{{ formatTime(overview.last_test_at) }}
-        </text>
-      </view>
+      <ProfileHeaderStats
+        :overview="overview"
+        :greeting-text="greeting?.greeting || '灵魂说明书正在慢慢生成中'"
+        :stat-display="statDisplay"
+        @go-persona-card="goPersonaCard"
+        @go-settings="goSettings"
+      />
 
-      <view class="stats">
-        <view class="stat-card">
-          <text class="stat-card__label">平均用时</text>
-          <text class="stat-card__value">{{ overview.avg_duration_seconds }} 秒</text>
-        </view>
-        <view class="stat-card">
-          <text class="stat-card__label">高频画像</text>
-          <text class="stat-card__value">
-            {{ overview.persona_distribution[0]?.persona_name || "待生成" }}
+      <view class="panel soul-panel">
+        <view class="panel__head">
+          <text class="panel__title">灵魂画像</text>
+          <text class="panel__head-link" @tap="soulExpanded = !soulExpanded">
+            {{ soulExpanded ? "收起详情" : "展开详情" }}
           </text>
         </view>
-      </view>
-
-      <view class="quick-actions">
-        <button class="quick-actions__button" @tap="goPersonaCard">我的人设名片</button>
-        <button class="quick-actions__button quick-actions__button--ghost" @tap="goSettings">
-          声音与触感
-        </button>
-      </view>
-
-      <view class="panel" v-if="overview.badges.length">
-        <text class="panel__title">已解锁勋章</text>
-        <text class="panel__body">
-          这些勋章会随着你的答题行为持续增长，后续会扩展更多成长触发规则。
-        </text>
-        <view class="badge-grid">
-          <view
-            v-for="item in overview.badges"
-            :key="item.badge_key"
-            class="badge-card"
-          >
-            <text class="badge-card__emoji">{{ item.emoji }}</text>
-            <text class="badge-card__name">{{ item.name }}</text>
-            <text class="badge-card__tier">{{ badgeTierLabel(item.tier) }}阶 · {{ item.unlock_count }} 次</text>
-            <text class="badge-card__time">{{ formatTime(item.unlocked_at) }}</text>
+        <view class="soul-panel__main">
+          <view class="soul-panel__radar">
+            <PersonaRadarCanvas :dimensions="soulRadarDimensions" />
+          </view>
+          <view class="soul-panel__meta">
+            <text class="soul-panel__level">Lv.{{ soulLevel }} 灵魂等级</text>
+            <view class="soul-panel__track">
+              <view class="soul-panel__fill" :style="{ width: `${soulProgress}%` }" />
+            </view>
+            <text class="soul-panel__progress">距离下一级 {{ 100 - soulProgress }}%</text>
+            <view class="soul-panel__tags">
+              <text v-for="item in overview.dominant_dimensions" :key="item.dim_code" class="soul-tag">
+                {{ item.dim_code.toUpperCase() }}
+              </text>
+            </view>
+          </view>
+        </view>
+        <view v-if="soulExpanded" class="rows rows--soft">
+          <view v-for="item in overview.dominant_dimensions" :key="`${item.dim_code}-detail`" class="row row--soft">
+            <text class="row__name">{{ item.dim_code.toUpperCase() }}</text>
+            <text class="row__value">{{ item.total_score.toFixed(2) }}</text>
           </view>
         </view>
       </view>
+
+      <view class="panel memory-panel">
+        <view class="memory-panel__head">
+          <XiaoCe expression="happy" size="sm" :animated="true" />
+          <text class="panel__title">小测的记忆</text>
+        </view>
+        <text class="panel__body">{{ greeting?.greeting || "小测正在学习你的节奏" }}</text>
+        <view class="memory-panel__track">
+          <view class="memory-panel__fill" :style="{ width: `${greeting?.know_level || 0}%` }" />
+        </view>
+        <text class="memory-panel__meta">
+          熟悉度 {{ greeting?.know_level || 0 }}% · {{ memoryLevel }}
+        </text>
+        <text class="memory-panel__meta">{{ memoryRecent }}</text>
+        <text class="memory-panel__meta">
+          个性化推荐：{{ memorySuggest?.items?.[0]?.name || "去首页看看今日推荐测试" }}
+        </text>
+      </view>
+
+      <ProfileHistoryPanel
+        :reports="reports"
+        :match-reports="matchReports"
+        @open-report="openReport"
+      />
+
+      <ProfileBadgesPanel
+        :solo-badges="soloBadges"
+        :duo-badges="duoBadges"
+        :show-duo-hint="Boolean(matchReports.length)"
+        @open-badge="openBadgeDetail"
+      />
 
       <view class="panel" v-if="overview.calendar_heatmap.length">
         <view class="calendar-panel__header">
@@ -592,6 +779,7 @@ onShow(() => {
               日历会汇总测试完成、每日一问、手动心情和碎片收集等事件，点开单元格可查看详情并补记心情。
             </text>
           </view>
+          <text class="calendar-panel__all" @tap="toggleCalendarView('year')">查看全部</text>
           <view class="calendar-toggle">
             <button
               class="calendar-toggle__button"
@@ -634,7 +822,10 @@ onShow(() => {
               v-for="cell in calendarMonthGrid"
               :key="cell.key"
               class="calendar-month__cell"
-              :class="cell.empty ? 'calendar-month__cell--empty' : heatmapClass(cell.item?.intensity || 0)"
+              :class="[
+                cell.empty ? 'calendar-month__cell--empty' : heatmapClass(cell.item?.intensity || 0),
+                !cell.empty && isToday(cell.item?.date) ? 'calendar-month__cell--today' : '',
+              ]"
               @tap="cell.item && openCalendarDay(cell.item)"
             >
               <template v-if="cell.item">
@@ -655,7 +846,10 @@ onShow(() => {
                 v-for="cell in week"
                 :key="cell.key"
                 class="calendar-year__cell"
-                :class="cell.empty ? 'calendar-year__cell--empty' : heatmapClass(cell.item?.intensity || 0)"
+                :class="[
+                  cell.empty ? 'calendar-year__cell--empty' : heatmapClass(cell.item?.intensity || 0),
+                  !cell.empty && isToday(cell.item?.date) ? 'calendar-year__cell--today' : '',
+                ]"
                 @tap="cell.item && openCalendarDay(cell.item)"
               >
                 <text v-if="cell.item && cell.item.mood_emoji" class="calendar-year__emoji">
@@ -939,6 +1133,37 @@ onShow(() => {
         </view>
       </view>
 
+      <view class="panel">
+        <text class="panel__title">设置菜单</text>
+        <view class="settings-menu">
+          <view class="settings-item" @tap="openSettingItem('edit')">
+            <text class="settings-item__icon">👤</text>
+            <text class="settings-item__label">编辑资料</text>
+            <text class="settings-item__arrow">›</text>
+          </view>
+          <view class="settings-item" @tap="openSettingItem('sound')">
+            <text class="settings-item__icon">🔊</text>
+            <text class="settings-item__label">声音与触感</text>
+            <text class="settings-item__arrow">›</text>
+          </view>
+          <view class="settings-item" @tap="openSettingItem('notify')">
+            <text class="settings-item__icon">🔔</text>
+            <text class="settings-item__label">通知设置</text>
+            <text class="settings-item__arrow">›</text>
+          </view>
+          <view class="settings-item" @tap="openSettingItem('privacy')">
+            <text class="settings-item__icon">🛡️</text>
+            <text class="settings-item__label">隐私设置</text>
+            <text class="settings-item__arrow">›</text>
+          </view>
+          <view class="settings-item" @tap="openSettingItem('about')">
+            <text class="settings-item__icon">💜</text>
+            <text class="settings-item__label">关于心测</text>
+            <text class="settings-item__arrow">›</text>
+          </view>
+        </view>
+      </view>
+
       <view class="panel" v-if="overview.dominant_dimensions.length">
         <text class="panel__title">基础画像聚合</text>
         <text class="panel__body">
@@ -970,32 +1195,6 @@ onShow(() => {
         </view>
       </view>
 
-      <view class="panel">
-        <text class="panel__title">历史报告</text>
-        <view v-if="reports.length" class="history">
-          <view
-            v-for="item in reports"
-            :key="item.record_id"
-            class="history-card"
-            @tap="openReport(item.record_id)"
-          >
-            <view class="history-card__top">
-              <text class="history-card__title">{{ item.test_name }}</text>
-              <text class="history-card__time">{{ formatTime(item.completed_at) }}</text>
-            </view>
-            <text class="history-card__persona">
-              {{ item.persona_name || "已生成基础结果" }}
-            </text>
-            <text class="history-card__summary">
-              {{ item.summary || "当前报告还没有生成摘要文案。" }}
-            </text>
-            <text class="history-card__footer">
-              {{ item.duration_seconds || 0 }} 秒 · 点击查看报告
-            </text>
-          </view>
-        </view>
-        <text v-else class="panel__body">你还没有可回看的历史报告。</text>
-      </view>
     </view>
   </view>
   <CelebrationOverlay
@@ -1005,6 +1204,19 @@ onShow(() => {
     :badges="celebrationBadges"
     @close="closeCelebration"
   />
+  <view v-if="selectedBadge" class="sheet" @tap="closeBadgeDetail">
+    <view class="sheet__mask sheet__mask--dreamy" />
+    <view class="sheet__panel sheet__panel--dreamy" @tap.stop>
+      <text class="fragment-reveal__emoji">{{ selectedBadge.emoji }}</text>
+      <text class="sheet__title">{{ selectedBadge.name }}</text>
+      <text class="sheet__subtitle">
+        {{ badgeTierLabel(selectedBadge.tier) }}阶徽章 · 累计 {{ selectedBadge.unlock_count }} 次
+      </text>
+      <text class="fragment-reveal__body">
+        解锁于 {{ formatTime(selectedBadge.unlocked_at) }}。继续保持你的探索节奏，还会点亮更高阶形态。
+      </text>
+    </view>
+  </view>
   <view v-if="calendarSelectedDay" class="sheet" @tap="closeCalendarDay">
     <view class="sheet__mask" />
     <view class="sheet__panel" @tap.stop>
@@ -2045,5 +2257,393 @@ onShow(() => {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.profile {
+  gap: 24rpx;
+}
+
+.hero {
+  @include gradient-hero;
+  border-radius: $xc-r-xl;
+  padding: 30rpx;
+  color: #fff;
+  box-shadow: $xc-sh-lg;
+}
+
+.hero__top {
+  display: flex;
+  align-items: center;
+  gap: 18rpx;
+}
+
+.hero__avatar-wrap {
+  width: 110rpx;
+  height: 110rpx;
+  border-radius: 50%;
+  padding: 4rpx;
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 0 24rpx rgba(155, 126, 216, 0.55);
+}
+
+.hero__avatar {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border-radius: 50%;
+  border: 3rpx solid rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.hero__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.hero__title {
+  margin: 0;
+  font-family: $xc-font-serif;
+  font-size: 46rpx;
+}
+
+.hero__signature {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 23rpx;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.hero__actions {
+  margin-top: 14rpx;
+  display: flex;
+  gap: 10rpx;
+}
+
+.hero__tag-btn,
+.hero__icon-btn {
+  margin: 0;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  border: 2rpx solid rgba(255, 255, 255, 0.3);
+  font-size: 22rpx;
+}
+
+.hero__tag-btn {
+  padding: 0 22rpx;
+}
+
+.hero__icon-btn {
+  width: 66rpx;
+  min-width: 66rpx;
+}
+
+.stats {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12rpx;
+}
+
+.stat-card--highlight {
+  @include glass-strong;
+  text-align: center;
+  padding: 20rpx 14rpx;
+}
+
+.stat-card--highlight .stat-card__value {
+  color: $xc-purple-d;
+  font-size: 38rpx;
+}
+
+.stat-card--highlight .stat-card__label {
+  margin-top: 8rpx;
+  color: $xc-muted;
+}
+
+.panel {
+  @include card-base;
+}
+
+.panel__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14rpx;
+}
+
+.panel__head-link {
+  font-size: 22rpx;
+  color: $xc-purple;
+}
+
+.soul-panel__main {
+  margin-top: 14rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 14rpx;
+}
+
+.soul-panel__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+}
+
+.soul-panel__level {
+  font-size: 24rpx;
+  color: $xc-ink;
+  font-weight: 600;
+}
+
+.soul-panel__track,
+.memory-panel__track {
+  height: 12rpx;
+  border-radius: 999rpx;
+  background: rgba(155, 126, 216, 0.12);
+  overflow: hidden;
+}
+
+.soul-panel__fill,
+.memory-panel__fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #9b7ed8, #e8729a);
+}
+
+.soul-panel__progress,
+.memory-panel__meta {
+  font-size: 22rpx;
+  color: $xc-muted;
+}
+
+.soul-panel__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx;
+}
+
+.soul-tag {
+  padding: 8rpx 14rpx;
+  border-radius: 999rpx;
+  background: rgba(155, 126, 216, 0.12);
+  color: $xc-purple-d;
+  font-size: 20rpx;
+}
+
+.memory-panel__head {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.history--timeline {
+  position: relative;
+  padding-left: 16rpx;
+}
+
+.history--timeline::before {
+  content: "";
+  position: absolute;
+  left: 4rpx;
+  top: 0;
+  bottom: 0;
+  width: 2rpx;
+  background: rgba(155, 126, 216, 0.2);
+}
+
+.history--timeline .history-card {
+  position: relative;
+  margin-left: 12rpx;
+}
+
+.history-card__dot {
+  position: absolute;
+  left: -22rpx;
+  top: 24rpx;
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  background: #9b7ed8;
+  box-shadow: 0 0 10rpx rgba(155, 126, 216, 0.45);
+}
+
+.match-card {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 18rpx;
+  border-radius: 18rpx;
+  background: rgba(255, 255, 255, 0.88);
+  border: 2rpx solid rgba(232, 114, 154, 0.16);
+}
+
+.match-card__avatars {
+  display: flex;
+  margin-right: 4rpx;
+}
+
+.match-card__avatar {
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 50%;
+  background: rgba(232, 114, 154, 0.2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: -6rpx;
+}
+
+.match-card__body {
+  flex: 1;
+}
+
+.match-card__title {
+  display: block;
+  font-size: 24rpx;
+  font-weight: 600;
+}
+
+.match-card__meta {
+  display: block;
+  margin-top: 6rpx;
+  font-size: 21rpx;
+  color: $xc-muted;
+}
+
+.match-card__tag {
+  padding: 6rpx 12rpx;
+  border-radius: 999rpx;
+  background: rgba(232, 114, 154, 0.18);
+  color: $xc-pink;
+  font-size: 20rpx;
+}
+
+.badge-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.badge-card {
+  position: relative;
+}
+
+.badge-card--duo {
+  border-color: rgba(232, 114, 154, 0.24);
+  background: rgba(253, 230, 239, 0.7);
+}
+
+.badge-card--t1 {
+  border-color: rgba(205, 127, 50, 0.35);
+  box-shadow: 0 0 12rpx rgba(205, 127, 50, 0.24);
+}
+
+.badge-card--t2 {
+  border-color: rgba(192, 192, 192, 0.52);
+  background:
+    linear-gradient(140deg, rgba(255, 255, 255, 0.92), rgba(240, 240, 240, 0.86));
+}
+
+.badge-card--t3 {
+  border-color: rgba(212, 168, 83, 0.48);
+  box-shadow: 0 0 18rpx rgba(212, 168, 83, 0.28);
+  animation: glowPulse 2s ease-in-out infinite;
+}
+
+.badge-card--t4 {
+  border-color: rgba(185, 242, 255, 0.75);
+  background:
+    linear-gradient(120deg, rgba(185, 242, 255, 0.34), rgba(201, 181, 240, 0.24), rgba(255, 255, 255, 0.9));
+  box-shadow: 0 0 24rpx rgba(185, 242, 255, 0.45);
+}
+
+.fragment-map__grid {
+  grid-auto-columns: 240rpx;
+}
+
+.fragment-column__head {
+  cursor: pointer;
+}
+
+.fragment-column__head:active {
+  transform: scale(0.98);
+}
+
+.fragment-column__progress {
+  background: linear-gradient(90deg, #9b7ed8, #e8729a);
+}
+
+.fragment-column__meta {
+  color: $xc-purple-d;
+}
+
+.fragment-column__item--locked {
+  filter: grayscale(0.75);
+}
+
+.calendar-panel__header {
+  align-items: flex-start;
+}
+
+.calendar-panel__all {
+  margin-top: 6rpx;
+  font-size: 22rpx;
+  color: $xc-purple;
+}
+
+.calendar-month__cell--today,
+.calendar-year__cell--today {
+  border-color: rgba(155, 126, 216, 0.82);
+  box-shadow: 0 0 0 2rpx rgba(155, 126, 216, 0.2);
+}
+
+.heatmap-cell--level-0 {
+  background: rgba(247, 241, 255, 0.6);
+}
+
+.heatmap-cell--level-1 {
+  background: rgba(221, 203, 247, 0.72);
+}
+
+.heatmap-cell--level-2 {
+  background: rgba(195, 165, 239, 0.8);
+}
+
+.heatmap-cell--level-3 {
+  background: rgba(155, 126, 216, 0.86);
+}
+
+.heatmap-cell--level-4 {
+  background: rgba(124, 93, 191, 0.9);
+}
+
+.settings-menu {
+  margin-top: 14rpx;
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-item {
+  display: grid;
+  grid-template-columns: 44rpx 1fr 20rpx;
+  align-items: center;
+  gap: 12rpx;
+  min-height: 82rpx;
+  border-bottom: 1px solid rgba(155, 126, 216, 0.08);
+}
+
+.settings-item:last-child {
+  border-bottom: 0;
+}
+
+.settings-item__icon {
+  font-size: 24rpx;
+}
+
+.settings-item__label {
+  font-size: 24rpx;
+}
+
+.settings-item__arrow {
+  font-size: 24rpx;
+  color: $xc-hint;
+  text-align: right;
 }
 </style>

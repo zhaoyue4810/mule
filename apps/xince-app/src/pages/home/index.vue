@@ -238,7 +238,10 @@ async function load() {
       revealVisible.value = true;
     }
   } catch (err) {
-    console.error(err);
+    uni.showToast({
+      title: err instanceof Error ? err.message : "首页加载失败，请稍后重试",
+      icon: "none",
+    });
   }
 }
 
@@ -247,7 +250,10 @@ async function closeReveal() {
     try {
       await revealTimeCapsule(revealItem.value.id);
     } catch (err) {
-      console.error(err);
+      uni.showToast({
+        title: err instanceof Error ? err.message : "胶囊揭示失败",
+        icon: "none",
+      });
     }
   }
   revealVisible.value = false;

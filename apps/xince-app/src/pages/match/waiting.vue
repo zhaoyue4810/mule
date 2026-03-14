@@ -11,6 +11,7 @@ const code = ref("");
 const loading = ref(false);
 const invite = ref<MatchInviteDetail | null>(null);
 const error = ref("");
+const successBurst = ref(false);
 let pollTimer: ReturnType<typeof setInterval> | null = null;
 
 async function loadInvite() {
@@ -25,9 +26,12 @@ async function loadInvite() {
     invite.value = payload;
     if (payload.status === "COMPLETED") {
       stopPolling();
-      uni.redirectTo({
-        url: `/pages/match/report?sessionId=${payload.session_id}`,
-      });
+      successBurst.value = true;
+      setTimeout(() => {
+        uni.redirectTo({
+          url: `/pages/match/report?sessionId=${payload.session_id}`,
+        });
+      }, 680);
     }
   } catch (err) {
     error.value = err instanceof Error ? err.message : "等待页加载失败";
@@ -108,12 +112,16 @@ onShareTimeline(() => ({
     </view>
 
     <view v-else class="stack">
-      <view class="hero">
-        <text class="hero__eyebrow">Waiting Room</text>
-        <text class="hero__title">邀请已发出，正在等待另一颗星靠近。</text>
-        <text class="hero__body">
-          {{ invite?.partner_joined ? "好友已加入，正在生成匹配结果。" : "把邀请码发给好友，等 TA 完成同一测试后就会自动点亮匹配结果。" }}
-        </text>
+      <view class="orbit-stage" :class="{ 'orbit-stage--success': successBurst }">
+        <view class="orbit-stage__ring" />
+        <view class="orbit-stage__loader">
+          <text>等待中...</text>
+        </view>
+        <view class="orbit-stage__track">
+          <view class="orbit-stage__planet orbit-stage__planet--a">🧠</view>
+          <view class="orbit-stage__planet orbit-stage__planet--b">{{ invite?.partner_joined ? "🌙" : "✨" }}</view>
+        </view>
+        <view class="orbit-stage__burst" />
       </view>
 
       <view class="panel panel--code">
@@ -123,22 +131,13 @@ onShareTimeline(() => ({
           <button class="panel__button" @tap="copyCode">复制邀请码</button>
           <button class="panel__button panel__button--ghost" @tap="openInvite">查看邀请页</button>
         </view>
-        <!-- #ifdef MP-WEIXIN -->
-        <button class="panel__button panel__button--share" open-type="share">分享到微信</button>
-        <!-- #endif -->
       </view>
 
       <view class="panel">
         <text class="panel__title">当前状态</text>
         <text class="panel__text">
-          {{ invite?.partner_joined ? "已检测到对方进入匹配，结果整理完成后会自动跳转。" : "还没有人加入这次匹配，我们会每 3 秒自动同步一次。" }}
+          {{ invite?.partner_joined ? "已检测到对方加入，正在生成匹配结果。" : "还没有人加入，我们会每 3 秒自动同步一次。" }}
         </text>
-      </view>
-
-      <view class="orbit">
-        <view class="orbit__ring" />
-        <view class="orbit__planet orbit__planet--left">🪐</view>
-        <view class="orbit__planet orbit__planet--right">{{ invite?.partner_joined ? "🌙" : "✨" }}</view>
       </view>
 
       <text class="footnote">会话 ID：{{ sessionId }}</text>
@@ -154,151 +153,170 @@ onShareTimeline(() => ({
 .stack {
   display: flex;
   flex-direction: column;
-  gap: 18rpx;
+  gap: 16rpx;
 }
 
-.hero,
 .panel {
-  padding: 28rpx;
-  border-radius: 26rpx;
-  background: rgba(255, 252, 247, 0.96);
-  border: 2rpx solid rgba(155, 126, 216, 0.08);
-  box-shadow: $xc-shadow;
+  @include card-base;
+  padding: 24rpx;
 }
 
 .panel--error {
-  background: rgba(255, 240, 235, 0.96);
+  border-color: rgba(232, 114, 154, 0.24);
 }
 
-.hero__eyebrow,
-.hero__body,
-.panel__text,
-.footnote {
-  color: $xc-muted;
-}
-
-.hero__eyebrow {
-  display: block;
-  font-size: 22rpx;
-  letter-spacing: 3rpx;
-  text-transform: uppercase;
-}
-
-.hero__title,
 .panel__title {
   display: block;
-  font-size: 32rpx;
+  font-size: 30rpx;
   font-weight: 700;
 }
 
-.hero__title {
-  margin-top: 14rpx;
-}
-
-.hero__body,
 .panel__text,
 .footnote {
   display: block;
-  margin-top: 14rpx;
-  font-size: 25rpx;
+  margin-top: 12rpx;
+  font-size: 24rpx;
   line-height: 1.7;
-}
-
-.code {
-  display: block;
-  margin-top: 18rpx;
-  text-align: center;
-  font-size: 54rpx;
-  letter-spacing: 10rpx;
-  font-weight: 700;
-  color: #9B7ED8;
-}
-
-.button-row {
-  display: flex;
-  gap: 16rpx;
-  margin-top: 18rpx;
+  color: $xc-muted;
 }
 
 .panel__button {
   flex: 1;
   border-radius: 999rpx;
-  background: linear-gradient(135deg, #E8729A, #9B7ED8);
-  color: #fff8f2;
+  background: linear-gradient(135deg, #9b7ed8, #e8729a);
+  color: #fff;
   font-size: 24rpx;
 }
 
 .panel__button--ghost {
   background: rgba(155, 126, 216, 0.12);
-  color: #9B7ED8;
+  color: $xc-purple;
 }
 
-.panel__button--share {
-  margin-top: 16rpx;
+.code {
+  display: block;
+  margin-top: 14rpx;
+  text-align: center;
+  font-size: 52rpx;
+  letter-spacing: 10rpx;
+  font-weight: 700;
+  color: $xc-purple;
 }
 
-.orbit {
+.button-row {
+  margin-top: 14rpx;
+  display: flex;
+  gap: 12rpx;
+}
+
+.orbit-stage {
   position: relative;
-  height: 280rpx;
+  height: 320rpx;
   border-radius: 26rpx;
-  background: linear-gradient(180deg, rgba(255, 245, 233, 0.9), rgba(255, 251, 246, 0.98));
   overflow: hidden;
+  background:
+    radial-gradient(circle at top, rgba(201, 181, 240, 0.28), transparent 58%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(237, 229, 249, 0.54));
+  border: 2rpx solid rgba(155, 126, 216, 0.12);
 }
 
-.orbit__ring {
+.orbit-stage__ring {
   position: absolute;
   left: 50%;
   top: 50%;
   width: 360rpx;
-  height: 160rpx;
+  height: 360rpx;
   margin-left: -180rpx;
-  margin-top: -80rpx;
-  border: 3rpx dashed rgba(155, 126, 216, 0.18);
+  margin-top: -180rpx;
   border-radius: 50%;
+  border: 2rpx dashed rgba(155, 126, 216, 0.24);
 }
 
-.orbit__planet {
+.orbit-stage__loader {
   position: absolute;
+  left: 50%;
   top: 50%;
-  width: 86rpx;
-  height: 86rpx;
-  margin-top: -43rpx;
+  transform: translate(-50%, -50%);
+  font-size: 26rpx;
+  color: $xc-purple;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.orbit-stage__track {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 360rpx;
+  height: 360rpx;
+  margin-left: -180rpx;
+  margin-top: -180rpx;
+  animation: orbitSpin 6s linear infinite;
+}
+
+.orbit-stage__planet {
+  position: absolute;
+  width: 82rpx;
+  height: 82rpx;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.95);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 40rpx;
-  box-shadow: 0 12rpx 28rpx rgba(155, 126, 216, 0.12);
+  font-size: 36rpx;
+  box-shadow: 0 8rpx 24rpx rgba(155, 126, 216, 0.2);
 }
 
-.orbit__planet--left {
-  left: 150rpx;
-  animation: floatLeft 2.6s ease-in-out infinite;
+.orbit-stage__planet--a {
+  top: -12rpx;
+  left: 50%;
+  margin-left: -41rpx;
 }
 
-.orbit__planet--right {
-  right: 150rpx;
-  animation: floatRight 2.8s ease-in-out infinite;
+.orbit-stage__planet--b {
+  bottom: -12rpx;
+  left: 50%;
+  margin-left: -41rpx;
 }
 
-@keyframes floatLeft {
-  0%,
-  100% {
-    transform: translateY(-6rpx);
+.orbit-stage__burst {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(232, 114, 154, 0.4);
+  transform: translate(-50%, -50%);
+  opacity: 0;
+}
+
+.orbit-stage--success .orbit-stage__track {
+  animation-duration: 0.7s;
+}
+
+.orbit-stage--success .orbit-stage__burst {
+  animation: burst 0.65s ease-out both;
+}
+
+@keyframes orbitSpin {
+  from {
+    transform: rotate(0deg);
   }
-  50% {
-    transform: translateY(8rpx);
+  to {
+    transform: rotate(360deg);
   }
 }
 
-@keyframes floatRight {
-  0%,
-  100% {
-    transform: translateY(8rpx);
+@keyframes burst {
+  from {
+    width: 0;
+    height: 0;
+    opacity: 0.8;
   }
-  50% {
-    transform: translateY(-8rpx);
+  to {
+    width: 420rpx;
+    height: 420rpx;
+    opacity: 0;
   }
 }
 </style>

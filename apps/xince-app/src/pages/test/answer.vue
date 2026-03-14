@@ -4,6 +4,7 @@ import { onLoad } from "@dcloudio/uni-app";
 
 import XiaoCe from "@/components/mascot/XiaoCe.vue";
 import XcMicroFeedback from "@/components/mascot/XcMicroFeedback.vue";
+import ReportReveal from "@/components/feedback/ReportReveal.vue";
 import QuestionRenderer from "@/components/question-renderers/QuestionRenderer.vue";
 import type { AnswerValue } from "@/shared/models/answers";
 import type { PublishedTestQuestionnaire } from "@/shared/models/tests";
@@ -23,9 +24,18 @@ const error = ref("");
 const currentIndex = ref(0);
 const answers = ref<Record<number, AnswerValue>>({});
 const submitting = ref(false);
+const advancing = ref(false);
 const startedAt = ref(Date.now());
 const microFeedbackText = ref("");
 const microFeedbackVisible = ref(false);
+const revealVisible = ref(false);
+const revealPersona = ref<{
+  persona_name?: string | null;
+  persona_key?: string | null;
+  result_tier?: string | null;
+} | null>(null);
+const revealScore = ref(0);
+const revealRecordId = ref(0);
 let microFeedbackTimer: ReturnType<typeof setTimeout> | null = null;
 
 const currentQuestion = computed(
@@ -113,20 +123,41 @@ function triggerMicroFeedback(interactionType?: string) {
   });
 }
 
+function completeReveal() {
+  revealVisible.value = false;
+  if (!revealRecordId.value) {
+    return;
+  }
+  uni.redirectTo({
+    url: `/pages/test/result?recordId=${revealRecordId.value}`,
+  });
+}
+
 async function goNext() {
-  if (!questionnaire.value || !currentQuestion.value || !isCurrentAnswered.value) {
+  if (
+    !questionnaire.value ||
+    !currentQuestion.value ||
+    !isCurrentAnswered.value ||
+    submitting.value ||
+    advancing.value
+  ) {
     return;
   }
 
   const interactionType = currentQuestion.value.interaction_type;
 
   if (currentIndex.value < questionnaire.value.question_count - 1) {
+    advancing.value = true;
     triggerMicroFeedback(interactionType);
     currentIndex.value += 1;
+    setTimeout(() => {
+      advancing.value = false;
+    }, 220);
     return;
   }
 
   submitting.value = true;
+  advancing.value = true;
   try {
     const currentUser = await ensureAppSession();
     const payload = {
@@ -172,9 +203,16 @@ async function goNext() {
       await ensureAppSession();
     }
 
-    uni.redirectTo({
-      url: `/pages/test/result?recordId=${response.record_id}`,
-    });
+    revealRecordId.value = response.record_id;
+    revealScore.value = response.total_score || 0;
+    revealPersona.value = {
+      persona_name: response.persona_name,
+      persona_key: response.persona_key,
+      result_tier:
+        (response.unlocked_badges && response.unlocked_badges[0]?.name) ||
+        "稀有人格",
+    };
+    revealVisible.value = true;
   } catch (err) {
     uni.showToast({
       title: err instanceof Error ? err.message : "提交失败",
@@ -182,6 +220,7 @@ async function goNext() {
     });
   } finally {
     submitting.value = false;
+    advancing.value = false;
   }
 }
 
@@ -244,7 +283,7 @@ onBeforeUnmount(() => {
         <button class="actions__ghost" :disabled="currentIndex === 0" @tap="previousQuestion">
           上一题
         </button>
-        <button class="actions__primary" :disabled="!isCurrentAnswered || submitting" @tap="goNext">
+        <button class="actions__primary" :disabled="!isCurrentAnswered || submitting || advancing" @tap="goNext">
           {{
             submitting
               ? "提交中..."
@@ -257,6 +296,13 @@ onBeforeUnmount(() => {
 
       <XcMicroFeedback :text="microFeedbackText" :show="microFeedbackVisible" />
     </view>
+
+    <ReportReveal
+      :visible="revealVisible"
+      :persona="revealPersona"
+      :total-score="revealScore"
+      :on-complete="completeReveal"
+    />
   </view>
 </template>
 

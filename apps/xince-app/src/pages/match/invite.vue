@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { onLoad, onShareAppMessage, onShareTimeline } from "@dcloudio/uni-app";
 
 import type { MatchInviteDetail } from "@/shared/models/match";
@@ -11,13 +11,48 @@ const loading = ref(false);
 const joining = ref(false);
 const invite = ref<MatchInviteDetail | null>(null);
 const error = ref("");
+const remainSeconds = ref(24 * 3600);
+let countdownTimer: ReturnType<typeof setInterval> | null = null;
 
-const inviteLink = computed(() => {
-  if (!invite.value?.invite_link) {
-    return "";
-  }
-  return invite.value.invite_link;
+const inviteLink = computed(() => invite.value?.invite_link || "");
+
+const countdownText = computed(() => {
+  const safe = Math.max(0, remainSeconds.value);
+  const hour = `${Math.floor(safe / 3600)}`.padStart(2, "0");
+  const minute = `${Math.floor((safe % 3600) / 60)}`.padStart(2, "0");
+  const second = `${safe % 60}`.padStart(2, "0");
+  return `${hour}:${minute}:${second}`;
 });
+
+function calcRemainSeconds() {
+  if (!invite.value?.created_at) {
+    remainSeconds.value = 24 * 3600;
+    return;
+  }
+  const created = new Date(invite.value.created_at).getTime();
+  if (Number.isNaN(created)) {
+    remainSeconds.value = 24 * 3600;
+    return;
+  }
+  const passed = Math.floor((Date.now() - created) / 1000);
+  remainSeconds.value = Math.max(0, 24 * 3600 - passed);
+}
+
+function startCountdown() {
+  if (countdownTimer) {
+    clearInterval(countdownTimer);
+  }
+  countdownTimer = setInterval(() => {
+    remainSeconds.value = Math.max(0, remainSeconds.value - 1);
+  }, 1000);
+}
+
+function stopCountdown() {
+  if (countdownTimer) {
+    clearInterval(countdownTimer);
+    countdownTimer = null;
+  }
+}
 
 async function loadInvite() {
   if (!code.value) {
@@ -28,6 +63,8 @@ async function loadInvite() {
   try {
     await ensureAppSession();
     invite.value = await fetchMatchInviteDetail(code.value);
+    calcRemainSeconds();
+    startCountdown();
   } catch (err) {
     error.value = err instanceof Error ? err.message : "加载邀请失败";
   } finally {
@@ -35,12 +72,26 @@ async function loadInvite() {
   }
 }
 
-function copyInvite() {
-  const text = inviteLink.value || code.value;
+function copyInviteCode() {
+  if (!invite.value?.invite_code) {
+    return;
+  }
+  uni.setClipboardData({ data: invite.value.invite_code });
+}
+
+function copyInviteLink() {
+  const text = inviteLink.value || invite.value?.invite_code || code.value;
   if (!text) {
     return;
   }
   uni.setClipboardData({ data: text });
+}
+
+function openPoster() {
+  uni.showToast({
+    title: "挑战海报请在报告页生成",
+    icon: "none",
+  });
 }
 
 function startTest() {
@@ -83,6 +134,7 @@ onLoad((query) => {
 });
 
 onMounted(loadInvite);
+onBeforeUnmount(stopCountdown);
 
 onShareAppMessage(() => ({
   title: invite.value
@@ -112,41 +164,46 @@ onShareTimeline(() => ({
     </view>
 
     <view v-else-if="invite" class="stack">
-      <view class="hero">
-        <text class="hero__eyebrow">Invite Preview</text>
-        <text class="hero__title">{{ invite.test_name }}</text>
-        <text class="hero__body">
-          {{ invite.initiator.nickname }} 邀请你一起完成这套测试，看看你们的灵魂契合度。
-        </text>
+      <view class="invite-card">
+        <text class="invite-card__title">{{ invite.test_name }}</text>
+        <text class="invite-card__desc">{{ invite.initiator.nickname }} 邀请你参与双人灵魂匹配</text>
+        <view class="invite-card__code-wrap">
+          <text class="invite-card__code">{{ invite.invite_code }}</text>
+          <button class="mini-btn" @tap="copyInviteCode">复制</button>
+        </view>
+        <text class="invite-card__countdown">24 小时内有效 · {{ countdownText }}</text>
       </view>
 
       <view class="panel">
-        <text class="panel__title">邀请码</text>
-        <text class="code">{{ invite.invite_code }}</text>
-        <text class="panel__text">复制后可直接发送给好友，或回到微信原生分享。</text>
-        <button class="panel__button panel__button--ghost" @tap="copyInvite">复制邀请</button>
-        <!-- #ifdef MP-WEIXIN -->
-        <button class="panel__button" open-type="share">分享到微信</button>
-        <!-- #endif -->
+        <text class="panel__title">分享方式</text>
+        <view class="share-actions">
+          <!-- #ifdef MP-WEIXIN -->
+          <button class="share-btn" open-type="share">微信好友</button>
+          <!-- #endif -->
+          <button class="share-btn" @tap="copyInviteLink">复制链接</button>
+          <button class="share-btn" @tap="openPoster">生成海报</button>
+        </view>
       </view>
 
       <view class="panel" v-if="invite.partner_joined">
         <text class="panel__title">当前状态</text>
-        <text class="panel__text">这份邀请已经有人加入，系统正在整理匹配结果。</text>
+        <text class="panel__text">好友已加入，系统正在生成匹配报告，请稍候在等待页查看进度。</text>
       </view>
 
       <view class="panel" v-else-if="invite.requires_test_completion">
         <text class="panel__title">加入前先完成测试</text>
-        <text class="panel__text">
-          你还没有完成「{{ invite.test_name }}」，先做完同一套测试，再回来加入这次匹配。
-        </text>
+        <text class="panel__text">你还没有完成「{{ invite.test_name }}」，先做完同一套测试再回来加入。</text>
         <button class="panel__button" @tap="startTest">去完成测试</button>
       </view>
 
       <view class="panel" v-else-if="invite.can_join">
         <text class="panel__title">立即加入</text>
-        <text class="panel__text">你的同一测试结果已就绪，加入后会立刻生成双人匹配报告。</text>
+        <text class="panel__text">你的结果已就绪，加入后将自动进入匹配等待页。</text>
         <button class="panel__button" :loading="joining" @tap="joinInvite">加入匹配</button>
+      </view>
+
+      <view class="hint">
+        <text>{{ invite.partner_joined ? "邀请已送达，对方正在作答中..." : "邀请已准备好，发送给朋友后等待对方加入。" }}</text>
       </view>
     </view>
   </view>
@@ -160,72 +217,113 @@ onShareTimeline(() => ({
 .stack {
   display: flex;
   flex-direction: column;
-  gap: 18rpx;
+  gap: 16rpx;
 }
 
-.hero,
-.panel {
-  padding: 28rpx;
-  border-radius: 26rpx;
-  background: rgba(255, 252, 247, 0.96);
-  border: 2rpx solid rgba(155, 126, 216, 0.08);
-  box-shadow: $xc-shadow;
+.panel,
+.invite-card {
+  @include card-base;
+  padding: 24rpx;
 }
 
 .panel--error {
-  background: rgba(255, 240, 235, 0.96);
+  border-color: rgba(232, 114, 154, 0.26);
 }
 
-.hero__eyebrow,
+.panel__title {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
 .panel__text {
+  display: block;
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  line-height: 1.7;
   color: $xc-muted;
 }
 
-.hero__eyebrow {
-  display: block;
-  font-size: 22rpx;
-  letter-spacing: 3rpx;
-  text-transform: uppercase;
-}
-
-.hero__title,
-.panel__title {
-  display: block;
-  font-size: 32rpx;
-  font-weight: 700;
-}
-
-.hero__title {
-  margin-top: 14rpx;
-}
-
-.hero__body,
-.panel__text {
-  display: block;
-  margin-top: 14rpx;
-  font-size: 25rpx;
-  line-height: 1.7;
-}
-
-.code {
-  display: block;
-  margin-top: 18rpx;
-  font-size: 54rpx;
-  letter-spacing: 10rpx;
-  font-weight: 700;
-  color: #9B7ED8;
-  text-align: center;
-}
-
 .panel__button {
-  margin-top: 18rpx;
+  margin-top: 14rpx;
   border-radius: 999rpx;
-  background: linear-gradient(135deg, #E8729A, #9B7ED8);
-  color: #fff8f2;
+  background: linear-gradient(135deg, #9b7ed8, #e8729a);
+  color: #fff;
 }
 
-.panel__button--ghost {
-  background: rgba(155, 126, 216, 0.12);
-  color: #9B7ED8;
+.invite-card {
+  background:
+    linear-gradient(140deg, rgba(155, 126, 216, 0.2), rgba(232, 114, 154, 0.16)),
+    rgba(255, 255, 255, 0.9);
+}
+
+.invite-card__title {
+  display: block;
+  font-size: 34rpx;
+  font-weight: 700;
+}
+
+.invite-card__desc {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 23rpx;
+  color: $xc-muted;
+}
+
+.invite-card__code-wrap {
+  margin-top: 18rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12rpx;
+  padding: 14rpx 16rpx;
+  border-radius: 18rpx;
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.invite-card__code {
+  font-size: 54rpx;
+  font-weight: 700;
+  letter-spacing: 10rpx;
+  color: $xc-purple;
+}
+
+.invite-card__countdown {
+  display: block;
+  margin-top: 12rpx;
+  font-size: 22rpx;
+  color: $xc-muted;
+}
+
+.mini-btn {
+  margin: 0;
+  border-radius: 999rpx;
+  background: rgba(155, 126, 216, 0.14);
+  color: $xc-purple;
+  font-size: 22rpx;
+  padding: 0 22rpx;
+}
+
+.share-actions {
+  margin-top: 12rpx;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10rpx;
+}
+
+.share-btn {
+  border-radius: 16rpx;
+  background: rgba(255, 255, 255, 0.88);
+  color: $xc-ink;
+  font-size: 22rpx;
+  border: 1px solid rgba(155, 126, 216, 0.14);
+}
+
+.hint {
+  padding: 18rpx 20rpx;
+  border-radius: 16rpx;
+  background: rgba(237, 229, 249, 0.5);
+  font-size: 22rpx;
+  color: $xc-purple;
 }
 </style>
