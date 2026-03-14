@@ -26,6 +26,48 @@ class ScoreEngine:
         if not math.isclose(quotient, round(quotient), rel_tol=1e-9, abs_tol=1e-9):
             raise ValueError(f"{field_name} requires step {step}")
 
+    @classmethod
+    def _resolve_numeric_constraints(
+        cls,
+        interaction_type: str,
+        config: dict | None,
+    ) -> tuple[float, float, float]:
+        config = config or {}
+
+        if interaction_type in {"slider", "hotcold"}:
+            min_value = float(config.get("min", 1))
+            max_value = float(config.get("max", 5))
+            step = float(config.get("step", 1))
+        elif interaction_type == "star":
+            min_value = float(config.get("min", 1))
+            max_value = float(config.get("max_stars", 5))
+            step = float(config.get("step", 1))
+        elif interaction_type == "pressure":
+            min_value = float(config.get("min", 0))
+            max_value = float(config.get("max_duration", 3000))
+            step = float(config.get("step", 1))
+        elif interaction_type == "colorpick":
+            min_value = float(config.get("min_hue", 0))
+            max_value = float(config.get("max_hue", 360))
+            step = float(config.get("step", 1))
+        else:
+            raise ValueError(f"Unsupported numeric interaction type: {interaction_type}")
+
+        cls._ensure_finite_number(f"{interaction_type}.min", min_value)
+        cls._ensure_finite_number(f"{interaction_type}.max", max_value)
+        cls._ensure_finite_number(f"{interaction_type}.step", step)
+
+        if max_value <= min_value:
+            raise ValueError(
+                f"Question type {interaction_type} has invalid numeric config: max must be greater than min"
+            )
+        if step <= 0:
+            raise ValueError(
+                f"Question type {interaction_type} has invalid numeric config: step must be greater than 0"
+            )
+
+        return min_value, max_value, step
+
     @staticmethod
     def normalize_numeric_answer(
         interaction_type: str,
@@ -36,31 +78,10 @@ class ScoreEngine:
             return 1.0 if numeric_value >= 1 else 0.0
 
         if interaction_type in {"slider", "star", "hotcold", "pressure", "colorpick"}:
-            config = config or {}
-            min_value = float(config.get("min", 0 if interaction_type == "pressure" else 1))
-            max_value = float(
-                config.get(
-                    "max",
-                    config.get(
-                        (
-                            "max_duration"
-                            if interaction_type == "pressure"
-                            else "max_hue"
-                            if interaction_type == "colorpick"
-                            else "max_stars"
-                        ),
-                        (
-                            3000
-                            if interaction_type == "pressure"
-                            else 360
-                            if interaction_type == "colorpick"
-                            else 5
-                        ),
-                    ),
-                )
+            min_value, max_value, _ = ScoreEngine._resolve_numeric_constraints(
+                interaction_type,
+                config,
             )
-            if max_value <= min_value:
-                return numeric_value
             return (numeric_value - min_value) / (max_value - min_value)
 
         return numeric_value
@@ -134,14 +155,14 @@ class ScoreEngine:
             raise ValueError("Question type swipe only accepts 0 or 1")
 
         if interaction_type in {"slider", "hotcold"}:
-            config = config or {}
-            min_value = float(config.get("min", 1))
-            max_value = float(config.get("max", 5))
+            min_value, max_value, step = cls._resolve_numeric_constraints(
+                interaction_type,
+                config,
+            )
             if numeric_value < min_value or numeric_value > max_value:
                 raise ValueError(
                     f"Question type {interaction_type} requires value between {min_value} and {max_value}"
                 )
-            step = float(config.get("step", 1))
             cls._validate_step(
                 f"Question type {interaction_type}",
                 numeric_value,
@@ -150,25 +171,25 @@ class ScoreEngine:
             )
 
         if interaction_type == "star":
-            config = config or {}
-            min_value = float(config.get("min", 1))
-            max_value = float(config.get("max_stars", 5))
+            min_value, max_value, step = cls._resolve_numeric_constraints(
+                interaction_type,
+                config,
+            )
             if numeric_value < min_value or numeric_value > max_value:
                 raise ValueError(
                     f"Question type star requires value between {min_value} and {max_value}"
                 )
-            step = float(config.get("step", 1))
             cls._validate_step("Question type star", numeric_value, min_value, step)
 
         if interaction_type == "pressure":
-            config = config or {}
-            min_value = float(config.get("min", 0))
-            max_value = float(config.get("max_duration", 3000))
+            min_value, max_value, step = cls._resolve_numeric_constraints(
+                interaction_type,
+                config,
+            )
             if numeric_value < min_value or numeric_value > max_value:
                 raise ValueError(
                     f"Question type pressure requires value between {min_value} and {max_value}"
                 )
-            step = float(config.get("step", 1))
             cls._validate_step(
                 "Question type pressure",
                 numeric_value,
@@ -177,14 +198,14 @@ class ScoreEngine:
             )
 
         if interaction_type == "colorpick":
-            config = config or {}
-            min_value = float(config.get("min_hue", 0))
-            max_value = float(config.get("max_hue", 360))
+            min_value, max_value, step = cls._resolve_numeric_constraints(
+                interaction_type,
+                config,
+            )
             if numeric_value < min_value or numeric_value > max_value:
                 raise ValueError(
                     f"Question type colorpick requires value between {min_value} and {max_value}"
                 )
-            step = float(config.get("step", 1))
             cls._validate_step(
                 "Question type colorpick",
                 numeric_value,

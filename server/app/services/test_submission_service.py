@@ -62,7 +62,7 @@ class TestSubmissionService:
             )
 
             if item.option_code is not None:
-                option_key = item.option_code or ""
+                option_key = item.option_code.strip()
                 option = option_map.get((question.id, option_key))
                 if option is None:
                     raise ValueError(
@@ -395,15 +395,20 @@ class TestSubmissionService:
         option_map = {
             option.option_code or str(option.seq): option for option in question_options
         }
-        if len(ordered_option_codes) != len(question_options):
+        normalized_codes = [option_code.strip() for option_code in ordered_option_codes]
+        if len(normalized_codes) != len(question_options):
             raise ValueError(
                 f"Question seq {question.seq} rank answer must include all options"
             )
-        if len(set(ordered_option_codes)) != len(ordered_option_codes):
+        if any(not option_code for option_code in normalized_codes):
+            raise ValueError(
+                f"Question seq {question.seq} rank answer contains blank option code"
+            )
+        if len(set(normalized_codes)) != len(normalized_codes):
             raise ValueError(f"Question seq {question.seq} rank answer has duplicates")
 
         ranked_options: list[Option] = []
-        for option_code in ordered_option_codes:
+        for option_code in normalized_codes:
             option = option_map.get(option_code)
             if option is None:
                 raise ValueError(

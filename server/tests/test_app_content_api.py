@@ -1146,6 +1146,84 @@ def test_submit_rejects_invalid_numeric_step_value() -> None:
         asyncio.run(engine.dispose())
 
 
+def test_submit_rejects_invalid_numeric_question_config() -> None:
+    engine = create_async_engine("sqlite+aiosqlite:///:memory:", future=True)
+    session_factory = async_sessionmaker(engine, expire_on_commit=False)
+
+    async def override_get_db():
+        async with session_factory() as session:
+            yield session
+
+    app.dependency_overrides[get_db] = override_get_db
+
+    try:
+        import asyncio
+
+        asyncio.run(_prepare_db(engine))
+        client = TestClient(app)
+
+        task_id = client.post(
+            "/api/admin/import/tasks",
+            json={"file_type": "html", "file_path": str(REPO_ROOT / "index.html")},
+        ).json()["id"]
+        client.post(f"/api/admin/import/tasks/{task_id}/parse", json={"force": True})
+        client.post(f"/api/admin/import/tasks/{task_id}/apply", json={"note": "apply"})
+
+        versions = client.get("/api/admin/content/tests/mbti/versions").json()
+        version_id = versions[0]["id"]
+        client.put(
+            f"/api/admin/content/tests/mbti/versions/{version_id}/content",
+            json={
+                "title": "MBTI 非法数值配置版",
+                "category": "personality",
+                "is_match_enabled": False,
+                "participant_count": 300,
+                "sort_order": 1,
+                "description": "数值题配置边界校验",
+                "duration_hint": "5分钟",
+                "cover_gradient": "dawn",
+                "report_template_code": "mbti_public_v1",
+                "dimensions": [
+                    {
+                        "dim_code": "ei",
+                        "dim_name": "外倾-内倾",
+                        "max_score": 100,
+                        "sort_order": 1,
+                    }
+                ],
+                "questions": [
+                    {
+                        "question_code": "q1",
+                        "seq": 1,
+                        "question_text": "这是一道故意配置错误的滑杆题",
+                        "interaction_type": "slider",
+                        "config": {"min": 5, "max": 1, "step": 1},
+                        "dim_weights": {"ei": 1},
+                        "options": [],
+                    }
+                ],
+                "personas": [],
+            },
+        )
+        client.post("/api/admin/content/tests/mbti/publish", json={"version": 1})
+
+        submit_response = client.post(
+            "/api/app/tests/mbti/submit",
+            json={
+                "nickname": "配置校验用户",
+                "duration_seconds": 14,
+                "answers": [{"question_seq": 1, "numeric_value": 3}],
+            },
+        )
+        assert submit_response.status_code == 409
+        assert "invalid numeric config" in submit_response.json()["detail"]
+    finally:
+        app.dependency_overrides.clear()
+        import asyncio
+
+        asyncio.run(engine.dispose())
+
+
 def test_submit_rejects_invalid_plot2d_point() -> None:
     engine = create_async_engine("sqlite+aiosqlite:///:memory:", future=True)
     session_factory = async_sessionmaker(engine, expire_on_commit=False)
@@ -1228,6 +1306,102 @@ def test_submit_rejects_invalid_plot2d_point() -> None:
         )
         assert submit_response.status_code == 409
         assert "requires x and y between 0 and 1" in submit_response.json()["detail"]
+    finally:
+        app.dependency_overrides.clear()
+        import asyncio
+
+        asyncio.run(engine.dispose())
+
+
+def test_submit_rejects_blank_rank_option_code() -> None:
+    engine = create_async_engine("sqlite+aiosqlite:///:memory:", future=True)
+    session_factory = async_sessionmaker(engine, expire_on_commit=False)
+
+    async def override_get_db():
+        async with session_factory() as session:
+            yield session
+
+    app.dependency_overrides[get_db] = override_get_db
+
+    try:
+        import asyncio
+
+        asyncio.run(_prepare_db(engine))
+        client = TestClient(app)
+
+        task_id = client.post(
+            "/api/admin/import/tasks",
+            json={"file_type": "html", "file_path": str(REPO_ROOT / "index.html")},
+        ).json()["id"]
+        client.post(f"/api/admin/import/tasks/{task_id}/parse", json={"force": True})
+        client.post(f"/api/admin/import/tasks/{task_id}/apply", json={"note": "apply"})
+
+        versions = client.get("/api/admin/content/tests/mbti/versions").json()
+        version_id = versions[0]["id"]
+        client.put(
+            f"/api/admin/content/tests/mbti/versions/{version_id}/content",
+            json={
+                "title": "MBTI 排序空白选项校验版",
+                "category": "personality",
+                "is_match_enabled": False,
+                "participant_count": 300,
+                "sort_order": 1,
+                "description": "rank 空白编码校验",
+                "duration_hint": "5分钟",
+                "cover_gradient": "dawn",
+                "report_template_code": "mbti_public_v1",
+                "dimensions": [
+                    {
+                        "dim_code": "logic",
+                        "dim_name": "理性",
+                        "max_score": 100,
+                        "sort_order": 1,
+                    }
+                ],
+                "questions": [
+                    {
+                        "question_code": "q1",
+                        "seq": 1,
+                        "question_text": "请给以下特质排序",
+                        "interaction_type": "rank",
+                        "dim_weights": {"logic": 1},
+                        "options": [
+                            {
+                                "option_code": "a",
+                                "seq": 1,
+                                "label": "分析",
+                                "value": 1.0,
+                            },
+                            {
+                                "option_code": "b",
+                                "seq": 2,
+                                "label": "表达",
+                                "value": 0.8,
+                            },
+                            {
+                                "option_code": "c",
+                                "seq": 3,
+                                "label": "协调",
+                                "value": 0.6,
+                            },
+                        ],
+                    }
+                ],
+                "personas": [],
+            },
+        )
+        client.post("/api/admin/content/tests/mbti/publish", json={"version": 1})
+
+        submit_response = client.post(
+            "/api/app/tests/mbti/submit",
+            json={
+                "nickname": "排序用户",
+                "duration_seconds": 12,
+                "answers": [{"question_seq": 1, "ordered_option_codes": ["a", " ", "c"]}],
+            },
+        )
+        assert submit_response.status_code == 409
+        assert "blank option code" in submit_response.json()["detail"]
     finally:
         app.dependency_overrides.clear()
         import asyncio
