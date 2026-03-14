@@ -29,43 +29,43 @@ async function saveCard() {
   }
   await nextTick();
   const ctx = uni.createCanvasContext("personaCardCanvas");
-  ctx.setFillStyle("#f9efe2");
+  ctx.setFillStyle("#FBF7F4");
   ctx.fillRect(0, 0, 720, 1180);
   ctx.setFillStyle("rgba(255,255,255,0.86)");
   ctx.fillRect(48, 48, 624, 1084);
-  ctx.setFillStyle("#d96f3d");
+  ctx.setFillStyle("#9B7ED8");
   ctx.setFontSize(24);
   ctx.fillText("XinCe Persona Card", 70, 94);
-  ctx.setFillStyle("#2b2118");
+  ctx.setFillStyle("#3A2E42");
   ctx.setFontSize(50);
   ctx.fillText(card.value.avatar_value, 70, 170);
   ctx.setFontSize(34);
   ctx.fillText(card.value.nickname, 140, 164);
   ctx.setFontSize(26);
-  ctx.setFillStyle("#7a6659");
+  ctx.setFillStyle("#7B6E85");
   ctx.fillText(card.value.persona_title, 140, 206);
-  ctx.setFillStyle("#5a4637");
+  ctx.setFillStyle("#3A2E42");
   ctx.setFontSize(24);
   ctx.fillText(card.value.soul_signature.slice(0, 30), 70, 284);
   let y = 380;
   card.value.dimensions.forEach((item) => {
-    ctx.setFillStyle("#7a6659");
+    ctx.setFillStyle("#7B6E85");
     ctx.fillText(item.label, 70, y);
-    ctx.setFillStyle("rgba(217,111,61,0.18)");
+    ctx.setFillStyle("rgba(155, 126, 216,0.18)");
     ctx.fillRect(160, y - 18, 380, 16);
-    ctx.setFillStyle("#d96f3d");
+    ctx.setFillStyle("#9B7ED8");
     ctx.fillRect(160, y - 18, (380 * item.score) / 100, 16);
-    ctx.setFillStyle("#2b2118");
+    ctx.setFillStyle("#3A2E42");
     ctx.fillText(`${Math.round(item.score)}%`, 566, y);
     y += 72;
   });
-  ctx.setFillStyle("#2b2118");
+  ctx.setFillStyle("#3A2E42");
   ctx.setFontSize(28);
   ctx.fillText(`${card.value.weather.emoji} ${card.value.weather.title}`, 70, 820);
-  ctx.setFillStyle("#7a6659");
+  ctx.setFillStyle("#7B6E85");
   ctx.setFontSize(22);
   ctx.fillText(card.value.weather.description.slice(0, 36), 70, 864);
-  ctx.setFillStyle("#d96f3d");
+  ctx.setFillStyle("#9B7ED8");
   ctx.fillText(card.value.keywords.join(" · "), 70, 940);
   await new Promise<void>((resolve) => ctx.draw(false, resolve));
   const tempPath = await new Promise<string>((resolve, reject) => {
@@ -143,11 +143,11 @@ onLoad(() => {
   padding: 28rpx;
   border-radius: 26rpx;
   background: rgba(255,255,255,0.9);
-  border: 2rpx solid rgba(217,111,61,0.08);
+  border: 2rpx solid rgba(155, 126, 216,0.08);
 }
 .card {
   text-align: center;
-  background: linear-gradient(145deg, rgba(255,251,245,0.98), rgba(255,239,228,0.9));
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(237, 229, 249, 0.36));
 }
 .card__avatar { display:block; font-size:72rpx; }
 .card__name { display:block; margin-top:12rpx; font-size:36rpx; font-weight:700; }
@@ -157,10 +157,10 @@ onLoad(() => {
 .bars { display:flex; flex-direction:column; gap:14rpx; margin-top:18rpx; }
 .bar { display:grid; grid-template-columns: 110rpx 1fr 90rpx; gap: 14rpx; align-items:center; }
 .bar__label, .bar__value { font-size:22rpx; }
-.bar__track { height: 16rpx; border-radius:999rpx; background:rgba(43,33,24,0.08); overflow:hidden; }
-.bar__fill { height:100%; border-radius:inherit; background:linear-gradient(135deg,#d96f3d,#f1b17a); }
+.bar__track { height: 16rpx; border-radius:999rpx; background:rgba(58, 46, 66, 0.08); overflow:hidden; }
+.bar__fill { height:100%; border-radius:inherit; background:linear-gradient(135deg,#9B7ED8,#C9B5F0); }
 .keywords { display:flex; flex-wrap:wrap; gap:12rpx; margin-top:16rpx; }
-.keyword { padding:10rpx 18rpx; border-radius:999rpx; background:rgba(255,238,224,0.92); color:$xc-accent; font-size:22rpx; }
-.button { border-radius:999rpx; background:linear-gradient(135deg,#d96f3d,#bf5321); color:#fff9f3; }
+.keyword { padding:10rpx 18rpx; border-radius:999rpx; background:rgba(237, 229, 249, 0.72); color:$xc-accent; font-size:22rpx; }
+.button { border-radius:999rpx; background:linear-gradient(135deg,#9B7ED8,#7C5DBF); color:#fff9f3; }
 .canvas { position: fixed; left: -9999px; top: -9999px; pointer-events:none; }
 </style>

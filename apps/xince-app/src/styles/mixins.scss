@@ -1,0 +1,65 @@
+@use "@/styles/tokens.scss" as *;
+
+@mixin glass {
+  background: $xc-card;
+  border: 1px solid $xc-line;
+  box-shadow: $xc-sh-sm;
+  // #ifdef H5
+  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  // #endif
+  // #ifdef MP-WEIXIN
+  background: rgba(255, 255, 255, 0.92);
+  // #endif
+}
+
+@mixin glass-strong {
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(155, 126, 216, 0.15);
+  box-shadow: $xc-sh-md;
+  // #ifdef H5
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  // #endif
+  // #ifdef MP-WEIXIN
+  background: rgba(255, 255, 255, 0.95);
+  // #endif
+}
+
+@mixin card-base {
+  border-radius: $xc-r-card;
+  @include glass;
+  box-shadow: $xc-sh-md;
+}
+
+@mixin btn-primary {
+  background: linear-gradient(135deg, $xc-purple, $xc-pink);
+  color: $xc-white;
+  border-radius: $xc-r-btn;
+  box-shadow: 0 8px 24px rgba(155, 126, 216, 0.3);
+  transition:
+    transform $xc-fast $xc-spring,
+    box-shadow $xc-fast $xc-ease;
+
+  &:active {
+    transform: scale(0.97);
+    box-shadow: 0 4px 14px rgba(155, 126, 216, 0.28);
+  }
+}
+
+@mixin gradient-hero {
+  background: linear-gradient(
+    135deg,
+    $xc-purple 0%,
+    $xc-purple-l 30%,
+    $xc-pink 60%,
+    $xc-peach 100%
+  );
+}
+
+@mixin text-gradient {
+  background: linear-gradient(135deg, $xc-purple-d, $xc-pink);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}

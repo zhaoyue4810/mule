@@ -3,6 +3,7 @@ import { computed, ref } from "vue";
 import { onShow } from "@dcloudio/uni-app";
 
 import CelebrationOverlay from "@/components/feedback/CelebrationOverlay.vue";
+import TabBuddy from "@/components/mascot/TabBuddy.vue";
 import type { TimeCapsuleItem } from "@/shared/models/capsule";
 import type {
   AppProfileOverview,
@@ -931,7 +932,7 @@ onShow(() => {
             <switch
               :checked="profileSettings.sound_enabled"
               :disabled="savingSound"
-              color="#d96f3d"
+              color="#9B7ED8"
               @change="onProfileSoundSwitchChange"
             />
           </view>
@@ -1049,6 +1050,7 @@ onShow(() => {
       <text class="fragment-reveal__body">{{ fragmentInsight.body }}</text>
     </view>
   </view>
+  <TabBuddy />
 </template>
 
 <style lang="scss" scoped>
@@ -1103,7 +1105,7 @@ onShow(() => {
   display: block;
   margin-top: 12rpx;
   font-size: 24rpx;
-  color: rgba(43, 33, 24, 0.72);
+  color: rgba(58, 46, 66, 0.72);
 }
 
 .stats {
@@ -1120,8 +1122,8 @@ onShow(() => {
 
 .quick-actions__button {
   border-radius: 22rpx;
-  background: linear-gradient(135deg, #d96f3d, #bf5321);
-  color: #fff8f0;
+  background: linear-gradient(135deg, #9B7ED8, #7C5DBF);
+  color: #FBF7F4;
   font-size: 24rpx;
 }
 
@@ -1158,8 +1160,8 @@ onShow(() => {
 .panel__button {
   margin-top: 24rpx;
   border-radius: 999rpx;
-  background: linear-gradient(135deg, #d96f3d, #bf5321);
-  color: #fff8f0;
+  background: linear-gradient(135deg, #9B7ED8, #7C5DBF);
+  color: #FBF7F4;
 }
 
 .panel__button--wechat {
@@ -1185,7 +1187,7 @@ onShow(() => {
   padding: 0 24rpx;
   border-radius: 18rpx;
   background: rgba(255, 250, 244, 0.96);
-  border: 2rpx solid rgba(217, 111, 61, 0.12);
+  border: 2rpx solid rgba(155, 126, 216, 0.12);
   font-size: 28rpx;
 }
 
@@ -1196,7 +1198,7 @@ onShow(() => {
 .field-button {
   min-width: 220rpx;
   border-radius: 18rpx;
-  background: rgba(217, 111, 61, 0.12);
+  background: rgba(155, 126, 216, 0.12);
   color: $xc-accent;
   font-size: 24rpx;
 }
@@ -1240,14 +1242,14 @@ onShow(() => {
   height: 64rpx;
   padding: 0 18rpx;
   border-radius: 999rpx;
-  background: rgba(217, 111, 61, 0.1);
+  background: rgba(155, 126, 216, 0.1);
   color: $xc-accent;
   font-size: 24rpx;
 }
 
 .calendar-toggle__button--active {
-  background: linear-gradient(135deg, #d96f3d, #bf5321);
-  color: #fff8f0;
+  background: linear-gradient(135deg, #9B7ED8, #7C5DBF);
+  color: #FBF7F4;
 }
 
 .calendar-stats {
@@ -1261,7 +1263,7 @@ onShow(() => {
   padding: 18rpx 12rpx;
   border-radius: 18rpx;
   background: rgba(255, 247, 238, 0.96);
-  border: 2rpx solid rgba(217, 111, 61, 0.08);
+  border: 2rpx solid rgba(155, 126, 216, 0.08);
   text-align: center;
 }
 
@@ -1326,7 +1328,7 @@ onShow(() => {
   min-height: 92rpx;
   border-radius: 18rpx;
   padding: 10rpx;
-  border: 2rpx solid rgba(217, 111, 61, 0.08);
+  border: 2rpx solid rgba(155, 126, 216, 0.08);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -1385,7 +1387,7 @@ onShow(() => {
   padding: 18rpx;
   border-radius: 18rpx;
   background: rgba(255, 248, 238, 0.96);
-  border: 2rpx solid rgba(217, 111, 61, 0.12);
+  border: 2rpx solid rgba(155, 126, 216, 0.12);
 }
 
 .badge-card__emoji {
@@ -1435,7 +1437,7 @@ onShow(() => {
   padding: 18rpx;
   border-radius: 22rpx;
   background: rgba(255, 248, 238, 0.96);
-  border: 2rpx solid rgba(217, 111, 61, 0.08);
+  border: 2rpx solid rgba(155, 126, 216, 0.08);
 }
 
 .fragment-column__head {
@@ -1463,14 +1465,14 @@ onShow(() => {
   margin-top: 12rpx;
   height: 10rpx;
   border-radius: 999rpx;
-  background: rgba(217, 111, 61, 0.1);
+  background: rgba(155, 126, 216, 0.1);
   overflow: hidden;
 }
 
 .fragment-column__progress {
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, #ffb16c, #d96f3d);
+  background: linear-gradient(90deg, #C9B5F0, #9B7ED8);
 }
 
 .fragment-column__list {
@@ -1485,7 +1487,7 @@ onShow(() => {
   padding: 14rpx 12rpx;
   border-radius: 16rpx;
   background: rgba(255, 255, 255, 0.72);
-  border: 2rpx solid rgba(217, 111, 61, 0.08);
+  border: 2rpx solid rgba(155, 126, 216, 0.08);
 }
 
 .fragment-column__item--locked {
@@ -1519,7 +1521,7 @@ onShow(() => {
   padding: 20rpx;
   border-radius: 20rpx;
   background: rgba(255, 247, 238, 0.96);
-  border: 2rpx solid rgba(217, 111, 61, 0.08);
+  border: 2rpx solid rgba(155, 126, 216, 0.08);
 }
 
 .capsule-card--open {
@@ -1557,7 +1559,7 @@ onShow(() => {
   border-radius: 20rpx;
   background:
     linear-gradient(145deg, rgba(255, 247, 235, 0.96), rgba(255, 235, 214, 0.92));
-  border: 2rpx solid rgba(217, 111, 61, 0.12);
+  border: 2rpx solid rgba(155, 126, 216, 0.12);
 }
 
 .fragment-card__emoji {
@@ -1608,7 +1610,7 @@ onShow(() => {
   min-height: 92rpx;
   padding: 12rpx 10rpx;
   border-radius: 16rpx;
-  border: 2rpx solid rgba(217, 111, 61, 0.08);
+  border: 2rpx solid rgba(155, 126, 216, 0.08);
   background: rgba(255, 250, 244, 0.72);
 }
 
@@ -1640,7 +1642,7 @@ onShow(() => {
 
 .heatmap-cell__day {
   font-size: 18rpx;
-  color: rgba(43, 33, 24, 0.72);
+  color: rgba(58, 46, 66, 0.72);
 }
 
 .heatmap-cell__count {
@@ -1676,7 +1678,7 @@ onShow(() => {
 .daily-question-retro__chip {
   padding: 0 20rpx;
   border-radius: 999rpx;
-  background: rgba(217, 111, 61, 0.12);
+  background: rgba(155, 126, 216, 0.12);
   color: $xc-accent;
   font-size: 22rpx;
 }
@@ -1692,7 +1694,7 @@ onShow(() => {
   padding: 18rpx 14rpx;
   border-radius: 18rpx;
   background: rgba(255, 248, 238, 0.96);
-  border: 2rpx solid rgba(217, 111, 61, 0.08);
+  border: 2rpx solid rgba(155, 126, 216, 0.08);
   text-align: center;
 }
 
@@ -1714,7 +1716,7 @@ onShow(() => {
   border-radius: 20rpx;
   background: rgba(255, 245, 235, 0.96);
   color: $xc-ink;
-  border: 2rpx solid rgba(217, 111, 61, 0.12);
+  border: 2rpx solid rgba(155, 126, 216, 0.12);
 }
 
 .daily-question-result {
@@ -1722,7 +1724,7 @@ onShow(() => {
   padding: 22rpx;
   border-radius: 20rpx;
   background: rgba(255, 248, 238, 0.96);
-  border: 2rpx solid rgba(217, 111, 61, 0.1);
+  border: 2rpx solid rgba(155, 126, 216, 0.1);
 }
 
 .daily-question-result__label {
@@ -1742,7 +1744,7 @@ onShow(() => {
 .daily-question-badges {
   margin-top: 16rpx;
   padding-top: 14rpx;
-  border-top: 2rpx dashed rgba(217, 111, 61, 0.12);
+  border-top: 2rpx dashed rgba(155, 126, 216, 0.12);
 }
 
 .daily-question-badges__title {
@@ -1772,7 +1774,7 @@ onShow(() => {
   padding: 24rpx;
   border-radius: 22rpx;
   background: rgba(255, 253, 248, 0.96);
-  border: 2rpx solid rgba(217, 111, 61, 0.08);
+  border: 2rpx solid rgba(155, 126, 216, 0.08);
 }
 
 .stat-card__label {
@@ -1800,7 +1802,7 @@ onShow(() => {
   min-width: 148rpx;
   padding: 18rpx 20rpx;
   border-radius: 20rpx;
-  background: rgba(255, 238, 224, 0.92);
+  background: rgba(237, 229, 249, 0.72);
 }
 
 .chip__name {
@@ -1839,7 +1841,7 @@ onShow(() => {
 
 .row--soft {
   background: rgba(255, 247, 238, 0.96);
-  border: 2rpx solid rgba(217, 111, 61, 0.08);
+  border: 2rpx solid rgba(155, 126, 216, 0.08);
 }
 
 .row__name,
@@ -1862,7 +1864,7 @@ onShow(() => {
   padding: 24rpx;
   border-radius: 22rpx;
   background: rgba(255, 250, 244, 0.96);
-  border: 2rpx solid rgba(217, 111, 61, 0.08);
+  border: 2rpx solid rgba(155, 126, 216, 0.08);
 }
 
 .history-card__top {

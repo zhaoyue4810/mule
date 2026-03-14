@@ -168,7 +168,7 @@ onShareTimeline(() => ({
   padding: 28rpx;
   border-radius: 26rpx;
   background: rgba(255, 252, 247, 0.96);
-  border: 2rpx solid rgba(217, 111, 61, 0.08);
+  border: 2rpx solid rgba(155, 126, 216, 0.08);
   box-shadow: $xc-shadow;
 }
 
@@ -213,19 +213,19 @@ onShareTimeline(() => ({
   font-size: 54rpx;
   letter-spacing: 10rpx;
   font-weight: 700;
-  color: #d96f3d;
+  color: #9B7ED8;
   text-align: center;
 }
 
 .panel__button {
   margin-top: 18rpx;
   border-radius: 999rpx;
-  background: linear-gradient(135deg, #e38b59, #d96f3d);
+  background: linear-gradient(135deg, #E8729A, #9B7ED8);
   color: #fff8f2;
 }
 
 .panel__button--ghost {
-  background: rgba(217, 111, 61, 0.12);
-  color: #d96f3d;
+  background: rgba(155, 126, 216, 0.12);
+  color: #9B7ED8;
 }
 </style>

@@ -162,7 +162,7 @@ onShareTimeline(() => ({
   padding: 28rpx;
   border-radius: 26rpx;
   background: rgba(255, 252, 247, 0.96);
-  border: 2rpx solid rgba(217, 111, 61, 0.08);
+  border: 2rpx solid rgba(155, 126, 216, 0.08);
   box-shadow: $xc-shadow;
 }
 
@@ -211,7 +211,7 @@ onShareTimeline(() => ({
   font-size: 54rpx;
   letter-spacing: 10rpx;
   font-weight: 700;
-  color: #d96f3d;
+  color: #9B7ED8;
 }
 
 .button-row {
@@ -223,14 +223,14 @@ onShareTimeline(() => ({
 .panel__button {
   flex: 1;
   border-radius: 999rpx;
-  background: linear-gradient(135deg, #e38b59, #d96f3d);
+  background: linear-gradient(135deg, #E8729A, #9B7ED8);
   color: #fff8f2;
   font-size: 24rpx;
 }
 
 .panel__button--ghost {
-  background: rgba(217, 111, 61, 0.12);
-  color: #d96f3d;
+  background: rgba(155, 126, 216, 0.12);
+  color: #9B7ED8;
 }
 
 .panel__button--share {
@@ -253,7 +253,7 @@ onShareTimeline(() => ({
   height: 160rpx;
   margin-left: -180rpx;
   margin-top: -80rpx;
-  border: 3rpx dashed rgba(217, 111, 61, 0.18);
+  border: 3rpx dashed rgba(155, 126, 216, 0.18);
   border-radius: 50%;
 }
 
@@ -269,7 +269,7 @@ onShareTimeline(() => ({
   align-items: center;
   justify-content: center;
   font-size: 40rpx;
-  box-shadow: 0 12rpx 28rpx rgba(217, 111, 61, 0.12);
+  box-shadow: 0 12rpx 28rpx rgba(155, 126, 216, 0.12);
 }
 
 .orbit__planet--left {

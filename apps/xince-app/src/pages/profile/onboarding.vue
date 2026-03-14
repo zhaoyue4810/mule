@@ -234,7 +234,7 @@ onMounted(() => {
   padding: 28rpx;
   border-radius: 26rpx;
   background: rgba(255, 255, 255, 0.86);
-  border: 2rpx solid rgba(217, 111, 61, 0.08);
+  border: 2rpx solid rgba(155, 126, 216, 0.08);
   box-shadow: $xc-shadow;
 }
 
@@ -303,7 +303,7 @@ onMounted(() => {
   padding: 20rpx 22rpx;
   border-radius: 20rpx;
   background: rgba(255, 249, 243, 0.92);
-  border: 2rpx solid rgba(217, 111, 61, 0.08);
+  border: 2rpx solid rgba(155, 126, 216, 0.08);
   font-size: 26rpx;
   color: $xc-ink;
 }
@@ -334,7 +334,7 @@ onMounted(() => {
 .submit {
   margin-top: 8rpx;
   border-radius: 999rpx;
-  background: linear-gradient(135deg, #d96f3d, #bf5321);
+  background: linear-gradient(135deg, #9B7ED8, #7C5DBF);
   color: #fff7f0;
 }
 

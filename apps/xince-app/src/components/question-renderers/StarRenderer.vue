@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
+
+import { haptic, playSound } from "@/shared/utils/sound-manager";
 
 const props = defineProps<{
   modelValue: number | null;
@@ -13,85 +15,121 @@ const emit = defineEmits<{
   "update:modelValue": [value: number];
 }>();
 
-function pick(value: number) {
+const flash = ref(false);
+const values = computed(() => {
+  const min = props.min ?? 1;
+  const max = props.max ?? 5;
+  const out: number[] = [];
+  for (let v = min; v <= max; v += props.step ?? 1) {
+    out.push(v);
+  }
+  return out;
+});
+const caption = computed(() => {
+  if (!props.modelValue) {
+    return "1=完全不是, 5=非常像我";
+  }
+  return props.labels?.[props.modelValue - 1] || `评分 ${props.modelValue}`;
+});
+
+function select(value: number) {
+  playSound("chime");
+  haptic(15);
+  flash.value = true;
+  setTimeout(() => {
+    flash.value = false;
+  }, 300);
   emit("update:modelValue", value);
 }
-
-const scaleValues = computed(() => {
-  const min = Number.isFinite(props.min) ? Number(props.min) : 1;
-  const max = Number.isFinite(props.max) ? Number(props.max) : 5;
-  const step = Number.isFinite(props.step) && Number(props.step) > 0 ? Number(props.step) : 1;
-  const values: number[] = [];
-  for (let value = min; value <= max + step / 1000; value += step) {
-    values.push(Number(value.toFixed(6)));
-  }
-  return values;
-});
 </script>
 
 <template>
-  <view class="stars">
+  <view class="stars q-enter">
+    <view v-if="flash" class="edge-flash" />
     <view class="stars__row">
       <text
-        v-for="value in scaleValues"
+        v-for="value in values"
         :key="value"
         class="stars__item"
-        :class="{ 'stars__item--active': modelValue === value }"
-        @tap="pick(value)"
+        :class="{ 'stars__item--active': (modelValue || 0) >= value }"
+        @tap="select(value)"
       >
-        {{ "★".repeat(Math.max(1, Math.round(value))) }}
-        <text class="stars__value">{{ value }}</text>
+        {{ (modelValue || 0) >= value ? "★" : "☆" }}
       </text>
     </view>
-    <text class="stars__caption">
-      {{
-        labels && modelValue
-          ? labels[Math.round(modelValue) - 1] || `评分 ${modelValue}`
-          : "请选择星级"
-      }}
-    </text>
+    <text class="stars__caption">{{ caption }}</text>
   </view>
 </template>
 
 <style lang="scss" scoped>
 .stars {
-  padding: 16rpx 0;
+  position: relative;
   text-align: center;
 }
 
 .stars__row {
   display: flex;
   justify-content: center;
-  gap: 12rpx;
+  gap: 16rpx;
 }
 
 .stars__item {
-  min-width: 98rpx;
-  padding: 10rpx 12rpx;
-  border-radius: 18rpx;
-  text-align: center;
-  font-size: 28rpx;
-  color: #cdb9a8;
-  background: rgba(255, 253, 248, 0.94);
-  border: 2rpx solid rgba(43, 33, 24, 0.07);
+  font-size: 56rpx;
+  color: rgba(123, 110, 133, 0.42);
+  transition: transform 0.2s ease;
 }
 
 .stars__item--active {
-  color: #d96f3d;
-  border-color: rgba(217, 111, 61, 0.45);
-  background: rgba(255, 235, 221, 0.94);
-}
-
-.stars__value {
-  margin-left: 6rpx;
-  font-size: 20rpx;
-  color: $xc-muted;
+  color: $xc-gold;
+  animation: starPulse 0.3s $xc-spring both;
 }
 
 .stars__caption {
+  margin-top: 10rpx;
   display: block;
-  margin-top: 14rpx;
-  font-size: 24rpx;
   color: $xc-muted;
+  font-size: 22rpx;
+}
+
+.edge-flash {
+  position: absolute;
+  inset: 0;
+  animation: edgeFlash 0.3s ease;
+}
+
+.q-enter {
+  animation: qEnter 0.4s $xc-ease both;
+}
+
+@keyframes starPulse {
+  0% {
+    transform: scale(0.8);
+  }
+  60% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes qEnter {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes edgeFlash {
+  from {
+    box-shadow: inset 0 0 0 0 rgba(212, 168, 83, 0.55);
+  }
+  to {
+    box-shadow: inset 0 0 0 14rpx rgba(212, 168, 83, 0);
+  }
 }
 </style>

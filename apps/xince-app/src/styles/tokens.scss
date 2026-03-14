@@ -1,0 +1,89 @@
+$xc-bg: #fbf7f4;
+$xc-bg2: #f5ede6;
+$xc-card: rgba(255, 255, 255, 0.72);
+$xc-card-solid: #ffffff;
+$xc-glass: rgba(255, 255, 255, 0.55);
+
+$xc-purple: #9b7ed8;
+$xc-purple-d: #7c5dbf;
+$xc-purple-l: #c9b5f0;
+$xc-purple-p: #ede5f9;
+
+$xc-pink: #e8729a;
+$xc-pink-l: #f4a5bf;
+$xc-pink-p: #fde6ef;
+
+$xc-peach: #f2a68b;
+$xc-peach-l: #f8c9b5;
+$xc-peach-p: #fff0e8;
+
+$xc-mint: #7cc5b2;
+$xc-mint-l: #a8ddd0;
+$xc-mint-p: #e2f5ef;
+
+$xc-gold: #d4a853;
+$xc-gold-l: #e5c97e;
+$xc-gold-p: #fdf4de;
+
+$xc-ink: #3a2e42;
+$xc-muted: #7b6e85;
+$xc-hint: #b5a9bf;
+$xc-line: rgba(155, 126, 216, 0.12);
+$xc-line-soft: rgba(155, 126, 216, 0.06);
+$xc-white: #ffffff;
+$xc-black: #000000;
+
+$xc-accent: $xc-purple;
+$xc-accent-2: $xc-pink;
+$xc-accent-soft: $xc-purple-p;
+$xc-success: $xc-mint;
+$xc-warning: $xc-gold;
+$xc-danger: $xc-pink;
+$xc-info: $xc-purple-l;
+$xc-surface: $xc-card-solid;
+$xc-surface-muted: $xc-bg2;
+
+$xc-r: 16px;
+$xc-r-lg: 24px;
+$xc-r-xl: 32px;
+$xc-r-card: 18px;
+$xc-r-btn: 24px;
+$xc-r-tag: 20px;
+$xc-r-pill: 9999px;
+
+$xc-sh-sm: 0 2px 8px rgba(155, 126, 216, 0.08);
+$xc-sh-md:
+  0 4px 20px rgba(155, 126, 216, 0.1),
+  0 1px 4px rgba(0, 0, 0, 0.03);
+$xc-sh-lg:
+  0 8px 32px rgba(155, 126, 216, 0.14),
+  0 2px 8px rgba(0, 0, 0, 0.04);
+$xc-sh-glow: 0 0 24px rgba(155, 126, 216, 0.2);
+$xc-shadow: $xc-sh-lg;
+
+$xc-font-sans:
+  "Noto Sans SC",
+  "PingFang SC",
+  "Microsoft YaHei",
+  system-ui,
+  sans-serif;
+$xc-font-serif:
+  "Noto Serif SC",
+  "Songti SC",
+  "STSong",
+  Georgia,
+  serif;
+
+$xc-ease: cubic-bezier(0.16, 1, 0.3, 1);
+$xc-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+$xc-fast: 0.2s;
+$xc-normal: 0.3s;
+$xc-slow: 0.5s;
+
+$xc-z-bg: 0;
+$xc-z-content: 1;
+$xc-z-float: 100;
+$xc-z-modal: 1000;
+
+$xc-tab-h: 68px;
+$xc-safe-b: env(safe-area-inset-bottom, 0px);

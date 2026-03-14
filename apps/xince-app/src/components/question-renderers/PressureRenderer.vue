@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
+
+import { haptic, playSound } from "@/shared/utils/sound-manager";
 
 const props = defineProps<{
   modelValue: number | null;
@@ -12,74 +14,142 @@ const emit = defineEmits<{
   "update:modelValue": [value: number];
 }>();
 
-const startedAt = ref(0);
-const currentDuration = ref(props.modelValue ?? 0);
+const startAt = ref(0);
+const duration = ref(props.modelValue ?? 0);
+const running = ref(false);
+const progress = ref(0);
+const flash = ref(false);
+let frame = 0;
+
+const max = computed(() => props.maxDuration ?? 3000);
+const ringStyle = computed(() => ({
+  background: `conic-gradient(${`rgba(155,126,216,0.85) ${progress.value * 360}deg`}, rgba(155,126,216,0.15) 0deg)`,
+}));
+const emojiScale = computed(() => 1 + progress.value * 0.3);
+
+function updateProgress() {
+  if (!running.value) return;
+  const elapsed = Math.min(max.value, Date.now() - startAt.value);
+  duration.value = elapsed;
+  progress.value = elapsed / max.value;
+  if (elapsed >= max.value) {
+    onPressEnd();
+    return;
+  }
+  frame = requestAnimationFrame(updateProgress);
+}
 
 function onPressStart() {
-  startedAt.value = Date.now();
+  if (running.value) return;
+  running.value = true;
+  startAt.value = Date.now();
+  frame = requestAnimationFrame(updateProgress);
 }
 
 function onPressEnd() {
-  if (!startedAt.value) {
-    return;
-  }
-  const maxDuration = props.maxDuration ?? 3000;
-  const minDuration = props.min ?? 0;
-  const rawDuration = Math.min(
-    Math.max(Date.now() - startedAt.value, 0),
-    maxDuration,
-  );
+  if (!running.value) return;
+  running.value = false;
+  cancelAnimationFrame(frame);
   const step = props.step && props.step > 0 ? props.step : 1;
-  const snapped =
-    Math.round((rawDuration - minDuration) / step) * step + minDuration;
-  const duration = Math.min(maxDuration, Math.max(minDuration, snapped));
-  currentDuration.value = duration;
-  startedAt.value = 0;
-  emit("update:modelValue", duration);
+  const min = props.min ?? 0;
+  const snapped = Math.round((duration.value - min) / step) * step + min;
+  const finalValue = Math.min(max.value, Math.max(min, snapped));
+  duration.value = finalValue;
+  playSound("whoosh");
+  haptic(15);
+  flash.value = true;
+  setTimeout(() => (flash.value = false), 300);
+  emit("update:modelValue", finalValue);
 }
 </script>
 
 <template>
-  <view class="pressure">
+  <view class="pressure q-enter">
+    <view v-if="flash" class="edge-flash" />
     <view
-      class="pressure__pad"
-      @touchstart.prevent="onPressStart"
-      @touchend.prevent="onPressEnd"
-      @touchcancel.prevent="onPressEnd"
+      class="pressure__ring"
+      :style="ringStyle"
+      @touchstart.stop.prevent="onPressStart"
+      @touchend.stop.prevent="onPressEnd"
+      @touchcancel.stop.prevent="onPressEnd"
     >
-      <text class="pressure__title">长按这里</text>
-      <text class="pressure__hint">按住越久，数值越高</text>
+      <view class="pressure__pad" :style="{ boxShadow: `0 0 ${24 + progress * 28}rpx rgba(155,126,216,0.28)` }">
+        <text class="pressure__emoji" :style="{ transform: `scale(${emojiScale})` }">💜</text>
+        <text class="pressure__title">长按测压</text>
+      </view>
     </view>
-    <text class="pressure__value">当前记录：{{ currentDuration }} ms</text>
+    <text class="pressure__value">{{ Math.round(duration) }} ms</text>
   </view>
 </template>
 
 <style lang="scss" scoped>
 .pressure {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 16rpx;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.pressure__ring {
+  width: 320rpx;
+  height: 320rpx;
+  border-radius: 50%;
+  padding: 14rpx;
 }
 
 .pressure__pad {
-  padding: 52rpx 20rpx;
-  border-radius: 28rpx;
-  text-align: center;
-  background: linear-gradient(145deg, #ffd6b6, #ffefdf);
-  box-shadow: $xc-shadow;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.pressure__emoji {
+  font-size: 44rpx;
 }
 
 .pressure__title {
-  display: block;
-  font-size: 34rpx;
-  font-weight: 700;
+  margin-top: 8rpx;
+  font-size: 28rpx;
 }
 
-.pressure__hint,
 .pressure__value {
-  display: block;
-  margin-top: 12rpx;
-  font-size: 24rpx;
+  font-size: 22rpx;
   color: $xc-muted;
+}
+
+.edge-flash {
+  position: absolute;
+  inset: 0;
+  animation: edgeFlash 0.3s ease;
+}
+
+.q-enter {
+  animation: qEnter 0.4s $xc-ease both;
+}
+
+@keyframes qEnter {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes edgeFlash {
+  from {
+    box-shadow: inset 0 0 0 0 rgba(155, 126, 216, 0.5);
+  }
+  to {
+    box-shadow: inset 0 0 0 14rpx rgba(155, 126, 216, 0);
+  }
 }
 </style>

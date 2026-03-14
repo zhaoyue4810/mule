@@ -158,7 +158,7 @@ onMounted(load);
   padding: 28rpx;
   border-radius: 28rpx;
   background: rgba(255, 252, 247, 0.96);
-  border: 2rpx solid rgba(217, 111, 61, 0.08);
+  border: 2rpx solid rgba(155, 126, 216, 0.08);
   box-shadow: $xc-shadow;
 }
 
@@ -214,7 +214,7 @@ onMounted(load);
 }
 
 .score--glow {
-  color: #d96f3d;
+  color: #9B7ED8;
 }
 
 .score--warm {
@@ -226,7 +226,7 @@ onMounted(load);
   margin-top: 10rpx;
   text-align: center;
   font-size: 28rpx;
-  color: #d96f3d;
+  color: #9B7ED8;
   font-weight: 700;
 }
 
@@ -252,8 +252,8 @@ onMounted(load);
 }
 
 .chip--warm {
-  background: rgba(217, 111, 61, 0.12);
-  color: #d96f3d;
+  background: rgba(155, 126, 216, 0.12);
+  color: #9B7ED8;
 }
 
 .chip--cool {
@@ -310,7 +310,7 @@ onMounted(load);
 }
 
 .compare-bar__fill--warm {
-  background: linear-gradient(135deg, #e38b59, #d96f3d);
+  background: linear-gradient(135deg, #E8729A, #9B7ED8);
 }
 
 .compare-bar__fill--cool {

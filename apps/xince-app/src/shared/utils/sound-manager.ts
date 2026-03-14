@@ -132,3 +132,11 @@ export const SoundManager = {
     source.stop(now + 0.18);
   },
 };
+
+export function playSound(type: "chime" | "ding" | "whoosh" | "ambient") {
+  SoundManager.play(type);
+}
+
+export function haptic(ms = 15) {
+  SoundManager.haptic(ms);
+}

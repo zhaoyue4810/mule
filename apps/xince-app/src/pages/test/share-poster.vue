@@ -303,7 +303,7 @@ async function generatePosterImage() {
     ctx.setFontSize(22);
     ctx.fillText(posterSubtitle.value, 68, 162);
 
-    ctx.setFillStyle("#2b2118");
+    ctx.setFillStyle("#3A2E42");
     ctx.setFontSize(46);
     wrapText(ctx, posterTitle.value, 68, 238, 584, 60, 2);
 
@@ -335,7 +335,7 @@ async function generatePosterImage() {
 
     ctx.setFillStyle(theme.panel);
     drawRoundedRect(ctx, 68, 522, 584, 306, 24);
-    ctx.setFillStyle("#2b2118");
+    ctx.setFillStyle("#3A2E42");
     ctx.setFontSize(30);
     if (posterMode.value === "challenge" && challengeInvite.value) {
       wrapText(ctx, "我已经完成这套测试，现在轮到你了。", 96, 590, 528, 44, 2);
@@ -367,10 +367,10 @@ async function generatePosterImage() {
         1,
       );
     } else {
-      ctx.setFillStyle("#7a6659");
+      ctx.setFillStyle("#7B6E85");
       ctx.setFontSize(22);
       wrapText(ctx, report.value.share_card.footer, 68, 1032, 584, 34, 2);
-      ctx.setFillStyle("rgba(43,33,24,0.52)");
+      ctx.setFillStyle("rgba(58, 46, 66, 0.52)");
       ctx.setFontSize(20);
       ctx.fillText("模板可切换，当前海报由前端即时生成。", 68, 1110);
     }
@@ -591,7 +591,7 @@ onShareTimeline(() => ({
   padding: 24rpx;
   border-radius: 24rpx;
   background: rgba(255, 252, 247, 0.96);
-  border: 2rpx solid rgba(217, 111, 61, 0.08);
+  border: 2rpx solid rgba(155, 126, 216, 0.08);
   box-shadow: $xc-shadow;
 }
 
@@ -623,7 +623,7 @@ onShareTimeline(() => ({
 .toolbar__back {
   min-width: 160rpx;
   border-radius: 999rpx;
-  background: rgba(217, 111, 61, 0.1);
+  background: rgba(155, 126, 216, 0.1);
   color: $xc-accent;
   font-size: 24rpx;
 }
@@ -637,15 +637,15 @@ onShareTimeline(() => ({
 .selector__button,
 .template-tabs__item {
   border-radius: 999rpx;
-  background: rgba(217, 111, 61, 0.1);
+  background: rgba(155, 126, 216, 0.1);
   color: $xc-accent;
   font-size: 24rpx;
 }
 
 .selector__button--active,
 .template-tabs__item--active {
-  background: linear-gradient(135deg, #d96f3d, #bf5321);
-  color: #fff8f0;
+  background: linear-gradient(135deg, #9B7ED8, #7C5DBF);
+  color: #FBF7F4;
 }
 
 .template-tabs__list {
@@ -661,7 +661,7 @@ onShareTimeline(() => ({
   min-height: 860rpx;
   padding: 36rpx 32rpx;
   border-radius: 30rpx;
-  color: #2b2118;
+  color: #3A2E42;
 }
 
 .poster--sunset {
@@ -680,7 +680,7 @@ onShareTimeline(() => ({
 .poster-preview__footer {
   display: block;
   font-size: 24rpx;
-  color: rgba(43, 33, 24, 0.68);
+  color: rgba(58, 46, 66, 0.68);
 }
 
 .poster-preview__title {
@@ -723,7 +723,7 @@ onShareTimeline(() => ({
   display: block;
   font-size: 26rpx;
   line-height: 1.8;
-  color: rgba(43, 33, 24, 0.82);
+  color: rgba(58, 46, 66, 0.82);
 }
 
 .poster-preview__line + .poster-preview__line {
@@ -736,10 +736,10 @@ onShareTimeline(() => ({
   margin: 26rpx auto 0;
   border-radius: 24rpx;
   background:
-    linear-gradient(45deg, rgba(43, 33, 24, 0.9) 25%, transparent 25%) -12rpx 0/24rpx 24rpx,
-    linear-gradient(-45deg, rgba(43, 33, 24, 0.9) 25%, transparent 25%) -12rpx 0/24rpx 24rpx,
-    linear-gradient(45deg, transparent 75%, rgba(43, 33, 24, 0.9) 75%) -12rpx 0/24rpx 24rpx,
-    linear-gradient(-45deg, transparent 75%, rgba(43, 33, 24, 0.9) 75%) -12rpx 0/24rpx 24rpx,
+    linear-gradient(45deg, rgba(58, 46, 66, 0.9) 25%, transparent 25%) -12rpx 0/24rpx 24rpx,
+    linear-gradient(-45deg, rgba(58, 46, 66, 0.9) 25%, transparent 25%) -12rpx 0/24rpx 24rpx,
+    linear-gradient(45deg, transparent 75%, rgba(58, 46, 66, 0.9) 75%) -12rpx 0/24rpx 24rpx,
+    linear-gradient(-45deg, transparent 75%, rgba(58, 46, 66, 0.9) 75%) -12rpx 0/24rpx 24rpx,
     #fff;
   display: flex;
   align-items: center;
@@ -768,8 +768,8 @@ onShareTimeline(() => ({
 }
 
 .actions__primary {
-  background: linear-gradient(135deg, #d96f3d, #bf5321);
-  color: #fff8f0;
+  background: linear-gradient(135deg, #9B7ED8, #7C5DBF);
+  color: #FBF7F4;
 }
 
 .actions__secondary {

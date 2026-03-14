@@ -151,7 +151,7 @@ onLoad((query) => {
 .detail__category {
   display: block;
   font-size: 22rpx;
-  color: rgba(43, 33, 24, 0.7);
+  color: rgba(58, 46, 66, 0.7);
 }
 
 .detail__title {
@@ -166,14 +166,14 @@ onLoad((query) => {
   display: block;
   margin-top: 16rpx;
   font-size: 24rpx;
-  color: rgba(43, 33, 24, 0.72);
+  color: rgba(58, 46, 66, 0.72);
 }
 
 .detail__section {
   padding: 26rpx;
   border-radius: 24rpx;
   background: rgba(255, 255, 255, 0.86);
-  border: 2rpx solid rgba(43, 33, 24, 0.06);
+  border: 2rpx solid rgba(58, 46, 66, 0.06);
 }
 
 .detail__section-title {
@@ -200,7 +200,7 @@ onLoad((query) => {
   padding: 24rpx 18rpx;
   border-radius: 22rpx;
   background: rgba(255, 250, 244, 0.92);
-  border: 2rpx solid rgba(217, 111, 61, 0.08);
+  border: 2rpx solid rgba(155, 126, 216, 0.08);
   text-align: center;
 }
 
@@ -247,7 +247,7 @@ onLoad((query) => {
 .detail__button {
   margin-top: 8rpx;
   border-radius: 999rpx;
-  background: linear-gradient(135deg, #d96f3d, #bf5321);
+  background: linear-gradient(135deg, #9B7ED8, #7C5DBF);
   color: #fff9f3;
 }
 </style>

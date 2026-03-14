@@ -30,7 +30,7 @@ function draw() {
   const radius = 110;
   const dimensions = props.dimensions.slice(0, 5);
   ctx.clearRect(0, 0, width, height);
-  ctx.setFillStyle("#fffaf4");
+  ctx.setFillStyle("#FBF7F4");
   ctx.fillRect(0, 0, width, height);
 
   for (let step = 1; step <= 4; step += 1) {
@@ -45,7 +45,7 @@ function draw() {
       }
     });
     ctx.closePath();
-    ctx.setStrokeStyle("rgba(217,111,61,0.14)");
+    ctx.setStrokeStyle("rgba(155, 126, 216,0.14)");
     ctx.stroke();
   }
 
@@ -56,9 +56,9 @@ function draw() {
     ctx.beginPath();
     ctx.moveTo(centerX, centerY);
     ctx.lineTo(edge.x, edge.y);
-    ctx.setStrokeStyle("rgba(217,111,61,0.14)");
+    ctx.setStrokeStyle("rgba(155, 126, 216,0.14)");
     ctx.stroke();
-    ctx.setFillStyle("#7c6351");
+    ctx.setFillStyle("#7B6E85");
     ctx.setFontSize(12);
     ctx.setTextAlign("center");
     ctx.fillText(item.label, label.x, label.y);
@@ -75,8 +75,8 @@ function draw() {
     }
   });
   ctx.closePath();
-  ctx.setStrokeStyle("#d96f3d");
-  ctx.setFillStyle("rgba(217,111,61,0.24)");
+  ctx.setStrokeStyle("#9B7ED8");
+  ctx.setFillStyle("rgba(155, 126, 216,0.24)");
   ctx.setLineWidth(2);
   ctx.stroke();
   ctx.fill();
@@ -106,8 +106,8 @@ watch(
 .radar {
   padding: 18rpx;
   border-radius: 28rpx;
-  background: rgba(255, 251, 244, 0.96);
-  border: 2rpx solid rgba(217, 111, 61, 0.08);
+  background: $xc-card;
+  border: 2rpx solid rgba(155, 126, 216, 0.08);
 }
 
 .radar__canvas {

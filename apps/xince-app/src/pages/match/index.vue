@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from "vue";
 import { onShow } from "@dcloudio/uni-app";
 
+import TabBuddy from "@/components/mascot/TabBuddy.vue";
 import type { MatchHistoryResponse } from "@/shared/models/match";
 import type { PublishedTestSummary } from "@/shared/models/tests";
 import { ensureAppSession } from "@/shared/services/auth";
@@ -174,6 +175,7 @@ onShow(load);
         <text class="panel__text">还没有匹配记录。选一套支持匹配的测试，邀请好友一起完成吧。</text>
       </view>
     </template>
+    <TabBuddy />
   </view>
 </template>
 
@@ -215,7 +217,7 @@ onShow(load);
 
 .hero__pulse {
   font-size: 34rpx;
-  color: #d96f3d;
+  color: #9B7ED8;
   animation: beat 1.5s ease-in-out infinite;
 }
 
@@ -278,7 +280,7 @@ onShow(load);
 .history-card {
   border-radius: 24rpx;
   background: rgba(255, 253, 248, 0.96);
-  border: 2rpx solid rgba(217, 111, 61, 0.08);
+  border: 2rpx solid rgba(155, 126, 216, 0.08);
 }
 
 .panel {
@@ -292,7 +294,7 @@ onShow(load);
 .panel__button {
   margin-top: 18rpx;
   border-radius: 999rpx;
-  background: #d96f3d;
+  background: #9B7ED8;
   color: #fff;
 }
 
@@ -332,7 +334,7 @@ onShow(load);
 .test-card__button {
   min-width: 180rpx;
   border-radius: 999rpx;
-  background: linear-gradient(135deg, #e38b59, #d96f3d);
+  background: linear-gradient(135deg, #E8729A, #9B7ED8);
   color: #fff9f4;
   font-size: 24rpx;
 }
@@ -375,7 +377,7 @@ onShow(load);
 .history-card__score {
   font-size: 28rpx;
   font-weight: 700;
-  color: #d96f3d;
+  color: #9B7ED8;
 }
 
 .history-card__meta,

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 
 import type { PublishedQuestionPayload } from "@/shared/models/tests";
 import { SoundManager } from "@/shared/utils/sound-manager";
@@ -15,9 +15,14 @@ const emit = defineEmits<{
 
 function choose(value: string) {
   SoundManager.play("ambient");
-  SoundManager.haptic(32);
+  SoundManager.haptic(15);
+  flash.value = true;
+  setTimeout(() => {
+    flash.value = false;
+  }, 300);
   emit("update:modelValue", value);
 }
+const flash = ref(false);
 
 const fallbackPositions = [
   { x: 14, y: 28 },
@@ -87,13 +92,15 @@ const lineSegments = computed(() => {
       top: `${prev.y}%`,
       width: `${length}%`,
       transform: `rotate(${angle}rad)`,
+      animationDelay: `${index * 60}ms`,
     };
   });
 });
 </script>
 
 <template>
-  <view class="constellation">
+  <view class="constellation q-enter">
+    <view v-if="flash" class="edge-flash" />
     <view class="constellation__board">
       <view
         v-for="(line, index) in lineSegments"
@@ -144,6 +151,7 @@ const lineSegments = computed(() => {
     radial-gradient(circle at 46% 74%, rgba(255, 255, 255, 0.6) 0, transparent 7rpx);
   opacity: 0.35;
   pointer-events: none;
+  animation: constTwinkle 2.8s ease-in-out infinite;
 }
 
 .constellation__line {
@@ -159,6 +167,7 @@ const lineSegments = computed(() => {
   );
   pointer-events: none;
   z-index: 1;
+  animation: lineFade 0.45s ease both;
 }
 
 .constellation__star {
@@ -181,6 +190,7 @@ const lineSegments = computed(() => {
   background: rgba(255, 223, 196, 0.26);
   border-color: rgba(255, 227, 200, 0.78);
   box-shadow: 0 0 22rpx rgba(255, 212, 179, 0.45);
+  transform: scale(1.08);
 }
 
 .constellation__glyph {
@@ -198,5 +208,54 @@ const lineSegments = computed(() => {
 .constellation__tip {
   font-size: 22rpx;
   color: $xc-muted;
+}
+
+.edge-flash {
+  position: absolute;
+  inset: 0;
+  animation: edgeFlash 0.3s ease;
+}
+
+.q-enter {
+  animation: qEnter 0.4s $xc-ease both;
+}
+
+@keyframes qEnter {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes constTwinkle {
+  0%,
+  100% {
+    opacity: 0.22;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@keyframes lineFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes edgeFlash {
+  from {
+    box-shadow: inset 0 0 0 0 rgba(155, 126, 216, 0.55);
+  }
+  to {
+    box-shadow: inset 0 0 0 16rpx rgba(155, 126, 216, 0);
+  }
 }
 </style>

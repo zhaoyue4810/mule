@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, ref } from "vue";
 
 import type { PublishedQuestionPayload } from "@/shared/models/tests";
+import { haptic, playSound } from "@/shared/utils/sound-manager";
 
 const props = defineProps<{
   modelValue: string;
@@ -14,6 +15,7 @@ const emit = defineEmits<{
 
 const spinning = ref(false);
 const rotation = ref(0);
+const flash = ref(false);
 let spinTimer: ReturnType<typeof setTimeout> | null = null;
 
 const options = computed(() => props.question.options || []);
@@ -80,6 +82,12 @@ function spinWheel() {
   if (spinning.value || !options.value.length) {
     return;
   }
+  playSound("whoosh");
+  haptic(15);
+  flash.value = true;
+  setTimeout(() => {
+    flash.value = false;
+  }, 300);
   const pickedIndex = Math.floor(Math.random() * options.value.length);
   const picked = options.value[pickedIndex];
   const pickedCode = picked.option_code || String(picked.seq);
@@ -87,7 +95,7 @@ function spinWheel() {
   const targetRemainder = (360 - centerAngle) % 360;
   const currentRemainder = ((rotation.value % 360) + 360) % 360;
   const delta = (targetRemainder - currentRemainder + 360) % 360;
-  const extraSpins = 5 * 360;
+  const extraSpins = (3 + Math.floor(Math.random() * 3)) * 360;
   spinning.value = true;
   rotation.value += extraSpins + delta;
   if (spinTimer) {
@@ -110,7 +118,8 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <view class="fortune">
+  <view class="fortune q-enter">
+    <view v-if="flash" class="edge-flash" />
     <view class="fortune__wheel-wrap">
       <view class="fortune__pointer" />
       <view class="fortune__wheel" :style="wheelStyle">
@@ -127,6 +136,7 @@ onBeforeUnmount(() => {
       </view>
     </view>
     <button class="fortune__btn" :disabled="spinning" @tap="spinWheel">
+      <text class="fortune__btn-center">转</text>
       {{ spinning ? "命运轮盘转动中..." : "转动命运轮盘" }}
     </button>
     <text v-if="selectedLabel" class="fortune__result">当前抽中：{{ selectedLabel }}</text>
@@ -157,7 +167,7 @@ onBeforeUnmount(() => {
   margin-left: -16rpx;
   border-left: 16rpx solid transparent;
   border-right: 16rpx solid transparent;
-  border-top: 36rpx solid #bf5321;
+  border-top: 36rpx solid #7C5DBF;
 }
 
 .fortune__label {
@@ -168,7 +178,7 @@ onBeforeUnmount(() => {
   text-align: center;
   font-size: 22rpx;
   line-height: 1.4;
-  color: #2b2118;
+  color: #3A2E42;
   font-weight: 600;
   text-shadow: 0 1rpx 0 rgba(255, 255, 255, 0.35);
   z-index: 3;
@@ -199,13 +209,67 @@ onBeforeUnmount(() => {
 .fortune__btn {
   width: 420rpx;
   border-radius: 999rpx;
-  background: linear-gradient(135deg, #d96f3d, #bf5321);
+  background: linear-gradient(135deg, #9B7ED8, #7C5DBF);
   color: #fff8f1;
   font-size: 26rpx;
+}
+
+.fortune__btn-center {
+  display: inline-block;
+  width: 34rpx;
+  height: 34rpx;
+  margin-right: 8rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.24);
+  text-align: center;
+  line-height: 34rpx;
 }
 
 .fortune__result {
   font-size: 24rpx;
   color: $xc-muted;
+  animation: popIn 0.24s $xc-spring both;
+}
+
+.edge-flash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  animation: edgeFlash 0.3s ease;
+}
+
+.q-enter {
+  animation: qEnter 0.4s $xc-ease both;
+}
+
+@keyframes qEnter {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes edgeFlash {
+  from {
+    box-shadow: inset 0 0 0 0 rgba(155, 126, 216, 0.58);
+  }
+  to {
+    box-shadow: inset 0 0 0 14rpx rgba(155, 126, 216, 0);
+  }
 }
 </style>

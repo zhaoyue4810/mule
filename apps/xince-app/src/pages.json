@@ -88,13 +88,13 @@
   "globalStyle": {
     "navigationBarTextStyle": "black",
     "navigationBarTitleText": "心测",
-    "navigationBarBackgroundColor": "#fff8f0",
-    "backgroundColor": "#fff8f0"
+    "navigationBarBackgroundColor": "#FBF7F4",
+    "backgroundColor": "#FBF7F4"
   },
   "tabBar": {
-    "color": "#7b6c5f",
-    "selectedColor": "#d96f3d",
-    "backgroundColor": "#fffaf4",
+    "color": "#7B6E85",
+    "selectedColor": "#9B7ED8",
+    "backgroundColor": "#FFFFFF",
     "borderStyle": "black",
     "list": [
       {

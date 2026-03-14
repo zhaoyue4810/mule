@@ -54,11 +54,11 @@ onLoad(() => {
       <template v-else>
         <view class="item">
           <text>声音反馈</text>
-          <switch :checked="soundEnabled" color="#d96f3d" @change="onSoundSwitchChange" />
+          <switch :checked="soundEnabled" color="#9B7ED8" @change="onSoundSwitchChange" />
         </view>
         <view class="item">
           <text>触觉反馈</text>
-          <switch :checked="hapticEnabled" color="#d96f3d" @change="onHapticSwitchChange" />
+          <switch :checked="hapticEnabled" color="#9B7ED8" @change="onHapticSwitchChange" />
         </view>
       </template>
     </view>
@@ -67,9 +67,9 @@ onLoad(() => {
 
 <style scoped lang="scss">
 .page { padding: 28rpx; }
-.panel { padding: 28rpx; border-radius: 24rpx; background: rgba(255,255,255,0.9); border: 2rpx solid rgba(217,111,61,0.08); }
+.panel { padding: 28rpx; border-radius: 24rpx; background: rgba(255,255,255,0.9); border: 2rpx solid rgba(155, 126, 216,0.08); }
 .panel__title { display:block; font-size:30rpx; font-weight:700; }
 .panel__body { display:block; margin-top:14rpx; font-size:24rpx; line-height:1.7; color:$xc-muted; }
-.item { display:flex; justify-content:space-between; align-items:center; padding:22rpx 0; font-size:26rpx; border-bottom: 2rpx solid rgba(217,111,61,0.08); }
+.item { display:flex; justify-content:space-between; align-items:center; padding:22rpx 0; font-size:26rpx; border-bottom: 2rpx solid rgba(155, 126, 216,0.08); }
 .item:last-child { border-bottom: 0; }
 </style>

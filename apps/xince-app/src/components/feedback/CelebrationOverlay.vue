@@ -181,7 +181,7 @@ onBeforeUnmount(() => {
   margin-top: 14rpx;
   font-size: 32rpx;
   font-weight: 600;
-  color: #2b2118;
+  color: #3A2E42;
 }
 
 .celebration__message {
@@ -190,7 +190,7 @@ onBeforeUnmount(() => {
   text-align: center;
   font-size: 26rpx;
   line-height: 1.7;
-  color: rgba(43, 33, 24, 0.76);
+  color: rgba(58, 46, 66, 0.76);
 }
 
 .celebration__list {

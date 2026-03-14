@@ -515,7 +515,7 @@ onUnload(() => {
   display: block;
   margin-top: 8rpx;
   font-size: 22rpx;
-  color: rgba(43, 33, 24, 0.7);
+  color: rgba(58, 46, 66, 0.7);
 }
 
 .panel,
@@ -523,12 +523,12 @@ onUnload(() => {
   padding: 28rpx;
   border-radius: 24rpx;
   background: rgba(255, 255, 255, 0.9);
-  border: 2rpx solid rgba(43, 33, 24, 0.06);
+  border: 2rpx solid rgba(58, 46, 66, 0.06);
 }
 
 .persona-card {
   background:
-    linear-gradient(145deg, rgba(255, 251, 245, 0.98), rgba(255, 239, 228, 0.9)),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(237, 229, 249, 0.36)),
     #fff;
 }
 
@@ -579,7 +579,7 @@ onUnload(() => {
 .chip {
   padding: 12rpx 18rpx;
   border-radius: 999rpx;
-  background: rgba(255, 238, 224, 0.92);
+  background: rgba(237, 229, 249, 0.72);
   color: $xc-accent;
   font-size: 22rpx;
 }
@@ -633,7 +633,7 @@ onUnload(() => {
   flex: 1;
   height: 18rpx;
   border-radius: 999rpx;
-  background: rgba(43, 33, 24, 0.08);
+  background: rgba(58, 46, 66, 0.08);
   overflow: hidden;
 }
 
@@ -641,7 +641,7 @@ onUnload(() => {
 .dna-item__fill {
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(135deg, #d96f3d, #f1b17a);
+  background: linear-gradient(135deg, #9B7ED8, #C9B5F0);
 }
 
 .metaphors {
@@ -708,7 +708,7 @@ onUnload(() => {
   margin-top: 18rpx;
   padding: 26rpx 24rpx;
   border-radius: 24rpx;
-  border: 2rpx solid rgba(217, 111, 61, 0.1);
+  border: 2rpx solid rgba(155, 126, 216, 0.1);
   overflow: hidden;
   position: relative;
 }
@@ -770,7 +770,7 @@ onUnload(() => {
   display: block;
   margin-top: 10rpx;
   font-size: 22rpx;
-  color: rgba(43, 33, 24, 0.7);
+  color: rgba(58, 46, 66, 0.7);
 }
 
 .share-card__chips {
@@ -786,7 +786,7 @@ onUnload(() => {
   border-radius: 999rpx;
   background: rgba(255, 255, 255, 0.62);
   font-size: 20rpx;
-  color: rgba(43, 33, 24, 0.78);
+  color: rgba(58, 46, 66, 0.78);
 }
 
 .share-card__highlights {
@@ -807,7 +807,7 @@ onUnload(() => {
   display: block;
   margin-top: 18rpx;
   font-size: 20rpx;
-  color: rgba(43, 33, 24, 0.58);
+  color: rgba(58, 46, 66, 0.58);
 }
 
 .capsule-input {
@@ -817,7 +817,7 @@ onUnload(() => {
   padding: 20rpx;
   border-radius: 22rpx;
   background: rgba(255, 249, 242, 0.96);
-  border: 2rpx solid rgba(217, 111, 61, 0.1);
+  border: 2rpx solid rgba(155, 126, 216, 0.1);
   font-size: 24rpx;
   line-height: 1.7;
 }
@@ -837,7 +837,7 @@ onUnload(() => {
 }
 
 .capsule-duration--active {
-  background: linear-gradient(135deg, #d96f3d, #bf5321);
+  background: linear-gradient(135deg, #9B7ED8, #7C5DBF);
   color: #fff9f3;
 }
 
@@ -849,20 +849,20 @@ onUnload(() => {
 
 .button {
   border-radius: 999rpx;
-  background: linear-gradient(135deg, #d96f3d, #bf5321);
+  background: linear-gradient(135deg, #9B7ED8, #7C5DBF);
   color: #fff9f3;
 }
 
 .button--secondary {
   background: rgba(255, 255, 255, 0.92);
   color: $xc-accent;
-  border: 2rpx solid rgba(217, 111, 61, 0.18);
+  border: 2rpx solid rgba(155, 126, 216, 0.18);
 }
 
 .mini-button {
   margin-top: 18rpx;
   border-radius: 999rpx;
-  background: rgba(255, 238, 224, 0.92);
+  background: rgba(237, 229, 249, 0.72);
   color: $xc-accent;
   font-size: 24rpx;
 }

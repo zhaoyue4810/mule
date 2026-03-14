@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, nextTick, onBeforeUnmount, ref } from "vue";
 import { onLoad } from "@dcloudio/uni-app";
 
+import XiaoCe from "@/components/mascot/XiaoCe.vue";
+import XcMicroFeedback from "@/components/mascot/XcMicroFeedback.vue";
 import QuestionRenderer from "@/components/question-renderers/QuestionRenderer.vue";
 import type { AnswerValue } from "@/shared/models/answers";
 import type { PublishedTestQuestionnaire } from "@/shared/models/tests";
@@ -22,6 +24,9 @@ const currentIndex = ref(0);
 const answers = ref<Record<number, AnswerValue>>({});
 const submitting = ref(false);
 const startedAt = ref(Date.now());
+const microFeedbackText = ref("");
+const microFeedbackVisible = ref(false);
+let microFeedbackTimer: ReturnType<typeof setTimeout> | null = null;
 
 const currentQuestion = computed(
   () => questionnaire.value?.questions[currentIndex.value] || null,
@@ -77,12 +82,46 @@ function previousQuestion() {
   }
 }
 
+function pickMicroFeedback(interactionType?: string) {
+  const type = (interactionType || "").toLowerCase();
+  if (type.includes("swipe")) {
+    return Math.random() > 0.5 ? "果断!" : "让我想想…";
+  }
+  if (type.includes("bubble")) {
+    return "这个泡泡很适合你~";
+  }
+  if (type.includes("tarot")) {
+    return "命运的指引…";
+  }
+  if (type.includes("slider")) {
+    return "这个刻度很有感觉";
+  }
+  return "小测收到啦";
+}
+
+function triggerMicroFeedback(interactionType?: string) {
+  microFeedbackText.value = pickMicroFeedback(interactionType);
+  microFeedbackVisible.value = false;
+  if (microFeedbackTimer) {
+    clearTimeout(microFeedbackTimer);
+  }
+  void nextTick(() => {
+    microFeedbackVisible.value = true;
+    microFeedbackTimer = setTimeout(() => {
+      microFeedbackVisible.value = false;
+    }, 1500);
+  });
+}
+
 async function goNext() {
   if (!questionnaire.value || !currentQuestion.value || !isCurrentAnswered.value) {
     return;
   }
 
+  const interactionType = currentQuestion.value.interaction_type;
+
   if (currentIndex.value < questionnaire.value.question_count - 1) {
+    triggerMicroFeedback(interactionType);
     currentIndex.value += 1;
     return;
   }
@@ -157,6 +196,12 @@ onLoad((query) => {
   startedAt.value = Date.now();
   loadQuestionnaire(testCode);
 });
+
+onBeforeUnmount(() => {
+  if (microFeedbackTimer) {
+    clearTimeout(microFeedbackTimer);
+  }
+});
 </script>
 
 <template>
@@ -179,6 +224,9 @@ onLoad((query) => {
       </view>
 
       <view class="question-card">
+        <view class="question-card__mascot">
+          <XiaoCe expression="thinking" size="md" :animated="true" />
+        </view>
         <text class="question-card__index">Q{{ currentQuestion.seq }}</text>
         <text class="question-card__title">{{ currentQuestion.question_text }}</text>
         <text class="question-card__hint">
@@ -206,6 +254,8 @@ onLoad((query) => {
           }}
         </button>
       </view>
+
+      <XcMicroFeedback :text="microFeedbackText" :show="microFeedbackVisible" />
     </view>
   </view>
 </template>
@@ -247,7 +297,7 @@ onLoad((query) => {
 .answer__category {
   display: block;
   font-size: 22rpx;
-  color: rgba(43, 33, 24, 0.68);
+  color: rgba(58, 46, 66, 0.68);
 }
 
 .answer__title {
@@ -262,14 +312,21 @@ onLoad((query) => {
   display: block;
   margin-top: 14rpx;
   font-size: 24rpx;
-  color: rgba(43, 33, 24, 0.74);
+  color: rgba(58, 46, 66, 0.74);
 }
 
 .question-card {
+  position: relative;
   padding: 30rpx 26rpx;
   border-radius: 24rpx;
   background: rgba(255, 255, 255, 0.9);
-  border: 2rpx solid rgba(43, 33, 24, 0.06);
+  border: 2rpx solid rgba(58, 46, 66, 0.06);
+}
+
+.question-card__mascot {
+  position: absolute;
+  right: 22rpx;
+  top: 20rpx;
 }
 
 .question-card__index {
@@ -305,7 +362,7 @@ onLoad((query) => {
 }
 
 .actions__primary {
-  background: linear-gradient(135deg, #d96f3d, #bf5321);
+  background: linear-gradient(135deg, #9B7ED8, #7C5DBF);
   color: #fff8f1;
 }
 </style>

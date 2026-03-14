@@ -68,7 +68,7 @@ function drawRadar() {
   const dimensions = props.dimensions.slice(0, 6);
 
   ctx.clearRect(0, 0, width, height);
-  ctx.setFillStyle("#fffaf4");
+  ctx.setFillStyle("#FBF7F4");
   ctx.fillRect(0, 0, width, height);
 
   for (let step = 1; step <= 4; step += 1) {
@@ -79,7 +79,7 @@ function drawRadar() {
       radius,
       centerX,
       centerY,
-      "rgba(174, 135, 111, 0.18)",
+      "rgba(155, 126, 216, 0.18)",
       "rgba(0,0,0,0)",
     );
   }
@@ -90,12 +90,12 @@ function drawRadar() {
     ctx.beginPath();
     ctx.moveTo(centerX, centerY);
     ctx.lineTo(edgePoint.x, edgePoint.y);
-    ctx.setStrokeStyle("rgba(174, 135, 111, 0.18)");
+    ctx.setStrokeStyle("rgba(155, 126, 216, 0.18)");
     ctx.setLineWidth(1);
     ctx.stroke();
 
     const labelPoint = pointAt(centerX, centerY, radius + 20, angle, 100);
-    ctx.setFillStyle("#7c6351");
+    ctx.setFillStyle("#7B6E85");
     ctx.setFontSize(12);
     ctx.setTextAlign("center");
     ctx.fillText(item.dim_code.toUpperCase(), labelPoint.x, labelPoint.y);
@@ -107,8 +107,8 @@ function drawRadar() {
     radius,
     centerX,
     centerY,
-    "#d96f3d",
-    "rgba(217,111,61,0.24)",
+    "#9B7ED8",
+    "rgba(155, 126, 216,0.24)",
   );
   drawPolygon(
     ctx,
@@ -116,8 +116,8 @@ function drawRadar() {
     radius,
     centerX,
     centerY,
-    "#6b91d9",
-    "rgba(107,145,217,0.22)",
+    "#E8729A",
+    "rgba(232, 114, 154, 0.22)",
   );
   ctx.draw();
 }
@@ -159,8 +159,8 @@ watch(
 .radar-card {
   padding: 18rpx;
   border-radius: 28rpx;
-  background: rgba(255, 251, 244, 0.96);
-  border: 2rpx solid rgba(217, 111, 61, 0.08);
+  background: $xc-card;
+  border: 2rpx solid rgba(155, 126, 216, 0.08);
 }
 
 .radar-card__canvas {
@@ -191,10 +191,10 @@ watch(
 }
 
 .radar-card__dot--warm {
-  background: #d96f3d;
+  background: $xc-purple;
 }
 
 .radar-card__dot--cool {
-  background: #6b91d9;
+  background: $xc-pink;
 }
 </style>

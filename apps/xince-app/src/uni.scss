@@ -1,7 +1,52 @@
-$xc-ink: #2b2118;
-$xc-muted: #6f6256;
-$xc-paper: #fffdf8;
-$xc-line: rgba(43, 33, 24, 0.08);
-$xc-accent: #d96f3d;
-$xc-accent-soft: #f7d4be;
-$xc-shadow: 0 18rpx 48rpx rgba(119, 74, 44, 0.12);
+@use "@/styles/tokens.scss" as *;
+@use "@/styles/mixins.scss" as *;
+
+:root,
+page {
+  --xc-bg: #{$xc-bg};
+  --xc-bg2: #{$xc-bg2};
+  --xc-card: #{$xc-card};
+  --xc-card-solid: #{$xc-card-solid};
+  --xc-purple: #{$xc-purple};
+  --xc-pink: #{$xc-pink};
+  --xc-peach: #{$xc-peach};
+  --xc-mint: #{$xc-mint};
+  --xc-gold: #{$xc-gold};
+  --xc-ink: #{$xc-ink};
+  --xc-muted: #{$xc-muted};
+  --xc-hint: #{$xc-hint};
+  --xc-line: #{$xc-line};
+  --xc-r: #{$xc-r};
+  --xc-r-lg: #{$xc-r-lg};
+  --xc-r-xl: #{$xc-r-xl};
+  --xc-ease: #{$xc-ease};
+  --xc-spring: #{$xc-spring};
+  --xc-sh-sm: #{$xc-sh-sm};
+  --xc-sh-md: #{$xc-sh-md};
+  --xc-sh-lg: #{$xc-sh-lg};
+  --xc-sh-glow: #{$xc-sh-glow};
+}
+
+.xc-glass {
+  @include glass;
+}
+
+.xc-glass-strong {
+  @include glass-strong;
+}
+
+.xc-card {
+  @include card-base;
+}
+
+.xc-btn-primary {
+  @include btn-primary;
+}
+
+.xc-hero-gradient {
+  @include gradient-hero;
+}
+
+.xc-text-gradient {
+  @include text-gradient;
+}

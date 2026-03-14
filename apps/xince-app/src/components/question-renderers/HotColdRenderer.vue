@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, getCurrentInstance, ref } from "vue";
+
+import { haptic, playSound } from "@/shared/utils/sound-manager";
 
 const props = defineProps<{
   modelValue: number | null;
@@ -16,81 +18,138 @@ const emit = defineEmits<{
   "update:modelValue": [value: number];
 }>();
 
-const scaleValues = computed(() => {
-  const min = Number.isFinite(props.min) ? Number(props.min) : 1;
-  const max = Number.isFinite(props.max) ? Number(props.max) : 5;
-  const step = Number.isFinite(props.step) && Number(props.step) > 0 ? Number(props.step) : 1;
-  const values: number[] = [];
-  for (let value = min; value <= max + step / 1000; value += step) {
-    values.push(Number(value.toFixed(6)));
-  }
-  return values;
+const proxy = getCurrentInstance()?.proxy;
+const flash = ref(false);
+const tubeRect = ref<UniApp.NodeInfo | null>(null);
+const current = computed(() => props.modelValue ?? props.min ?? 1);
+const progress = computed(() => ((current.value - (props.min ?? 1)) / Math.max(1, (props.max ?? 5) - (props.min ?? 1))));
+const tempEmoji = computed(() => {
+  if (progress.value > 0.75) return "🔥";
+  if (progress.value > 0.45) return "😐";
+  return "❄️";
 });
+
+async function ensureRect() {
+  if (tubeRect.value) return tubeRect.value;
+  return new Promise<UniApp.NodeInfo | null>((resolve) => {
+    if (!proxy) {
+      resolve(null);
+      return;
+    }
+    uni.createSelectorQuery()
+      .in(proxy)
+      .select(".hotcold__tube")
+      .boundingClientRect((rect) => {
+        const parsed = Array.isArray(rect) ? rect[0] : rect;
+        tubeRect.value = parsed || null;
+        resolve(tubeRect.value);
+      })
+      .exec();
+  });
+}
+
+async function updateByTouch(event: { touches?: Array<{ clientY?: number; pageY?: number }> }) {
+  const touch = event.touches?.[0];
+  if (!touch) return;
+  const rect = await ensureRect();
+  if (!rect || !rect.height || !rect.top) return;
+  const y = touch.clientY ?? touch.pageY ?? rect.top;
+  const ratio = 1 - Math.min(1, Math.max(0, (y - rect.top) / rect.height));
+  const min = props.min ?? 1;
+  const max = props.max ?? 5;
+  const raw = min + ratio * (max - min);
+  const step = props.step ?? 1;
+  const snapped = Math.round(raw / step) * step;
+  emit("update:modelValue", Math.min(max, Math.max(min, snapped)));
+}
+
+function confirm() {
+  playSound("chime");
+  haptic(15);
+  flash.value = true;
+  setTimeout(() => (flash.value = false), 300);
+}
 </script>
 
 <template>
-  <view class="hotcold">
-    <view class="hotcold__labels">
-      <text>{{ minLabel || "冰冷" }}</text>
-      <text>{{ maxLabel || "火热" }}</text>
+  <view class="hotcold q-enter">
+    <view v-if="flash" class="edge-flash" />
+    <text class="hotcold__label">{{ maxLabel || "热" }}</text>
+    <view
+      class="hotcold__tube"
+      @touchstart.stop.prevent="updateByTouch"
+      @touchmove.stop.prevent="updateByTouch"
+      @touchend.stop.prevent="confirm"
+    >
+      <view class="hotcold__fill" :style="{ height: `${progress * 100}%` }" />
     </view>
-    <view class="hotcold__row">
-      <view
-        v-for="(value, index) in scaleValues"
-        :key="value"
-        class="hotcold__item"
-        :class="{ 'hotcold__item--active': modelValue === value }"
-        @tap="emit('update:modelValue', value)"
-      >
-        <text class="hotcold__emoji">{{ emojis?.[index] || "•" }}</text>
-        <text class="hotcold__caption">{{ labels?.[index] || value }}</text>
-      </view>
-    </view>
+    <text class="hotcold__label">{{ minLabel || "冷" }}</text>
+    <text class="hotcold__emoji">{{ tempEmoji }}</text>
   </view>
 </template>
 
 <style lang="scss" scoped>
 .hotcold {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 14rpx;
-}
-
-.hotcold__labels {
-  display: flex;
-  justify-content: space-between;
-  font-size: 22rpx;
-  color: $xc-muted;
-}
-
-.hotcold__row {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(96rpx, 1fr));
+  align-items: center;
   gap: 12rpx;
 }
 
-.hotcold__item {
-  padding: 18rpx 8rpx;
-  border-radius: 18rpx;
-  text-align: center;
-  background: rgba(255, 253, 248, 0.94);
-  border: 2rpx solid rgba(43, 33, 24, 0.07);
+.hotcold__tube {
+  width: 92rpx;
+  height: 360rpx;
+  border-radius: 999rpx;
+  background: linear-gradient(180deg, #ff7a6d, #f8f8f8 52%, #6aa5ff);
+  border: 2rpx solid rgba(155, 126, 216, 0.14);
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
 }
 
-.hotcold__item--active {
-  border-color: rgba(217, 111, 61, 0.45);
-  background: rgba(255, 235, 221, 0.94);
+.hotcold__fill {
+  width: 100%;
+  background: linear-gradient(180deg, #ff6a59, #ffffff 55%, #4a83ff);
+  transition: height 0.15s ease;
 }
 
 .hotcold__emoji {
-  display: block;
-  font-size: 30rpx;
+  font-size: 34rpx;
 }
 
-.hotcold__caption {
-  display: block;
-  margin-top: 8rpx;
-  font-size: 20rpx;
+.hotcold__label {
   color: $xc-muted;
+  font-size: 22rpx;
+}
+
+.edge-flash {
+  position: absolute;
+  inset: 0;
+  animation: edgeFlash 0.3s ease;
+}
+
+.q-enter {
+  animation: qEnter 0.4s $xc-ease both;
+}
+
+@keyframes qEnter {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes edgeFlash {
+  from {
+    box-shadow: inset 0 0 0 0 rgba(255, 106, 89, 0.5);
+  }
+  to {
+    box-shadow: inset 0 0 0 14rpx rgba(74, 131, 255, 0);
+  }
 }
 </style>
