@@ -7,7 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_settings
-from app.models.ai import AiPromptTemplate
+from app.models.ai import AiPromptTemplate, AiPromptTemplateHistory
 
 
 class PromptTemplateService:
@@ -62,6 +62,23 @@ class PromptTemplateService:
 
         if changed:
             await self.db.commit()
+
+    async def snapshot_template(self, template: AiPromptTemplate) -> None:
+        self.db.add(
+            AiPromptTemplateHistory(
+                template_id=template.id,
+                template_code=template.template_code,
+                scene=template.scene,
+                system_prompt=template.system_prompt,
+                user_prompt_tpl=template.user_prompt_tpl,
+                model_tier=template.model_tier,
+                temperature=float(template.temperature),
+                max_tokens=template.max_tokens,
+                version=template.version,
+                is_active=template.is_active,
+            )
+        )
+        await self.db.flush()
 
     async def get_active_template(self, template_code: str) -> AiPromptTemplate:
         await self.ensure_defaults()

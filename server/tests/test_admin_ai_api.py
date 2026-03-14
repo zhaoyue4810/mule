@@ -117,6 +117,11 @@ def test_admin_ai_task_and_prompt_management() -> None:
         assert "failure_rate" in metrics
         assert "avg_duration_ms" in metrics
         assert "tasks_last_24h" in metrics
+        assert isinstance(metrics["series"], list)
+
+        metrics_by_week = client.get("/api/admin/ai/task/metrics?bucket=week")
+        assert metrics_by_week.status_code == 200
+        assert "series" in metrics_by_week.json()
 
         detail_response = client.get(
             f"/api/admin/ai/task/{task_page['items'][0]['id']}"
@@ -150,6 +155,28 @@ def test_admin_ai_task_and_prompt_management() -> None:
         updated_template = update_response.json()
         assert updated_template["version"] == template["version"] + 1
         assert "同理心" in updated_template["system_prompt"]
+
+        history_response = client.get(f"/api/admin/ai/prompt/{template['id']}/history")
+        assert history_response.status_code == 200
+        history_payload = history_response.json()
+        assert len(history_payload) >= 2
+        assert history_payload[0]["template_id"] == template["id"]
+
+        compare_response = client.get(f"/api/admin/ai/prompt/{template['id']}/compare")
+        assert compare_response.status_code == 200
+        compare_payload = compare_response.json()
+        assert compare_payload["template_id"] == template["id"]
+        assert "同理心" in compare_payload["system_prompt_after"]
+
+        retry_task_response = client.post(
+            f"/api/admin/ai/task/{task_page['items'][0]['id']}/retry"
+        )
+        assert retry_task_response.status_code == 200
+        assert retry_task_response.json()["retried"] == 1
+
+        retry_failed_response = client.post("/api/admin/ai/task/retry-failed")
+        assert retry_failed_response.status_code == 200
+        assert "retried" in retry_failed_response.json()
     finally:
         app.dependency_overrides.clear()
         import asyncio

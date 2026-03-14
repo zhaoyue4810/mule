@@ -43,3 +43,21 @@ class AiPromptTemplate(TimestampMixin, Base):
     max_tokens: Mapped[int] = mapped_column(Integer, default=2000, nullable=False)
     version: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+
+
+class AiPromptTemplateHistory(TimestampMixin, Base):
+    __tablename__ = "xc_ai_prompt_template_history"
+
+    id: Mapped[int] = mapped_column(BIGINT_ID, primary_key=True, autoincrement=True)
+    template_id: Mapped[int] = mapped_column(BIGINT_ID, nullable=False, index=True)
+    template_code: Mapped[str] = mapped_column(String(50), nullable=False)
+    scene: Mapped[str] = mapped_column(String(30), nullable=False)
+    system_prompt: Mapped[str] = mapped_column(Text, nullable=False)
+    user_prompt_tpl: Mapped[str] = mapped_column(Text, nullable=False)
+    model_tier: Mapped[str] = mapped_column(String(10), default="PRO", nullable=False)
+    temperature: Mapped[float] = mapped_column(
+        Numeric(3, 2), default=0.70, nullable=False
+    )
+    max_tokens: Mapped[int] = mapped_column(Integer, default=2000, nullable=False)
+    version: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)

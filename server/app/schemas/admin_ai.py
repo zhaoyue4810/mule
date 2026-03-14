@@ -59,6 +59,7 @@ class AdminAiTaskMetrics(BaseModel):
     p95_duration_ms: int
     tasks_last_24h: int
     failures_last_24h: int
+    series: list[dict] = []
 
 
 class AdminAiPromptTemplateSummary(BaseModel):
@@ -73,6 +74,25 @@ class AdminAiPromptTemplateSummary(BaseModel):
     version: int
     is_active: bool
     created_at: datetime
+
+
+class AdminAiPromptTemplateHistoryItem(AdminAiPromptTemplateSummary):
+    template_id: int
+
+
+class AdminAiPromptTemplateComparePayload(BaseModel):
+    template_id: int
+    from_version: int
+    to_version: int
+    system_prompt_before: str
+    system_prompt_after: str
+    user_prompt_before: str
+    user_prompt_after: str
+
+
+class AdminAiRetryResponse(BaseModel):
+    retried: int
+    task_ids: list[int]
 
 
 class AdminAiPromptTemplateUpdateRequest(BaseModel):
