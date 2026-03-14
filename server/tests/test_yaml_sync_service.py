@@ -87,7 +87,7 @@ async def test_sync_dictionaries_creates_runtime_dictionary_rows() -> None:
         service = YamlSyncService(session)
         summary = await service.sync_dictionaries()
 
-        assert summary.badge_count == 3
+        assert summary.badge_count == 5
         assert summary.daily_question_count == 3
         assert summary.soul_fragment_count == 5
 
@@ -99,7 +99,7 @@ async def test_sync_dictionaries_creates_runtime_dictionary_rows() -> None:
             select(func.count(SoulFragmentDefinition.id))
         )
 
-        assert badge_count == 3
+        assert badge_count == 5
         assert daily_question_count == 3
         assert soul_fragment_count == 5
 

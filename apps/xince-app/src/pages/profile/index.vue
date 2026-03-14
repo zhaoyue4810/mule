@@ -4,6 +4,7 @@ import { onShow } from "@dcloudio/uni-app";
 
 import type {
   AppProfileOverview,
+  DailyQuestionStatePayload,
   ProfileReportHistoryItem,
 } from "@/shared/models/profile";
 import type { AuthUserPayload } from "@/shared/models/auth";
@@ -13,7 +14,12 @@ import {
   getSessionUser,
   sendPhoneCode,
 } from "@/shared/services/auth";
-import { fetchMyProfileOverview, fetchMyProfileReports } from "@/shared/services/profile";
+import {
+  fetchMyDailyQuestion,
+  fetchMyProfileOverview,
+  fetchMyProfileReports,
+  submitMyDailyQuestion,
+} from "@/shared/services/profile";
 
 const overview = ref<AppProfileOverview | null>(null);
 const reports = ref<ProfileReportHistoryItem[]>([]);
@@ -25,6 +31,8 @@ const code = ref("");
 const sendingCode = ref(false);
 const bindingPhone = ref(false);
 const debugCode = ref("");
+const dailyQuestion = ref<DailyQuestionStatePayload | null>(null);
+const dailyQuestionSubmitting = ref(false);
 
 const hasProfile = computed(() => Boolean(overview.value));
 const canSubmitPhoneBind = computed(
@@ -94,6 +102,7 @@ async function loadProfile() {
     ]);
     overview.value = overviewPayload;
     reports.value = reportPayload;
+    dailyQuestion.value = await fetchMyDailyQuestion();
   } catch (err) {
     if (
       err instanceof Error &&
@@ -106,6 +115,35 @@ async function loadProfile() {
     error.value = err instanceof Error ? err.message : "个人中心加载失败";
   } finally {
     loading.value = false;
+  }
+}
+
+async function answerDailyQuestion(answerIndex: number) {
+  if (
+    dailyQuestionSubmitting.value ||
+    !dailyQuestion.value ||
+    dailyQuestion.value.answered
+  ) {
+    return;
+  }
+  dailyQuestionSubmitting.value = true;
+  try {
+    dailyQuestion.value = await submitMyDailyQuestion(
+      dailyQuestion.value.question_id,
+      answerIndex,
+    );
+    await loadProfile();
+    uni.showToast({
+      title: "今日心情已记录",
+      icon: "success",
+    });
+  } catch (err) {
+    uni.showToast({
+      title: err instanceof Error ? err.message : "提交失败",
+      icon: "none",
+    });
+  } finally {
+    dailyQuestionSubmitting.value = false;
   }
 }
 
@@ -246,6 +284,59 @@ onShow(() => {
               <text class="heatmap-cell__day">{{ formatDayLabel(item.date) }}</text>
               <text class="heatmap-cell__count">
                 {{ item.activity_count > 0 ? item.activity_count : "-" }}
+              </text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="panel" v-if="dailyQuestion">
+        <text class="panel__title">今日灵魂一问</text>
+        <text class="panel__body">{{ dailyQuestion.question_text }}</text>
+        <view class="daily-question-stats">
+          <view class="daily-question-stat">
+            <text class="daily-question-stat__value">{{ dailyQuestion.current_streak }}</text>
+            <text class="daily-question-stat__label">连续打卡</text>
+          </view>
+          <view class="daily-question-stat">
+            <text class="daily-question-stat__value">{{ dailyQuestion.best_streak }}</text>
+            <text class="daily-question-stat__label">最佳记录</text>
+          </view>
+          <view class="daily-question-stat">
+            <text class="daily-question-stat__value">{{ dailyQuestion.recent_answered_days }}</text>
+            <text class="daily-question-stat__label">近7天作答</text>
+          </view>
+        </view>
+        <view v-if="!dailyQuestion.answered" class="daily-question-options">
+          <button
+            v-for="(option, index) in dailyQuestion.options"
+            :key="`${dailyQuestion.question_id}-${index}`"
+            class="daily-question-option"
+            :disabled="dailyQuestionSubmitting"
+            @tap="answerDailyQuestion(index)"
+          >
+            {{ option }}
+          </button>
+        </view>
+        <view v-else class="daily-question-result">
+          <text class="daily-question-result__label">
+            今日选择：{{ dailyQuestion.options[dailyQuestion.selected_index || 0] }}
+          </text>
+          <text class="daily-question-result__body">
+            {{ dailyQuestion.insight || "今天的答案已经留下，明天再来看看新的问题。" }}
+          </text>
+          <view
+            v-if="dailyQuestion.unlocked_badges && dailyQuestion.unlocked_badges.length"
+            class="daily-question-badges"
+          >
+            <text class="daily-question-badges__title">连续奖励已点亮</text>
+            <view class="daily-question-badges__list">
+              <text
+                v-for="badge in dailyQuestion.unlocked_badges"
+                :key="badge.badge_key"
+                class="daily-question-badges__item"
+              >
+                {{ badge.emoji }} {{ badge.name }}
               </text>
             </view>
           </view>
@@ -652,6 +743,99 @@ onShow(() => {
   margin-top: 10rpx;
   font-size: 26rpx;
   font-weight: 700;
+  color: $xc-ink;
+}
+
+.daily-question-options {
+  display: grid;
+  gap: 12rpx;
+  margin-top: 18rpx;
+}
+
+.daily-question-stats {
+  margin-top: 18rpx;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12rpx;
+}
+
+.daily-question-stat {
+  padding: 18rpx 14rpx;
+  border-radius: 18rpx;
+  background: rgba(255, 248, 238, 0.96);
+  border: 2rpx solid rgba(217, 111, 61, 0.08);
+  text-align: center;
+}
+
+.daily-question-stat__value {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 700;
+  color: $xc-accent;
+}
+
+.daily-question-stat__label {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 20rpx;
+  color: $xc-muted;
+}
+
+.daily-question-option {
+  border-radius: 20rpx;
+  background: rgba(255, 245, 235, 0.96);
+  color: $xc-ink;
+  border: 2rpx solid rgba(217, 111, 61, 0.12);
+}
+
+.daily-question-result {
+  margin-top: 18rpx;
+  padding: 22rpx;
+  border-radius: 20rpx;
+  background: rgba(255, 248, 238, 0.96);
+  border: 2rpx solid rgba(217, 111, 61, 0.1);
+}
+
+.daily-question-result__label {
+  display: block;
+  font-size: 24rpx;
+  color: $xc-accent;
+}
+
+.daily-question-result__body {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  line-height: 1.6;
+  color: $xc-muted;
+}
+
+.daily-question-badges {
+  margin-top: 16rpx;
+  padding-top: 14rpx;
+  border-top: 2rpx dashed rgba(217, 111, 61, 0.12);
+}
+
+.daily-question-badges__title {
+  display: block;
+  font-size: 22rpx;
+  color: $xc-accent;
+}
+
+.daily-question-badges__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx;
+  margin-top: 10rpx;
+}
+
+.daily-question-badges__item {
+  display: inline-flex;
+  align-items: center;
+  padding: 10rpx 16rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 242, 228, 0.96);
+  font-size: 22rpx;
   color: $xc-ink;
 }
 

@@ -151,6 +151,14 @@ def test_app_tests_only_return_published_content() -> None:
         assert report_payload["action_guides"]
         assert report_payload["result_tier"]
         assert report_payload["ai_status"] in {"PENDING", "COMPLETED"}
+        assert report_payload["share_card"]["title"]
+        assert report_payload["share_card"]["share_text"]
+        assert report_payload["share_card"]["highlight_lines"]
+        assert report_payload["share_card"]["theme"]
+        assert report_payload["share_card"]["background"]
+        assert report_payload["share_card"]["badge"]
+        assert report_payload["share_card"]["footer"]
+        assert report_payload["share_card"]["stat_chips"]
 
         ai_status_response = client.get(
             f"/api/app/reports/{submit_payload['record_id']}/ai-status"
@@ -288,18 +296,25 @@ def test_profile_history_orders_latest_reports_first() -> None:
         )
         client.post("/api/admin/content/tests/mbti/publish", json={"version": 1})
 
+        guest_response = client.post(
+            "/api/app/auth/guest",
+            json={"nickname": "连续测试用户"},
+        )
+        guest_payload = guest_response.json()
+        headers = {"Authorization": f"Bearer {guest_payload['access_token']}"}
+
         first_submit = client.post(
             "/api/app/tests/mbti/submit",
+            headers=headers,
             json={
-                "nickname": "连续测试用户",
                 "duration_seconds": 12,
                 "answers": [{"question_seq": 1, "option_code": "a"}],
             },
         ).json()
         second_submit_response = client.post(
             "/api/app/tests/mbti/submit",
+            headers=headers,
             json={
-                "user_id": first_submit["user_id"],
                 "duration_seconds": 30,
                 "answers": [{"question_seq": 1, "option_code": "b"}],
             },
@@ -968,6 +983,349 @@ def test_submit_supports_colorpick_numeric_answer() -> None:
         payload = submit_response.json()
         assert payload["record_id"] >= 1
         assert payload["answers"][0]["label"] == "数值 180.0"
+    finally:
+        app.dependency_overrides.clear()
+        import asyncio
+
+        asyncio.run(engine.dispose())
+
+
+def test_submit_rejects_non_integer_discrete_numeric_answers() -> None:
+    engine = create_async_engine("sqlite+aiosqlite:///:memory:", future=True)
+    session_factory = async_sessionmaker(engine, expire_on_commit=False)
+
+    async def override_get_db():
+        async with session_factory() as session:
+            yield session
+
+    app.dependency_overrides[get_db] = override_get_db
+
+    try:
+        import asyncio
+
+        asyncio.run(_prepare_db(engine))
+        client = TestClient(app)
+
+        task_id = client.post(
+            "/api/admin/import/tasks",
+            json={"file_type": "html", "file_path": str(REPO_ROOT / "index.html")},
+        ).json()["id"]
+        client.post(f"/api/admin/import/tasks/{task_id}/parse", json={"force": True})
+        client.post(f"/api/admin/import/tasks/{task_id}/apply", json={"note": "apply"})
+
+        versions = client.get("/api/admin/content/tests/mbti/versions").json()
+        version_id = versions[0]["id"]
+        client.put(
+            f"/api/admin/content/tests/mbti/versions/{version_id}/content",
+            json={
+                "title": "MBTI 离散数值校验版",
+                "category": "personality",
+                "is_match_enabled": False,
+                "participant_count": 300,
+                "sort_order": 1,
+                "description": "离散数值题型校验",
+                "duration_hint": "5分钟",
+                "cover_gradient": "dawn",
+                "report_template_code": "mbti_public_v1",
+                "dimensions": [
+                    {
+                        "dim_code": "ei",
+                        "dim_name": "外倾-内倾",
+                        "max_score": 100,
+                        "sort_order": 1,
+                    }
+                ],
+                "questions": [
+                    {
+                        "question_code": "q1",
+                        "seq": 1,
+                        "question_text": "你会给今天的社交状态打几星？",
+                        "interaction_type": "star",
+                        "config": {"min": 1, "max_stars": 5},
+                        "dim_weights": {"ei": 1},
+                        "options": [],
+                    }
+                ],
+                "personas": [],
+            },
+        )
+        client.post("/api/admin/content/tests/mbti/publish", json={"version": 1})
+
+        submit_response = client.post(
+            "/api/app/tests/mbti/submit",
+            json={
+                "nickname": "离散数值用户",
+                "duration_seconds": 16,
+                "answers": [{"question_seq": 1, "numeric_value": 3.5}],
+            },
+        )
+        assert submit_response.status_code == 409
+        assert "requires integer steps" in submit_response.json()["detail"]
+    finally:
+        app.dependency_overrides.clear()
+        import asyncio
+
+        asyncio.run(engine.dispose())
+
+
+def test_submit_rejects_invalid_plot2d_point() -> None:
+    engine = create_async_engine("sqlite+aiosqlite:///:memory:", future=True)
+    session_factory = async_sessionmaker(engine, expire_on_commit=False)
+
+    async def override_get_db():
+        async with session_factory() as session:
+            yield session
+
+    app.dependency_overrides[get_db] = override_get_db
+
+    try:
+        import asyncio
+
+        asyncio.run(_prepare_db(engine))
+        client = TestClient(app)
+
+        task_id = client.post(
+            "/api/admin/import/tasks",
+            json={"file_type": "html", "file_path": str(REPO_ROOT / "index.html")},
+        ).json()["id"]
+        client.post(f"/api/admin/import/tasks/{task_id}/parse", json={"force": True})
+        client.post(f"/api/admin/import/tasks/{task_id}/apply", json={"note": "apply"})
+
+        versions = client.get("/api/admin/content/tests/mbti/versions").json()
+        version_id = versions[0]["id"]
+        client.put(
+            f"/api/admin/content/tests/mbti/versions/{version_id}/content",
+            json={
+                "title": "MBTI 坐标题型校验版",
+                "category": "personality",
+                "is_match_enabled": False,
+                "participant_count": 300,
+                "sort_order": 1,
+                "description": "plot2d 边界校验",
+                "duration_hint": "5分钟",
+                "cover_gradient": "dawn",
+                "report_template_code": "mbti_public_v1",
+                "dimensions": [
+                    {
+                        "dim_code": "logic",
+                        "dim_name": "理性",
+                        "max_score": 100,
+                        "sort_order": 1,
+                    },
+                    {
+                        "dim_code": "social",
+                        "dim_name": "社交",
+                        "max_score": 100,
+                        "sort_order": 2,
+                    },
+                ],
+                "questions": [
+                    {
+                        "question_code": "q1",
+                        "seq": 1,
+                        "question_text": "在二维坐标中选一个位置",
+                        "interaction_type": "plot2d",
+                        "config": {
+                            "x_min": "内向",
+                            "x_max": "外向",
+                            "y_min": "感性",
+                            "y_max": "理性",
+                        },
+                        "dim_weights": {"social": 1, "logic": 1},
+                        "options": [],
+                    }
+                ],
+                "personas": [],
+            },
+        )
+        client.post("/api/admin/content/tests/mbti/publish", json={"version": 1})
+
+        submit_response = client.post(
+            "/api/app/tests/mbti/submit",
+            json={
+                "nickname": "坐标用户",
+                "duration_seconds": 22,
+                "answers": [{"question_seq": 1, "point": {"x": 1.2, "y": 0.6}}],
+            },
+        )
+        assert submit_response.status_code == 409
+        assert "requires x and y between 0 and 1" in submit_response.json()["detail"]
+    finally:
+        app.dependency_overrides.clear()
+        import asyncio
+
+        asyncio.run(engine.dispose())
+
+
+def test_submit_rejects_explicit_user_id_without_auth() -> None:
+    engine = create_async_engine("sqlite+aiosqlite:///:memory:", future=True)
+    session_factory = async_sessionmaker(engine, expire_on_commit=False)
+
+    async def override_get_db():
+        async with session_factory() as session:
+            yield session
+
+    app.dependency_overrides[get_db] = override_get_db
+
+    try:
+        import asyncio
+
+        asyncio.run(_prepare_db(engine))
+        client = TestClient(app)
+
+        task_id = client.post(
+            "/api/admin/import/tasks",
+            json={"file_type": "html", "file_path": str(REPO_ROOT / "index.html")},
+        ).json()["id"]
+        client.post(f"/api/admin/import/tasks/{task_id}/parse", json={"force": True})
+        client.post(f"/api/admin/import/tasks/{task_id}/apply", json={"note": "apply"})
+
+        versions = client.get("/api/admin/content/tests/mbti/versions").json()
+        version_id = versions[0]["id"]
+        client.put(
+            f"/api/admin/content/tests/mbti/versions/{version_id}/content",
+            json={
+                "title": "MBTI 显式用户提交校验版",
+                "category": "personality",
+                "is_match_enabled": False,
+                "participant_count": 300,
+                "sort_order": 1,
+                "description": "显式 user_id 需要鉴权",
+                "duration_hint": "5分钟",
+                "cover_gradient": "dawn",
+                "report_template_code": "mbti_public_v1",
+                "dimensions": [
+                    {
+                        "dim_code": "ei",
+                        "dim_name": "外倾-内倾",
+                        "max_score": 100,
+                        "sort_order": 1,
+                    }
+                ],
+                "questions": [
+                    {
+                        "question_code": "q1",
+                        "seq": 1,
+                        "question_text": "你更喜欢哪种聚会？",
+                        "interaction_type": "bubble",
+                        "dim_weights": {"ei": 1},
+                        "options": [
+                            {
+                                "option_code": "a",
+                                "seq": 1,
+                                "label": "热闹局",
+                                "value": 2,
+                            }
+                        ],
+                    }
+                ],
+                "personas": [],
+            },
+        )
+        client.post("/api/admin/content/tests/mbti/publish", json={"version": 1})
+
+        guest_response = client.post("/api/app/auth/guest", json={"nickname": "访客A"})
+        guest_payload = guest_response.json()
+
+        submit_response = client.post(
+            "/api/app/tests/mbti/submit",
+            json={
+                "user_id": guest_payload["user"]["user_id"],
+                "duration_seconds": 10,
+                "answers": [{"question_seq": 1, "option_code": "a"}],
+            },
+        )
+        assert submit_response.status_code == 401
+        assert "Authorization required" in submit_response.json()["detail"]
+    finally:
+        app.dependency_overrides.clear()
+        import asyncio
+
+        asyncio.run(engine.dispose())
+
+
+def test_submit_rejects_mismatched_user_id_for_current_session() -> None:
+    engine = create_async_engine("sqlite+aiosqlite:///:memory:", future=True)
+    session_factory = async_sessionmaker(engine, expire_on_commit=False)
+
+    async def override_get_db():
+        async with session_factory() as session:
+            yield session
+
+    app.dependency_overrides[get_db] = override_get_db
+
+    try:
+        import asyncio
+
+        asyncio.run(_prepare_db(engine))
+        client = TestClient(app)
+
+        task_id = client.post(
+            "/api/admin/import/tasks",
+            json={"file_type": "html", "file_path": str(REPO_ROOT / "index.html")},
+        ).json()["id"]
+        client.post(f"/api/admin/import/tasks/{task_id}/parse", json={"force": True})
+        client.post(f"/api/admin/import/tasks/{task_id}/apply", json={"note": "apply"})
+
+        versions = client.get("/api/admin/content/tests/mbti/versions").json()
+        version_id = versions[0]["id"]
+        client.put(
+            f"/api/admin/content/tests/mbti/versions/{version_id}/content",
+            json={
+                "title": "MBTI 会话用户校验版",
+                "category": "personality",
+                "is_match_enabled": False,
+                "participant_count": 300,
+                "sort_order": 1,
+                "description": "token 用户和 payload.user_id 必须一致",
+                "duration_hint": "5分钟",
+                "cover_gradient": "dawn",
+                "report_template_code": "mbti_public_v1",
+                "dimensions": [
+                    {
+                        "dim_code": "ei",
+                        "dim_name": "外倾-内倾",
+                        "max_score": 100,
+                        "sort_order": 1,
+                    }
+                ],
+                "questions": [
+                    {
+                        "question_code": "q1",
+                        "seq": 1,
+                        "question_text": "你更喜欢哪种聚会？",
+                        "interaction_type": "bubble",
+                        "dim_weights": {"ei": 1},
+                        "options": [
+                            {
+                                "option_code": "a",
+                                "seq": 1,
+                                "label": "热闹局",
+                                "value": 2,
+                            }
+                        ],
+                    }
+                ],
+                "personas": [],
+            },
+        )
+        client.post("/api/admin/content/tests/mbti/publish", json={"version": 1})
+
+        guest_a = client.post("/api/app/auth/guest", json={"nickname": "访客A"}).json()
+        guest_b = client.post("/api/app/auth/guest", json={"nickname": "访客B"}).json()
+        headers = {"Authorization": f"Bearer {guest_a['access_token']}"}
+
+        submit_response = client.post(
+            "/api/app/tests/mbti/submit",
+            headers=headers,
+            json={
+                "user_id": guest_b["user"]["user_id"],
+                "duration_seconds": 10,
+                "answers": [{"question_seq": 1, "option_code": "a"}],
+            },
+        )
+        assert submit_response.status_code == 403
+        assert "does not match current session" in submit_response.json()["detail"]
     finally:
         app.dependency_overrides.clear()
         import asyncio

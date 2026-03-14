@@ -80,7 +80,7 @@ class PublishedTestQuestionnaire(BaseModel):
 
 
 class TestSubmitAnswerPayload(BaseModel):
-    question_seq: int
+    question_seq: int = Field(ge=1)
     option_code: str | None = None
     numeric_value: float | None = None
     ordered_option_codes: list[str] | None = None
@@ -90,7 +90,7 @@ class TestSubmitAnswerPayload(BaseModel):
 class TestSubmitRequest(BaseModel):
     user_id: int | None = None
     nickname: str | None = None
-    duration_seconds: int | None = None
+    duration_seconds: int | None = Field(default=None, ge=0)
     answers: list[TestSubmitAnswerPayload] = Field(default_factory=list)
 
 

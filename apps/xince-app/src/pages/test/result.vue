@@ -34,6 +34,15 @@ function goProfile() {
   });
 }
 
+function openSharePoster() {
+  if (!currentRecordId) {
+    return;
+  }
+  uni.navigateTo({
+    url: `/pages/test/share-poster?recordId=${currentRecordId}`,
+  });
+}
+
 function stopPolling() {
   if (pollTimer) {
     clearInterval(pollTimer);
@@ -43,6 +52,30 @@ function stopPolling() {
 
 function formatPercent(value: number) {
   return `${Math.round(value * 100)}%`;
+}
+
+function shareCardThemeClass(theme: string) {
+  return `share-card--${theme || "sunset"}`;
+}
+
+async function copyShareText() {
+  if (!report.value?.share_card?.share_text) {
+    return;
+  }
+  try {
+    await uni.setClipboardData({
+      data: report.value.share_card.share_text,
+    });
+    uni.showToast({
+      title: "分享文案已复制",
+      icon: "success",
+    });
+  } catch (err) {
+    uni.showToast({
+      title: err instanceof Error ? err.message : "复制失败",
+      icon: "none",
+    });
+  }
 }
 
 async function refreshAiStatus() {
@@ -184,6 +217,39 @@ onUnload(() => {
       <view class="panel">
         <text class="panel__title">结果摘要</text>
         <text class="panel__body">{{ report.summary }}</text>
+      </view>
+
+      <view class="panel" v-if="report.share_card">
+        <text class="panel__title">分享卡片</text>
+        <view class="share-card" :class="shareCardThemeClass(report.share_card.theme)">
+          <text class="share-card__badge">{{ report.share_card.badge }}</text>
+          <text class="share-card__eyebrow">{{ report.share_card.subtitle }}</text>
+          <text class="share-card__title">{{ report.share_card.title }}</text>
+          <text class="share-card__accent">主色标签：{{ report.share_card.accent }}</text>
+          <view class="share-card__chips">
+            <text
+              v-for="chip in report.share_card.stat_chips"
+              :key="chip"
+              class="share-card__chip"
+            >
+              {{ chip }}
+            </text>
+          </view>
+          <view class="share-card__highlights">
+            <text
+              v-for="line in report.share_card.highlight_lines"
+              :key="line"
+              class="share-card__line"
+            >
+              {{ line }}
+            </text>
+          </view>
+          <text class="share-card__footer">{{ report.share_card.footer }}</text>
+        </view>
+        <button class="mini-button" @tap="copyShareText">复制分享文案</button>
+        <button class="mini-button mini-button--ghost" @tap="openSharePoster">
+          打开海报预览
+        </button>
       </view>
 
       <view class="panel" v-if="report.radar_dimensions.length">
@@ -561,6 +627,112 @@ onUnload(() => {
   font-size: 24rpx;
   line-height: 1.7;
   color: $xc-muted;
+}
+
+.share-card {
+  margin-top: 18rpx;
+  padding: 26rpx 24rpx;
+  border-radius: 24rpx;
+  border: 2rpx solid rgba(217, 111, 61, 0.1);
+  overflow: hidden;
+  position: relative;
+}
+
+.share-card--dawn {
+  background:
+    radial-gradient(circle at top right, rgba(255, 245, 230, 0.98), rgba(255, 206, 171, 0.9)),
+    linear-gradient(145deg, #fff1df, #ffc8a4);
+}
+
+.share-card--aurora {
+  background:
+    radial-gradient(circle at top right, rgba(241, 255, 245, 0.98), rgba(190, 246, 214, 0.92)),
+    linear-gradient(145deg, #ebfff2, #b9efcf);
+}
+
+.share-card--ember {
+  background:
+    radial-gradient(circle at top right, rgba(255, 245, 240, 0.98), rgba(255, 190, 155, 0.92)),
+    linear-gradient(145deg, #fff0e8, #ffb48f);
+}
+
+.share-card--nightfall {
+  background:
+    radial-gradient(circle at top right, rgba(243, 246, 255, 0.98), rgba(207, 218, 255, 0.92)),
+    linear-gradient(145deg, #eef2ff, #c7d2ff);
+}
+
+.share-card--sunset {
+  background:
+    radial-gradient(circle at top right, rgba(255, 238, 214, 0.98), rgba(255, 219, 189, 0.92)),
+    linear-gradient(145deg, #fff7ef, #ffd7bf);
+}
+
+.share-card__badge {
+  display: inline-flex;
+  padding: 10rpx 16rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.66);
+  font-size: 20rpx;
+  color: $xc-accent;
+}
+
+.share-card__eyebrow {
+  display: block;
+  margin-top: 16rpx;
+  font-size: 22rpx;
+  color: $xc-accent;
+}
+
+.share-card__title {
+  display: block;
+  margin-top: 12rpx;
+  font-size: 34rpx;
+  font-weight: 700;
+}
+
+.share-card__accent {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 22rpx;
+  color: rgba(43, 33, 24, 0.7);
+}
+
+.share-card__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx;
+  margin-top: 16rpx;
+}
+
+.share-card__chip {
+  display: inline-flex;
+  padding: 8rpx 14rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.62);
+  font-size: 20rpx;
+  color: rgba(43, 33, 24, 0.78);
+}
+
+.share-card__highlights {
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+  margin-top: 18rpx;
+}
+
+.share-card__line {
+  display: block;
+  font-size: 24rpx;
+  line-height: 1.6;
+  color: $xc-ink;
+}
+
+.share-card__footer {
+  display: block;
+  margin-top: 18rpx;
+  font-size: 20rpx;
+  color: rgba(43, 33, 24, 0.58);
 }
 
 .actions {

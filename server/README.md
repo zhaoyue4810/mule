@@ -15,7 +15,18 @@ uvicorn app.main:app --reload --port 8080
 ## Useful commands
 
 ```bash
-pytest
+bash scripts/run_pytest.sh
 python ../scripts/yaml_validate.py
 alembic upgrade head
 ```
+
+## Stable test entry
+
+To avoid PATH differences between shells, this project now provides a single backend test entry:
+
+```bash
+cd /Users/zhaoyue/pythonProject/mule/server
+bash scripts/run_pytest.sh
+```
+
+If `.venv` or dev dependencies are missing, the script will print the exact setup commands needed.

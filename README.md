@@ -38,6 +38,15 @@ cp .env.example .env
 uvicorn app.main:app --reload --port 8080
 ```
 
+后端测试建议统一走：
+
+```bash
+cd /Users/zhaoyue/pythonProject/mule/server
+bash scripts/run_pytest.sh
+```
+
+这样可以避免不同 shell / Python PATH 差异导致的 `pytest` 不可用问题。
+
 启动后可访问：
 
 - `http://127.0.0.1:8080/health`

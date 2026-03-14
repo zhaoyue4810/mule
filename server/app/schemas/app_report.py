@@ -44,6 +44,19 @@ class ReportActionGuide(BaseModel):
     description: str
 
 
+class ReportShareCard(BaseModel):
+    theme: str
+    background: str
+    title: str
+    subtitle: str
+    accent: str
+    badge: str
+    footer: str
+    stat_chips: list[str] = Field(default_factory=list)
+    highlight_lines: list[str] = Field(default_factory=list)
+    share_text: str
+
+
 class ReportPersonaPayload(BaseModel):
     persona_key: str | None = None
     persona_name: str | None = None
@@ -73,3 +86,4 @@ class AppReportDetail(BaseModel):
     ai_status: str
     ai_text: str | None = None
     share_card_url: str | None = None
+    share_card: ReportShareCard

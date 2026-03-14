@@ -14,6 +14,20 @@ badges:
       type: time_range
       start: 23
       end: 5
+  - code: soul_checkin_3
+    name: 三日微光
+    emoji: 🔥
+    scope: personal
+    unlock_rule:
+      type: daily_streak
+      value: 3
+  - code: soul_checkin_7
+    name: 七日恒星
+    emoji: ☀️
+    scope: personal
+    unlock_rule:
+      type: daily_streak
+      value: 7
   - code: perfect_match
     name: 天作之合
     emoji: 💎

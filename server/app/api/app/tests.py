@@ -64,6 +64,20 @@ async def submit_test_answers(
     current_user: User | None = Depends(get_current_user_optional),
     db: AsyncSession = Depends(get_db),
 ) -> TestSubmitResponse:
+    if payload.user_id is not None and current_user is None:
+        raise HTTPException(
+            status_code=401,
+            detail="Authorization required when submitting with explicit user_id",
+        )
+    if (
+        current_user is not None
+        and payload.user_id is not None
+        and payload.user_id != current_user.id
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="Submitted user_id does not match current session",
+        )
     if current_user is not None and payload.user_id is None:
         payload = payload.model_copy(update={"user_id": current_user.id})
     service = TestSubmissionService(db)

@@ -128,6 +128,32 @@ def test_guest_auth_and_profile_me_flow() -> None:
         reports_payload = reports_response.json()
         assert len(reports_payload) == 1
         assert reports_payload[0]["record_id"] == submit_payload["record_id"]
+
+        daily_question_response = client.get(
+            "/api/app/profile/me/daily-question",
+            headers=headers,
+        )
+        assert daily_question_response.status_code == 200
+        daily_question_payload = daily_question_response.json()
+        assert daily_question_payload["question_id"] >= 1
+        assert daily_question_payload["answered"] is False
+
+        answer_response = client.post(
+            "/api/app/profile/me/daily-question",
+            json={
+                "question_id": daily_question_payload["question_id"],
+                "answer_index": 1,
+            },
+            headers=headers,
+        )
+        assert answer_response.status_code == 200
+        answered_payload = answer_response.json()
+        assert answered_payload["answered"] is True
+        assert answered_payload["selected_index"] == 1
+        assert answered_payload["insight"]
+        assert answered_payload["current_streak"] == 1
+        assert answered_payload["best_streak"] == 1
+        assert answered_payload["unlocked_badges"] == []
     finally:
         app.dependency_overrides.clear()
         import asyncio

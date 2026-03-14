@@ -31,6 +31,8 @@ class BadgeUnlockService:
         *,
         user_id: int,
         unlock_time: datetime | None = None,
+        metrics: dict[str, int] | None = None,
+        allowed_rule_types: set[str] | None = None,
     ) -> list[UnlockedBadge]:
         await self._ensure_default_definitions()
         definitions = list(
@@ -52,12 +54,23 @@ class BadgeUnlockService:
             or 0
         )
         now_local = (unlock_time or datetime.now()).astimezone(LOCAL_TZ)
+        merged_metrics = {
+            "test_count": test_count,
+        }
+        merged_metrics.update(metrics or {})
 
         unlocked: list[UnlockedBadge] = []
         for definition in definitions:
             if definition.id in existing_badge_ids:
                 continue
-            if not self._rule_matched(definition.unlock_rule or {}, test_count, now_local):
+            rule_type = str((definition.unlock_rule or {}).get("type") or "").strip().lower()
+            if allowed_rule_types is not None and rule_type not in allowed_rule_types:
+                continue
+            if not self._rule_matched(
+                definition.unlock_rule or {},
+                merged_metrics,
+                now_local,
+            ):
                 continue
             self.db.add(
                 UserBadge(
@@ -105,7 +118,7 @@ class BadgeUnlockService:
     def _rule_matched(
         self,
         rule: dict,
-        test_count: int,
+        metrics: dict[str, int],
         now_local: datetime,
     ) -> bool:
         rule_type = str(rule.get("type") or "").strip().lower()
@@ -114,7 +127,11 @@ class BadgeUnlockService:
 
         if rule_type == "test_count":
             target = int(rule.get("value") or 0)
-            return test_count >= target > 0
+            return int(metrics.get("test_count") or 0) >= target > 0
+
+        if rule_type == "daily_streak":
+            target = int(rule.get("value") or 0)
+            return int(metrics.get("daily_streak") or 0) >= target > 0
 
         if rule_type == "time_range":
             start_hour = int(rule.get("start") or 0)

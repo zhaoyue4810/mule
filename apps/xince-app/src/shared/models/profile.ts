@@ -39,6 +39,24 @@ export interface ProfileSoulFragmentCategoryProgress {
   completed: boolean;
 }
 
+export interface DailyQuestionStatePayload {
+  question_id: number;
+  question_text: string;
+  options: string[];
+  answer_date: string;
+  answered: boolean;
+  selected_index?: number | null;
+  insight?: string | null;
+  current_streak: number;
+  best_streak: number;
+  recent_answered_days: number;
+  unlocked_badges: Array<{
+    badge_key: string;
+    name: string;
+    emoji: string;
+  }>;
+}
+
 export interface ProfileReportHistoryItem {
   record_id: number;
   test_code: string;

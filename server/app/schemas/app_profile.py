@@ -46,6 +46,31 @@ class ProfileSoulFragmentCategoryProgress(BaseModel):
     completed: bool
 
 
+class DailyQuestionBadgeSummary(BaseModel):
+    badge_key: str
+    name: str
+    emoji: str
+
+
+class DailyQuestionStatePayload(BaseModel):
+    question_id: int
+    question_text: str
+    options: list[str] = Field(default_factory=list)
+    answer_date: str
+    answered: bool
+    selected_index: int | None = None
+    insight: str | None = None
+    current_streak: int = 0
+    best_streak: int = 0
+    recent_answered_days: int = 0
+    unlocked_badges: list[DailyQuestionBadgeSummary] = Field(default_factory=list)
+
+
+class DailyQuestionAnswerRequest(BaseModel):
+    question_id: int
+    answer_index: int
+
+
 class ProfileReportHistoryItem(BaseModel):
     record_id: int
     test_code: str

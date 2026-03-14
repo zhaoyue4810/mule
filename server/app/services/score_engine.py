@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import math
+
 
 class ScoreEngine:
     NUMERIC_INTERACTION_TYPES = {
@@ -10,6 +12,11 @@ class ScoreEngine:
         "pressure",
         "colorpick",
     }
+
+    @staticmethod
+    def _ensure_finite_number(field_name: str, value: float) -> None:
+        if not math.isfinite(value):
+            raise ValueError(f"{field_name} must be a finite number")
 
     @staticmethod
     def normalize_numeric_answer(
@@ -113,6 +120,8 @@ class ScoreEngine:
         numeric_value: float,
         config: dict | None,
     ) -> None:
+        cls._ensure_finite_number("numeric_value", numeric_value)
+
         if interaction_type == "swipe" and numeric_value not in {0, 1}:
             raise ValueError("Question type swipe only accepts 0 or 1")
 
@@ -124,6 +133,8 @@ class ScoreEngine:
                 raise ValueError(
                     f"Question type {interaction_type} requires value between {min_value} and {max_value}"
                 )
+            if interaction_type == "hotcold" and not float(numeric_value).is_integer():
+                raise ValueError("Question type hotcold requires integer steps")
 
         if interaction_type == "star":
             config = config or {}
@@ -133,6 +144,8 @@ class ScoreEngine:
                 raise ValueError(
                     f"Question type star requires value between {min_value} and {max_value}"
                 )
+            if not float(numeric_value).is_integer():
+                raise ValueError("Question type star requires integer steps")
 
         if interaction_type == "pressure":
             config = config or {}
@@ -142,6 +155,8 @@ class ScoreEngine:
                 raise ValueError(
                     f"Question type pressure requires value between {min_value} and {max_value}"
                 )
+            if not float(numeric_value).is_integer():
+                raise ValueError("Question type pressure requires integer milliseconds")
 
         if interaction_type == "colorpick":
             config = config or {}
@@ -164,5 +179,7 @@ class ScoreEngine:
         y = point.get("y")
         if x is None or y is None:
             raise ValueError("Question type plot2d requires both x and y")
+        ScoreEngine._ensure_finite_number("point.x", float(x))
+        ScoreEngine._ensure_finite_number("point.y", float(y))
         if x < 0 or x > 1 or y < 0 or y > 1:
             raise ValueError("Question type plot2d requires x and y between 0 and 1")

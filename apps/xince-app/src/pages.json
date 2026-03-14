@@ -41,6 +41,12 @@
       "style": {
         "navigationBarTitleText": "测试结果"
       }
+    },
+    {
+      "path": "pages/test/share-poster",
+      "style": {
+        "navigationBarTitleText": "分享海报"
+      }
     }
   ],
   "globalStyle": {

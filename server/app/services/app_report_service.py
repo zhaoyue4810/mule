@@ -72,6 +72,13 @@ class AppReportService:
             answered_count or 0,
         )
         ai_status = self._resolve_ai_status(snapshot.ai_text, analysis.status if analysis else None)
+        share_card = self._build_share_card(
+            test_name=test.title,
+            persona_name=report_json.get("persona_name"),
+            result_tier=result_tier,
+            top_dimensions=top_dimensions,
+            summary=report_json.get("summary", ""),
+        )
 
         return {
             "record_id": record.id,
@@ -103,6 +110,7 @@ class AppReportService:
             "ai_status": ai_status,
             "ai_text": snapshot.ai_text or (analysis.content if analysis else None),
             "share_card_url": snapshot.share_card_url,
+            "share_card": share_card,
         }
 
     def _build_radar_dimensions(
@@ -258,6 +266,83 @@ class AppReportService:
         if average_score >= 0.8:
             return "稳定成像"
         return "渐进解锁"
+
+    def _build_share_card(
+        self,
+        *,
+        test_name: str,
+        persona_name: str | None,
+        result_tier: str,
+        top_dimensions: list[tuple[str, float]],
+        summary: str,
+    ) -> dict:
+        persona_label = persona_name or "你的当前画像"
+        primary_dim = top_dimensions[0][0].upper() if top_dimensions else "CORE"
+        secondary_dim = top_dimensions[1][0].upper() if len(top_dimensions) > 1 else None
+        theme = self._resolve_share_theme(primary_dim)
+        highlight_lines = [f"{result_tier} · {persona_label}"]
+        highlight_lines.append(f"主导维度：{primary_dim}")
+        if secondary_dim:
+            highlight_lines.append(f"辅助维度：{secondary_dim}")
+        stat_chips = [result_tier, f"主维度 {primary_dim}"]
+        if secondary_dim:
+            stat_chips.append(f"副维度 {secondary_dim}")
+
+        compact_summary = (summary or "").strip()
+        if len(compact_summary) > 46:
+            compact_summary = f"{compact_summary[:46]}..."
+
+        share_text = "\n".join(
+            [
+                f"我刚完成了《{test_name}》",
+                f"结果是：{persona_label} · {result_tier}",
+                f"主导维度：{primary_dim}",
+                compact_summary or "这份报告比我想象中更像现在的自己。",
+            ]
+        )
+
+        return {
+            "theme": theme["theme"],
+            "background": theme["background"],
+            "title": persona_label,
+            "subtitle": f"{test_name} · {result_tier}",
+            "accent": primary_dim,
+            "badge": theme["badge"],
+            "footer": "来自心测 · 今日人格切片",
+            "stat_chips": stat_chips,
+            "highlight_lines": highlight_lines,
+            "share_text": share_text,
+        }
+
+    def _resolve_share_theme(self, primary_dim: str) -> dict:
+        mapping = {
+            "EI": {
+                "theme": "dawn",
+                "background": "linear-gradient(145deg, #fff0dc, #ffc9a8)",
+                "badge": "外放灵感",
+            },
+            "SN": {
+                "theme": "aurora",
+                "background": "linear-gradient(145deg, #e9fff2, #b8f0cf)",
+                "badge": "感知流动",
+            },
+            "TF": {
+                "theme": "ember",
+                "background": "linear-gradient(145deg, #fff1ea, #ffb694)",
+                "badge": "判断火花",
+            },
+            "JP": {
+                "theme": "nightfall",
+                "background": "linear-gradient(145deg, #edf1ff, #c9d3ff)",
+                "badge": "秩序星图",
+            },
+            "CORE": {
+                "theme": "sunset",
+                "background": "linear-gradient(145deg, #fff2e7, #ffd9bf)",
+                "badge": "当前画像",
+            },
+        }
+        return mapping.get(primary_dim, mapping["CORE"])
 
     def _resolve_ai_status(self, ai_text: str | None, status: int | None) -> str:
         if ai_text:

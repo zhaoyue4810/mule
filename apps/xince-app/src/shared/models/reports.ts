@@ -39,6 +39,19 @@ export interface ReportActionGuide {
   description: string;
 }
 
+export interface ReportShareCard {
+  theme: string;
+  background: string;
+  title: string;
+  subtitle: string;
+  accent: string;
+  badge: string;
+  footer: string;
+  stat_chips: string[];
+  highlight_lines: string[];
+  share_text: string;
+}
+
 export interface ReportAiStatusPayload {
   record_id: number;
   status: string;
@@ -77,4 +90,5 @@ export interface AppReportDetail {
   ai_status: string;
   ai_text?: string | null;
   share_card_url?: string | null;
+  share_card: ReportShareCard;
 }
