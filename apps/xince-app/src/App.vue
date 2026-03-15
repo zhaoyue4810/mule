@@ -377,4 +377,170 @@ button {
     transform: scale(1.12);
   }
 }
+
+@keyframes heartbeat {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  15% {
+    transform: scale(1.15);
+  }
+
+  30% {
+    transform: scale(1);
+  }
+
+  45% {
+    transform: scale(1.08);
+  }
+}
+
+@keyframes sparkle {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(0.5);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes countUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes revealSpin {
+  0% {
+    transform: rotateY(90deg);
+    opacity: 0;
+  }
+
+  60% {
+    transform: rotateY(-10deg);
+    opacity: 1;
+  }
+
+  100% {
+    transform: rotateY(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes glow {
+  0%,
+  100% {
+    box-shadow: 0 0 8px rgba(155, 126, 216, 0.2);
+  }
+
+  50% {
+    box-shadow: 0 0 20px rgba(155, 126, 216, 0.4);
+  }
+}
+
+@keyframes rainbow {
+  0% {
+    border-color: rgba(201, 181, 240, 0.85);
+  }
+
+  25% {
+    border-color: rgba(244, 165, 191, 0.85);
+  }
+
+  50% {
+    border-color: rgba(242, 166, 139, 0.85);
+  }
+
+  75% {
+    border-color: rgba(168, 221, 208, 0.85);
+  }
+
+  100% {
+    border-color: rgba(201, 181, 240, 0.85);
+  }
+}
+
+@keyframes hiddenShake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-1px);
+  }
+
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(1px);
+  }
+}
+
+/* --- Global utility classes --- */
+
+.xc-anim-fu {
+  animation: fadeInUp 0.5s $xc-ease both;
+}
+
+.xc-anim-si {
+  animation: scaleIn 0.45s $xc-ease both;
+}
+
+.xc-anim-sl {
+  animation: slideIn 0.5s $xc-ease both;
+}
+
+.xc-anim-pi {
+  animation: popIn 0.4s $xc-spring both;
+}
+
+.xc-d1 {
+  animation-delay: 0.06s;
+}
+
+.xc-d2 {
+  animation-delay: 0.12s;
+}
+
+.xc-d3 {
+  animation-delay: 0.18s;
+}
+
+.xc-d4 {
+  animation-delay: 0.24s;
+}
+
+.xc-d5 {
+  animation-delay: 0.3s;
+}
 </style>

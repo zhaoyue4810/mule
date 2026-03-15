@@ -278,16 +278,19 @@ onShow(load);
 </template>
 
 <style lang="scss" scoped>
+/* ── Page ── */
 .page {
   padding: 28rpx 24rpx calc(48rpx + env(safe-area-inset-bottom, 0rpx));
 }
 
+/* ── Hero ── */
 .hero {
   padding: 34rpx 28rpx;
   border-radius: 30rpx;
   @include gradient-hero;
   color: #fff;
   box-shadow: $xc-sh-lg;
+  animation: fadeInUp 0.5s $xc-ease both;
 }
 
 .hero__avatars {
@@ -307,6 +310,12 @@ onShow(load);
   justify-content: center;
   font-size: 42rpx;
   color: $xc-ink;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  transition: transform $xc-fast $xc-spring;
+
+  &:active {
+    transform: scale(0.95);
+  }
 }
 
 .hero__avatar--alt {
@@ -315,7 +324,7 @@ onShow(load);
 
 .hero__heart {
   font-size: 36rpx;
-  animation: heartbeat 1.2s ease-in-out infinite;
+  animation: heartbeat 2s ease-in-out infinite;
 }
 
 .hero__title {
@@ -335,6 +344,7 @@ onShow(load);
   color: rgba(255, 255, 255, 0.92);
 }
 
+/* ── Section heads ── */
 .section-head {
   margin: 28rpx 6rpx 14rpx;
   display: flex;
@@ -352,16 +362,30 @@ onShow(load);
   color: $xc-muted;
 }
 
+/* ── Glass card base ── */
 .panel,
 .mode-card,
 .history-card,
 .badge-card,
 .cp-item {
-  @include card-base;
+  background: rgba(255, 255, 255, 0.72);
+  // #ifdef H5
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  // #endif
+  // #ifdef MP-WEIXIN
+  background: rgba(255, 255, 255, 0.92);
+  // #endif
+  border: 1px solid rgba(155, 126, 216, 0.12);
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(155, 126, 216, 0.08);
+  transition: transform $xc-fast $xc-spring, box-shadow $xc-fast $xc-ease;
 }
 
 .panel {
   padding: 26rpx;
+  animation: fadeInUp 0.5s $xc-ease both;
+  animation-delay: 0.05s;
 }
 
 .panel--error {
@@ -377,30 +401,43 @@ onShow(load);
 .panel__button {
   margin-top: 14rpx;
   border-radius: 999rpx;
-  background: linear-gradient(135deg, #9b7ed8, #e8729a);
-  color: #fff;
+  @include btn-primary;
 }
 
+/* ── Mode grid ── */
 .mode-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12rpx;
+  animation: fadeInUp 0.5s $xc-ease both;
+  animation-delay: 0.1s;
 }
 
 .mode-card {
   padding: 20rpx;
+  // #ifdef H5
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  // #endif
+
+  &:active {
+    transform: scale(0.97);
+    box-shadow: 0 1px 4px rgba(155, 126, 216, 0.12);
+  }
 }
 
 .mode-card--purple {
   background:
-    linear-gradient(135deg, rgba(155, 126, 216, 0.22), rgba(201, 181, 240, 0.12)),
-    rgba(255, 255, 255, 0.88);
+    linear-gradient(135deg, rgba(155, 126, 216, 0.28), rgba(201, 181, 240, 0.15)),
+    rgba(255, 255, 255, 0.72);
+  border-color: rgba(155, 126, 216, 0.18);
 }
 
 .mode-card--pink {
   background:
-    linear-gradient(135deg, rgba(232, 114, 154, 0.18), rgba(244, 165, 191, 0.1)),
-    rgba(255, 255, 255, 0.88);
+    linear-gradient(135deg, rgba(232, 114, 154, 0.24), rgba(244, 165, 191, 0.13)),
+    rgba(255, 255, 255, 0.72);
+  border-color: rgba(232, 114, 154, 0.18);
 }
 
 .mode-card__title {
@@ -424,8 +461,14 @@ onShow(load);
   color: $xc-purple;
   font-size: 22rpx;
   border: 1px solid rgba(155, 126, 216, 0.2);
+  transition: transform $xc-fast $xc-spring;
+
+  &:active {
+    transform: scale(0.96);
+  }
 }
 
+/* ── CP Ranking ── */
 .cp-list,
 .history-list {
   display: flex;
@@ -433,30 +476,48 @@ onShow(load);
   gap: 12rpx;
 }
 
+.cp-list {
+  animation: fadeInUp 0.5s $xc-ease both;
+  animation-delay: 0.15s;
+}
+
 .cp-item {
   padding: 16rpx;
   display: flex;
   align-items: center;
   gap: 14rpx;
+
+  &:active {
+    transform: scale(0.98);
+  }
 }
 
 .cp-item__rank {
-  width: 44rpx;
-  font-size: 34rpx;
-  font-weight: 700;
+  width: 48rpx;
+  height: 48rpx;
+  font-size: 24rpx;
+  font-weight: 800;
   text-align: center;
+  line-height: 48rpx;
+  border-radius: 50%;
 }
 
 .rank--gold {
-  color: #d4a853;
+  background: linear-gradient(135deg, #fdf4de, #f5e4a8);
+  color: $xc-gold;
+  box-shadow: 0 2px 8px rgba(212, 168, 83, 0.25);
 }
 
 .rank--silver {
-  color: #c0c0c0;
+  background: linear-gradient(135deg, #f0f0f0, #dcdcdc);
+  color: #8a8a8a;
+  box-shadow: 0 2px 8px rgba(192, 192, 192, 0.25);
 }
 
 .rank--bronze {
+  background: linear-gradient(135deg, #f8e8d6, #e8c9a8);
   color: #cd7f32;
+  box-shadow: 0 2px 8px rgba(205, 127, 50, 0.2);
 }
 
 .cp-item__avatars {
@@ -491,8 +552,19 @@ onShow(load);
   color: $xc-muted;
 }
 
+/* ── History cards ── */
+.history-list {
+  animation: fadeInUp 0.5s $xc-ease both;
+  animation-delay: 0.2s;
+}
+
 .history-card {
   padding: 20rpx;
+
+  &:active {
+    transform: scale(0.98);
+    box-shadow: 0 1px 4px rgba(155, 126, 216, 0.12);
+  }
 }
 
 .history-card__top,
@@ -522,40 +594,59 @@ onShow(load);
   color: $xc-muted;
 }
 
+/* ── Status badges ── */
 .status {
   margin-top: 8rpx;
   padding: 6rpx 14rpx;
   border-radius: 999rpx;
   font-size: 20rpx;
+  font-weight: 600;
 }
 
 .status--waiting {
-  background: rgba(232, 114, 154, 0.14);
-  color: $xc-pink;
-  animation: pulse 1.8s ease-in-out infinite;
+  background: $xc-gold-p;
+  color: $xc-gold;
+  animation: statusPulse 2s ease-in-out infinite;
 }
 
 .status--running {
-  background: rgba(124, 197, 178, 0.2);
-  color: #4d9f89;
-}
-
-.status--done {
   background: rgba(155, 126, 216, 0.14);
   color: $xc-purple;
 }
 
+.status--done {
+  background: $xc-mint-p;
+  color: $xc-mint;
+}
+
+/* ── Duo badge grid ── */
 .badge-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12rpx;
+  animation: fadeInUp 0.5s $xc-ease both;
+  animation-delay: 0.25s;
 }
 
 .badge-card {
   padding: 16rpx 10rpx;
   text-align: center;
-  background:
-    linear-gradient(140deg, rgba(253, 230, 239, 0.56), rgba(255, 255, 255, 0.86));
+  background: linear-gradient(160deg, rgba(253, 230, 239, 0.4), rgba(255, 255, 255, 0.72));
+  border-color: $xc-pink-l;
+  box-shadow: 0 0 12px rgba(232, 114, 154, 0.15);
+  transition: transform $xc-fast $xc-spring;
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.badge-card--locked {
+  opacity: 0.45;
+  border-color: $xc-line;
+  box-shadow: none;
+  background: rgba(255, 255, 255, 0.5);
+  filter: grayscale(0.6);
 }
 
 .badge-card__emoji {
@@ -577,13 +668,26 @@ onShow(load);
   color: $xc-muted;
 }
 
+/* ── Full-width CTA ── */
 .invite-cta {
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
   margin-top: 22rpx;
   border-radius: $xc-r-btn;
   overflow: hidden;
   color: #fff;
-  background: linear-gradient(135deg, #9b7ed8, #e8729a);
+  font-weight: 700;
+  @include btn-primary;
+  animation: fadeInUp 0.5s $xc-ease both;
+  animation-delay: 0.3s;
+
+  &:active {
+    transform: scale(0.97);
+    box-shadow: 0 4px 14px rgba(155, 126, 216, 0.28);
+  }
 }
 
 .invite-cta__shine {
@@ -593,34 +697,54 @@ onShow(load);
   left: -120%;
   width: 60%;
   height: 100%;
-  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.65), transparent);
-  animation: ctaShimmer 1.8s linear infinite;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  animation: shimmer 3s infinite;
 }
 
+/* ── Keyframes ── */
 @keyframes heartbeat {
-  0% {
-    transform: scale(1);
-  }
-  20% {
-    transform: scale(1.15);
-  }
-  35% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.08);
-  }
+  0%,
   100% {
     transform: scale(1);
   }
+  15% {
+    transform: scale(1.15);
+  }
+  30% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.08);
+  }
 }
 
-@keyframes ctaShimmer {
+@keyframes shimmer {
   0% {
     transform: translateX(0);
   }
   100% {
-    transform: translateX(320%);
+    transform: translateX(420%);
+  }
+}
+
+@keyframes statusPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 </style>

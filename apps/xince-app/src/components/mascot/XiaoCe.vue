@@ -53,9 +53,12 @@ const sizeClass = computed(() => `xc-${props.size}`);
   width: var(--xc-size);
   height: var(--xc-size);
   border-radius: 50%;
-  background: $xc-purple-p;
-  border: 2px solid rgba(155, 126, 216, 0.6);
-  box-shadow: $xc-sh-sm;
+  background: linear-gradient(160deg, $xc-purple-p, #f5ecff);
+  border: 2px solid rgba(155, 126, 216, 0.5);
+  box-shadow:
+    $xc-sh-sm,
+    inset 0 -2px 4px rgba(155, 126, 216, 0.12);
+  transition: transform 0.3s $xc-spring;
 }
 
 .xc::before,

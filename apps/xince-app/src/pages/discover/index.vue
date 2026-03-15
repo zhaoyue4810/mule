@@ -166,12 +166,12 @@ function openZodiac(item: { key: string; name: string; emoji: string }) {
       <text class="search__placeholder">搜索测试、话题...</text>
     </view>
 
-    <view class="tabs d1">
+    <view class="tabs d2">
       <text
         v-for="item in [
-          { key: 'hot', label: '热门' },
-          { key: 'story', label: '故事' },
-          { key: 'zodiac', label: '星座' },
+          { key: 'hot', label: '热门讨论' },
+          { key: 'story', label: '测试故事' },
+          { key: 'zodiac', label: '星座运势' },
         ]"
         :key="item.key"
         class="tabs__item"
@@ -183,13 +183,13 @@ function openZodiac(item: { key: string; name: string; emoji: string }) {
       <view
         class="tabs__line"
         :style="{
-          left: activeTab === 'hot' ? '8%' : activeTab === 'story' ? '41%' : '74%',
+          left: activeTab === 'hot' ? 'calc(16.67% - 24rpx)' : activeTab === 'story' ? 'calc(50% - 24rpx)' : 'calc(83.33% - 24rpx)',
         }"
       />
     </view>
 
     <template v-if="activeTab === 'hot'">
-      <scroll-view scroll-x class="zodiac-row d2">
+      <scroll-view scroll-x class="zodiac-row d3">
         <view class="zodiac-row__list">
           <view
             v-for="item in zodiacScroller"
@@ -203,7 +203,7 @@ function openZodiac(item: { key: string; name: string; emoji: string }) {
         </view>
       </scroll-view>
 
-      <view class="post-list d3">
+      <view class="post-list d4">
         <view v-for="post in hotPosts" :key="post.id" class="post">
           <view class="post__head">
             <view class="post__avatar">{{ post.avatar }}</view>
@@ -226,7 +226,7 @@ function openZodiac(item: { key: string; name: string; emoji: string }) {
     </template>
 
     <template v-else-if="activeTab === 'story'">
-      <view class="story-list d2">
+      <view class="story-list d3">
         <view v-for="item in stories" :key="item.id" class="story-card" @tap="openStory">
           <view class="story-card__cover" :style="{ background: item.gradient }">
             <text>{{ item.emoji }}</text>
@@ -247,7 +247,7 @@ function openZodiac(item: { key: string; name: string; emoji: string }) {
     </template>
 
     <template v-else>
-      <view class="zodiac-grid d2">
+      <view class="zodiac-grid d3">
         <view
           v-for="item in zodiacList"
           :key="item.key"
@@ -266,79 +266,105 @@ function openZodiac(item: { key: string; name: string; emoji: string }) {
 </template>
 
 <style lang="scss" scoped>
+/* ─── Page layout ─── */
 .page {
   padding: 22rpx 24rpx 40rpx;
 }
 
+/* ─── Glass mixin helper ─── */
 .glass {
   @include glass;
 }
 
+/* ─── Search bar (matches home page glass pill) ─── */
 .search {
-  border-radius: 999rpx;
-  padding: 18rpx 22rpx;
+  @include glass-strong;
+  border-radius: $xc-r-pill;
+  padding: 18rpx 24rpx;
   display: flex;
   align-items: center;
   gap: 10rpx;
+  transition: transform $xc-fast $xc-ease, box-shadow $xc-fast $xc-ease;
+
+  &:active {
+    transform: scale(0.98);
+    box-shadow: $xc-sh-sm;
+  }
 }
 
 .search__placeholder {
-  color: $xc-muted;
+  color: $xc-hint;
   font-size: 24rpx;
+  letter-spacing: 0.5rpx;
 }
 
+/* ─── Tab bar with animated indicator ─── */
 .tabs {
-  margin-top: 18rpx;
+  margin-top: 20rpx;
   position: relative;
   display: flex;
   justify-content: space-around;
-  padding-bottom: 14rpx;
-  border-bottom: 1px solid rgba(155, 126, 216, 0.1);
+  padding-bottom: 16rpx;
+  border-bottom: 1px solid $xc-line-soft;
 }
 
 .tabs__item {
-  font-size: 26rpx;
+  font-size: 28rpx;
   color: $xc-muted;
-  padding: 8rpx 14rpx;
+  padding: 10rpx 16rpx;
+  font-weight: 500;
+  transition: color $xc-fast $xc-ease, font-weight $xc-fast $xc-ease;
+
+  &:active {
+    transform: scale(0.96);
+  }
 }
 
 .tabs__item--active {
   color: $xc-purple-d;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .tabs__line {
   position: absolute;
   bottom: -2rpx;
-  width: 16%;
+  width: 48rpx;
   height: 6rpx;
-  border-radius: 999rpx;
+  border-radius: $xc-r-pill;
   background: linear-gradient(90deg, $xc-purple, $xc-pink);
-  transition: left 0.3s $xc-ease;
+  transition: left 0.35s $xc-spring;
+  box-shadow: 0 2rpx 12rpx rgba($xc-purple, 0.35);
 }
 
+/* ─── Zodiac horizontal scroll chips (glass-morphism) ─── */
 .zodiac-row {
-  margin-top: 16rpx;
+  margin-top: 18rpx;
 }
 
 .zodiac-row__list {
   display: flex;
-  gap: 12rpx;
+  gap: 14rpx;
+  padding: 4rpx 0;
 }
 
 .zodiac-chip {
-  width: 98rpx;
+  width: 104rpx;
   flex-shrink: 0;
-  border-radius: 999rpx;
-  padding: 14rpx 10rpx;
+  border-radius: $xc-r-pill;
+  padding: 16rpx 10rpx;
   text-align: center;
-  background: rgba(255, 255, 255, 0.86);
-  border: 1px solid rgba(155, 126, 216, 0.12);
+  @include glass;
+  transition: transform $xc-fast $xc-spring, box-shadow $xc-fast $xc-ease;
+
+  &:active {
+    transform: scale(0.95);
+    box-shadow: $xc-sh-sm;
+  }
 }
 
 .zodiac-chip__emoji {
   display: block;
-  font-size: 26rpx;
+  font-size: 28rpx;
 }
 
 .zodiac-chip__name {
@@ -346,18 +372,26 @@ function openZodiac(item: { key: string; name: string; emoji: string }) {
   margin-top: 6rpx;
   font-size: 20rpx;
   color: $xc-muted;
+  font-weight: 600;
 }
 
+/* ─── Post cards (glass card styling) ─── */
 .post-list {
-  margin-top: 14rpx;
-  border-radius: 22rpx;
-  background: rgba(255, 255, 255, 0.88);
+  margin-top: 16rpx;
+  border-radius: $xc-r-lg;
+  @include glass-strong;
   overflow: hidden;
 }
 
 .post {
-  padding: 20rpx;
-  border-bottom: 1px solid rgba(155, 126, 216, 0.08);
+  padding: 22rpx 20rpx;
+  border-bottom: 1px solid $xc-line-soft;
+  transition: transform $xc-fast $xc-ease, background $xc-fast $xc-ease;
+
+  &:active {
+    transform: scale(0.98);
+    background: rgba($xc-purple, 0.03);
+  }
 }
 
 .post:last-child {
@@ -367,17 +401,19 @@ function openZodiac(item: { key: string; name: string; emoji: string }) {
 .post__head {
   display: flex;
   align-items: center;
-  gap: 10rpx;
+  gap: 12rpx;
 }
 
 .post__avatar {
-  width: 52rpx;
-  height: 52rpx;
+  width: 56rpx;
+  height: 56rpx;
   border-radius: 50%;
-  background: rgba(237, 229, 249, 0.75);
+  background: linear-gradient(135deg, $xc-purple-p, $xc-pink-p);
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 24rpx;
+  box-shadow: 0 2rpx 8rpx rgba($xc-purple, 0.15);
 }
 
 .post__meta {
@@ -387,23 +423,26 @@ function openZodiac(item: { key: string; name: string; emoji: string }) {
 
 .post__name {
   font-size: 24rpx;
-  font-weight: 700;
+  font-weight: 800;
+  color: $xc-ink;
 }
 
 .post__time {
   font-size: 20rpx;
-  color: $xc-muted;
+  color: $xc-hint;
+  margin-top: 2rpx;
 }
 
 .post__content {
-  margin-top: 12rpx;
+  margin-top: 14rpx;
   display: block;
-  font-size: 25rpx;
-  line-height: 1.65;
+  font-size: 26rpx;
+  line-height: 1.7;
+  color: $xc-ink;
 }
 
 .post__tags {
-  margin-top: 8rpx;
+  margin-top: 10rpx;
   display: flex;
   gap: 10rpx;
   flex-wrap: wrap;
@@ -413,65 +452,102 @@ function openZodiac(item: { key: string; name: string; emoji: string }) {
   font-size: 20rpx;
   color: $xc-purple-d;
   background: $xc-purple-p;
-  padding: 4rpx 10rpx;
-  border-radius: 999rpx;
+  padding: 4rpx 12rpx;
+  border-radius: $xc-r-pill;
+  font-weight: 600;
+  transition: transform $xc-fast $xc-ease;
+
+  &:active {
+    transform: scale(0.95);
+  }
 }
 
 .post__ops {
-  margin-top: 12rpx;
+  margin-top: 14rpx;
   display: flex;
-  gap: 24rpx;
+  gap: 28rpx;
   font-size: 22rpx;
   color: $xc-muted;
+
+  text {
+    transition: transform $xc-fast $xc-ease, color $xc-fast $xc-ease;
+
+    &:active {
+      transform: scale(0.92);
+      color: $xc-pink;
+    }
+  }
 }
 
+/* ─── Story cards (gradient covers + glass body) ─── */
 .story-list {
-  margin-top: 16rpx;
+  margin-top: 18rpx;
   display: flex;
   flex-direction: column;
-  gap: 14rpx;
+  gap: 18rpx;
 }
 
 .story-card {
-  border-radius: 22rpx;
-  background: rgba(255, 255, 255, 0.88);
+  border-radius: $xc-r-lg;
+  @include glass-strong;
   overflow: hidden;
-  border: 1px solid rgba(155, 126, 216, 0.1);
+  transition: transform $xc-fast $xc-spring, box-shadow $xc-fast $xc-ease;
+
+  &:active {
+    transform: scale(0.98);
+    box-shadow: $xc-sh-sm;
+  }
 }
 
 .story-card__cover {
-  height: 220rpx;
+  height: 240rpx;
   color: $xc-white;
-  font-size: 72rpx;
+  font-size: 76rpx;
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+
+  /* gradient overlay for text legibility */
+  &::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 50%;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.15));
+    pointer-events: none;
+  }
 }
 
 .story-card__body {
-  padding: 18rpx;
+  padding: 20rpx;
 }
 
 .story-card__title {
   display: block;
   font-size: 28rpx;
-  font-weight: 700;
+  font-weight: 800;
+  font-family: $xc-font-serif;
+  color: $xc-ink;
+  line-height: 1.45;
 }
 
 .story-card__summary {
-  margin-top: 8rpx;
+  margin-top: 10rpx;
   display: block;
   color: $xc-muted;
   font-size: 23rpx;
-  line-height: 1.6;
+  line-height: 1.65;
 }
 
 .story-card__foot {
-  margin-top: 14rpx;
+  margin-top: 16rpx;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: $xc-muted;
+  color: $xc-hint;
   font-size: 20rpx;
 }
 
@@ -479,33 +555,43 @@ function openZodiac(item: { key: string; name: string; emoji: string }) {
   display: flex;
   align-items: center;
   gap: 8rpx;
+  font-weight: 600;
+  color: $xc-muted;
 }
 
+/* ─── Zodiac grid (3x4 with hover/press effects) ─── */
 .zodiac-grid {
-  margin-top: 16rpx;
+  margin-top: 18rpx;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12rpx;
+  gap: 14rpx;
 }
 
 .zodiac-card {
-  border-radius: 18rpx;
-  background: rgba(255, 255, 255, 0.88);
-  border: 1px solid rgba(155, 126, 216, 0.12);
-  padding: 14rpx 10rpx;
+  border-radius: $xc-r-card;
+  @include glass;
+  box-shadow: $xc-sh-md;
+  padding: 18rpx 12rpx;
   text-align: center;
+  transition: transform $xc-fast $xc-spring, box-shadow $xc-fast $xc-ease;
+
+  &:active {
+    transform: scale(0.96);
+    box-shadow: $xc-sh-sm;
+  }
 }
 
 .zodiac-card__emoji {
   display: block;
-  font-size: 32rpx;
+  font-size: 36rpx;
 }
 
 .zodiac-card__name {
   display: block;
-  margin-top: 6rpx;
+  margin-top: 8rpx;
   font-size: 24rpx;
-  font-weight: 700;
+  font-weight: 800;
+  color: $xc-ink;
 }
 
 .zodiac-card__brief {
@@ -513,17 +599,20 @@ function openZodiac(item: { key: string; name: string; emoji: string }) {
   margin-top: 6rpx;
   font-size: 20rpx;
   color: $xc-muted;
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
+/* ─── Cascading fade-in animations (d1–d5) ─── */
 .d1,
 .d2,
-.d3 {
-  animation: fadeInUp 0.5s $xc-ease both;
+.d3,
+.d4,
+.d5 {
+  animation: fadeInUp 0.55s $xc-ease both;
 }
 
 .d1 {
-  animation-delay: 0.06s;
+  animation-delay: 0.05s;
 }
 
 .d2 {
@@ -531,9 +620,18 @@ function openZodiac(item: { key: string; name: string; emoji: string }) {
 }
 
 .d3 {
-  animation-delay: 0.18s;
+  animation-delay: 0.2s;
 }
 
+.d4 {
+  animation-delay: 0.28s;
+}
+
+.d5 {
+  animation-delay: 0.36s;
+}
+
+/* ─── Scrollbar hide ─── */
 ::v-deep(::-webkit-scrollbar) {
   display: none;
   width: 0;

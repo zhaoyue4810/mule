@@ -837,6 +837,17 @@ onUnload(() => {
   padding: 34rpx 28rpx;
   color: #fff;
   box-shadow: $xc-sh-lg;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.12), transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.08), transparent 40%);
+  }
 }
 
 .hero__eyebrow {
@@ -867,7 +878,8 @@ onUnload(() => {
 .hero__title {
   font-size: 50rpx;
   font-family: $xc-font-serif;
-  font-weight: 700;
+  font-weight: 900;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .hero__tier {
@@ -876,6 +888,9 @@ onUnload(() => {
   border-radius: $xc-r-pill;
   background: rgba(255, 255, 255, 0.2);
   font-size: 22rpx;
+  // #ifdef H5
+  backdrop-filter: blur(8px);
+  // #endif
 }
 
 .score-ring__circle {
@@ -918,6 +933,14 @@ onUnload(() => {
   padding: 16rpx;
   border-radius: 18rpx;
   background: rgba(255, 255, 255, 0.18);
+  // #ifdef H5
+  backdrop-filter: blur(8px);
+  // #endif
+  transition: transform 0.2s $xc-ease;
+
+  &:active {
+    transform: scale(0.96);
+  }
 }
 
 .hero-dim-card__name {
@@ -936,6 +959,11 @@ onUnload(() => {
   @include card-base;
   padding: 26rpx;
   border-radius: 26rpx;
+  transition: transform 0.2s $xc-ease;
+
+  &:active {
+    transform: scale(0.99);
+  }
 }
 
 .panel-head {
@@ -948,7 +976,7 @@ onUnload(() => {
 .panel-title {
   display: block;
   font-size: 30rpx;
-  font-weight: 700;
+  font-weight: 800;
   color: $xc-ink;
 }
 
@@ -1126,6 +1154,7 @@ onUnload(() => {
 .dimension-bar__fill {
   height: 100%;
   border-radius: inherit;
+  transition: width 0.6s $xc-ease;
 }
 
 .weather {
@@ -1486,15 +1515,33 @@ onUnload(() => {
 .button {
   border-radius: $xc-r-btn;
   font-size: 24rpx;
+  font-weight: 600;
+  transition: transform 0.2s $xc-spring;
+
+  &:active {
+    transform: scale(0.95);
+  }
 }
 
 .button--primary {
   @include btn-primary;
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    background-size: 200% 100%;
+    animation: shimmer 2.5s infinite;
+  }
 }
 
 .button--glass {
   @include glass;
   color: $xc-purple;
+  font-weight: 700;
 }
 
 .next-test__card {

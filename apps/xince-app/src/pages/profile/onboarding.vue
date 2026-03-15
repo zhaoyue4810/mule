@@ -191,37 +191,53 @@ onMounted(() => {
 }
 
 .hero {
-  padding: 36rpx 32rpx;
-  border-radius: 30rpx;
-  background:
-    radial-gradient(circle at top right, rgba(255, 242, 225, 0.95), rgba(255, 218, 191, 0.92)),
-    linear-gradient(140deg, #fff8ef, #ffd9c4);
-  box-shadow: $xc-shadow;
+  padding: 40rpx 32rpx;
+  border-radius: $xc-r-xl;
+  background: linear-gradient(135deg, #7C5DBF 0%, #B57FE0 40%, #E8729A 80%, #F2A68B 100%);
+  color: $xc-white;
+  box-shadow: $xc-sh-lg;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.15), transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.12), transparent 40%);
+  }
 }
 
 .hero__eyebrow {
   display: block;
+  position: relative;
+  z-index: 1;
   font-size: 22rpx;
-  color: $xc-accent;
   letter-spacing: 2rpx;
-  text-transform: uppercase;
+  opacity: 0.85;
 }
 
 .hero__title {
   display: block;
+  position: relative;
+  z-index: 1;
   margin-top: 16rpx;
-  font-size: 42rpx;
+  font-family: $xc-font-serif;
+  font-size: 44rpx;
   line-height: 1.35;
-  font-weight: 600;
-  color: $xc-ink;
+  font-weight: 900;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .hero__body {
   display: block;
+  position: relative;
+  z-index: 1;
   margin-top: 16rpx;
   font-size: 26rpx;
   line-height: 1.7;
-  color: $xc-muted;
+  opacity: 0.88;
 }
 
 .form {
@@ -233,16 +249,15 @@ onMounted(() => {
 
 .panel {
   padding: 28rpx;
-  border-radius: 26rpx;
-  background: rgba(255, 255, 255, 0.86);
-  border: 2rpx solid rgba(155, 126, 216, 0.08);
-  box-shadow: $xc-shadow;
+  border-radius: $xc-r-lg;
+  @include glass;
+  box-shadow: $xc-sh-md;
 }
 
 .panel__title {
   display: block;
   font-size: 28rpx;
-  font-weight: 600;
+  font-weight: 800;
   color: $xc-ink;
 }
 
@@ -264,13 +279,20 @@ onMounted(() => {
   justify-content: center;
   height: 108rpx;
   border-radius: 22rpx;
-  background: rgba(255, 245, 236, 0.8);
+  background: linear-gradient(160deg, $xc-purple-p, $xc-pink-p);
   border: 2rpx solid transparent;
+  transition: all 0.2s $xc-spring;
+
+  &:active {
+    transform: scale(0.93);
+  }
 }
 
 .avatar-option--active {
-  border-color: $xc-accent;
-  background: rgba(255, 236, 223, 0.96);
+  border-color: $xc-purple;
+  background: linear-gradient(135deg, rgba(237, 229, 249, 0.95), rgba(253, 230, 239, 0.9));
+  box-shadow: 0 0 16px rgba(155, 126, 216, 0.25);
+  transform: scale(1.05);
 }
 
 .avatar-option__emoji {
@@ -296,6 +318,7 @@ onMounted(() => {
 .field__label {
   font-size: 24rpx;
   color: $xc-muted;
+  font-weight: 600;
 }
 
 .field__input,
@@ -303,10 +326,16 @@ onMounted(() => {
   width: 100%;
   padding: 20rpx 22rpx;
   border-radius: 20rpx;
-  background: rgba(255, 249, 243, 0.92);
-  border: 2rpx solid rgba(155, 126, 216, 0.08);
+  background: rgba(255, 255, 255, 0.92);
+  border: 1.5px solid $xc-line;
   font-size: 26rpx;
   color: $xc-ink;
+  transition: border-color 0.3s;
+
+  &:focus {
+    border-color: $xc-purple-l;
+    box-shadow: 0 0 12px rgba(155, 126, 216, 0.12);
+  }
 }
 
 .field__textarea {
@@ -320,28 +349,50 @@ onMounted(() => {
 }
 
 .chip {
-  padding: 12rpx 20rpx;
+  padding: 14rpx 24rpx;
   border-radius: 999rpx;
-  background: rgba(255, 245, 236, 0.86);
+  background: rgba(255, 255, 255, 0.88);
+  border: 1.5px solid rgba(155, 126, 216, 0.08);
   color: $xc-muted;
   font-size: 24rpx;
+  font-weight: 600;
+  transition: all 0.2s;
+
+  &:active {
+    transform: scale(0.96);
+  }
 }
 
 .chip--active {
-  background: $xc-accent-soft;
-  color: $xc-accent;
+  background: $xc-purple;
+  color: $xc-white;
+  border-color: transparent;
+  box-shadow: 0 4px 12px rgba(155, 126, 216, 0.25);
 }
 
 .submit {
   margin-top: 8rpx;
+  height: 88rpx;
   border-radius: 999rpx;
-  background: linear-gradient(135deg, #9B7ED8, #7C5DBF);
-  color: #fff7f0;
+  @include btn-primary;
+  font-size: 30rpx;
+  font-weight: 700;
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+    background-size: 200% 100%;
+    animation: shimmer 2.5s infinite;
+  }
 }
 
 .hint {
   text-align: center;
   font-size: 22rpx;
-  color: $xc-muted;
+  color: $xc-hint;
 }
 </style>

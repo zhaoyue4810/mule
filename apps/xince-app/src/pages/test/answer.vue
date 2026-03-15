@@ -281,6 +281,12 @@ onBeforeUnmount(() => {
         <text class="answer__meta">
           第 {{ progressText }} 题 · {{ questionnaire.duration_hint || "预计几分钟完成" }}
         </text>
+        <view class="answer__progress">
+          <view
+            class="answer__progress-fill"
+            :style="{ width: `${((currentIndex + 1) / questionnaire.question_count) * 100}%` }"
+          />
+        </view>
       </view>
 
       <view class="question-card">
@@ -329,15 +335,15 @@ onBeforeUnmount(() => {
 
 <style lang="scss" scoped>
 .page {
-  padding: 28rpx;
   animation: fadeInUp 0.45s $xc-ease both;
 }
 
 .state-card {
-  padding: 28rpx;
-  border-radius: 24rpx;
-  background: rgba(255, 255, 255, 0.86);
-  border: 2rpx solid $xc-line;
+  margin: 28rpx;
+  padding: 32rpx;
+  border-radius: $xc-r-lg;
+  @include glass;
+  text-align: center;
 }
 
 .state-card--error {
@@ -353,84 +359,176 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   gap: 20rpx;
+  padding-bottom: 40rpx;
 }
 
+/* --- Hero / Progress --- */
 .answer__hero {
-  padding: 32rpx 28rpx;
-  border-radius: 26rpx;
-  background: linear-gradient(145deg, #fff1dc, #ffd6b6);
-  box-shadow: $xc-shadow;
+  position: relative;
+  padding: 36rpx 28rpx 28rpx;
+  border-radius: 0 0 $xc-r-xl $xc-r-xl;
+  background: linear-gradient(160deg, #7C5DBF 0%, #B57FE0 50%, #E8729A 100%);
+  color: $xc-white;
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.12), transparent 40%);
+  }
 }
 
 .answer__category {
   display: block;
+  position: relative;
+  z-index: 1;
   font-size: 22rpx;
-  color: rgba(58, 46, 66, 0.68);
+  opacity: 0.78;
 }
 
 .answer__title {
   display: block;
-  margin-top: 16rpx;
-  font-size: 38rpx;
+  position: relative;
+  z-index: 1;
+  margin-top: 8rpx;
+  font-family: $xc-font-serif;
+  font-size: 34rpx;
   line-height: 1.35;
-  font-weight: 700;
+  font-weight: 900;
 }
 
 .answer__meta {
   display: block;
-  margin-top: 14rpx;
+  position: relative;
+  z-index: 1;
+  margin-top: 10rpx;
   font-size: 24rpx;
-  color: rgba(58, 46, 66, 0.74);
+  opacity: 0.85;
 }
 
+/* --- Progress Bar --- */
+.answer__progress {
+  position: relative;
+  z-index: 1;
+  margin-top: 18rpx;
+  height: 8rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+}
+
+.answer__progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: rgba(255, 255, 255, 0.85);
+  transition: width 0.4s $xc-ease;
+}
+
+/* --- Question Card --- */
 .question-card {
   position: relative;
-  padding: 30rpx 26rpx;
-  border-radius: 24rpx;
-  background: rgba(255, 255, 255, 0.9);
-  border: 2rpx solid rgba(58, 46, 66, 0.06);
+  margin: 0 24rpx;
+  padding: 28rpx 24rpx;
+  border-radius: $xc-r;
+  @include glass;
+  box-shadow: $xc-sh-md;
+  animation: qEnter 0.45s $xc-ease both;
 }
 
 .question-card__mascot {
   position: absolute;
-  right: 22rpx;
-  top: 20rpx;
+  right: 20rpx;
+  top: 18rpx;
+  animation: gentleBounce 2s infinite;
 }
 
 .question-card__index {
-  display: block;
+  display: inline-block;
+  padding: 4rpx 14rpx;
+  border-radius: 999rpx;
+  background: $xc-purple-p;
   font-size: 22rpx;
-  color: $xc-accent;
+  color: $xc-purple-d;
+  font-weight: 700;
 }
 
 .question-card__title {
   display: block;
   margin-top: 16rpx;
-  font-size: 34rpx;
-  line-height: 1.5;
-  font-weight: 600;
+  font-size: 32rpx;
+  line-height: 1.55;
+  font-weight: 700;
 }
 
 .question-card__hint {
   display: block;
   margin-top: 14rpx;
   font-size: 22rpx;
-  color: $xc-muted;
+  color: $xc-hint;
 }
 
+/* --- Actions --- */
 .actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16rpx;
+  gap: 14rpx;
+  margin: 0 24rpx;
 }
 
-.actions__ghost,
+.actions__ghost {
+  border-radius: 999rpx;
+  height: 80rpx;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1.5px solid $xc-line;
+  color: $xc-muted;
+  font-size: 28rpx;
+  font-weight: 600;
+  transition: all 0.2s;
+
+  &:active {
+    transform: scale(0.96);
+    background: rgba(255, 255, 255, 1);
+  }
+
+  &[disabled] {
+    opacity: 0.4;
+  }
+}
+
 .actions__primary {
   border-radius: 999rpx;
+  height: 80rpx;
+  @include btn-primary;
+  font-size: 28rpx;
+  font-weight: 700;
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    background-size: 200% 100%;
+    animation: shimmer 2.5s infinite;
+  }
+
+  &[disabled] {
+    opacity: 0.5;
+    box-shadow: none;
+  }
 }
 
-.actions__primary {
-  background: linear-gradient(135deg, #9B7ED8, #7C5DBF);
-  color: #fff8f1;
+@keyframes qEnter {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>

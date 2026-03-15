@@ -5,7 +5,7 @@ import { onHide, onShow, onUnload } from "@dcloudio/uni-app";
 import TimeCapsuleReveal from "@/components/feedback/TimeCapsuleReveal.vue";
 import TabBuddy from "@/components/mascot/TabBuddy.vue";
 import XiaoCe from "@/components/mascot/XiaoCe.vue";
-import XcBubble from "@/components/mascot/XcBubble.vue";
+// XcBubble available for future use
 import PersonaRadarCanvas from "@/components/profile/PersonaRadarCanvas.vue";
 import type { TimeCapsuleItem } from "@/shared/models/capsule";
 import type { MemoryGreetingPayload, MemorySuggestPayload } from "@/shared/models/memory";
@@ -311,7 +311,10 @@ onUnload(() => {
   <view class="page">
     <view class="topbar glass-strong d1">
       <view class="brand">
-        <view class="brand__logo">心</view>
+        <view class="brand__logo">
+          <text class="brand__logo-text">心</text>
+          <view class="brand__logo-shimmer" />
+        </view>
         <view>
           <text class="brand__name">心测</text>
           <text class="brand__sub">灵魂说明书</text>
@@ -322,7 +325,7 @@ onUnload(() => {
           <text>🔔</text>
           <text class="bell__badge">{{ unreadCount }}</text>
         </view>
-        <view class="avatar">{{ userAvatar }}</view>
+        <view class="avatar" :style="{ border: '2px solid #fff', boxShadow: '0 2px 8px rgba(155,126,216,0.15)' }">{{ userAvatar }}</view>
       </view>
     </view>
 
@@ -332,38 +335,60 @@ onUnload(() => {
     </view>
 
     <view class="ticker d2">
-      <view class="ticker__inner">
-        <text v-for="item in tickerItems" :key="item" class="ticker__item">{{ item }}</text>
+      <view class="ticker__dot" />
+      <view class="ticker__wrap">
+        <view class="ticker__inner">
+          <text v-for="item in tickerItems" :key="item" class="ticker__item">{{ item }}</text>
+        </view>
       </view>
     </view>
 
     <view class="hero d2">
-      <view class="hero__bg" />
-      <view class="hero__body">
-        <view class="hero__left">
-          <XiaoCe expression="happy" size="lg" :animated="true" />
-          <XcBubble
-            :text="greeting?.greeting || '今天一起探索你的灵魂坐标吧'"
-            :persistent="true"
-            :typing="true"
-          />
+      <view class="hero__bg">
+        <view class="hero__bg-overlay" />
+      </view>
+      <view class="hero__content">
+        <view class="hero__badge-tag">
+          <text>✨</text>
+          <text>每日精选</text>
         </view>
-        <view class="hero__right">
-          <text class="hero__hint">推荐你先测</text>
-          <text class="hero__title">{{ heroRecommended?.name || "今日灵魂快测" }}</text>
-          <button class="hero__cta" @tap="heroRecommended && openDetail(heroRecommended.test_code)">
-            开始测试
-          </button>
+        <text class="hero__title">{{ heroRecommended?.name || "今日灵魂快测" }}</text>
+        <text class="hero__desc">{{ heroRecommended?.description || "用15种创新互动方式，探索你的灵魂坐标" }}</text>
+        <button class="hero__cta" @tap="heroRecommended && openDetail(heroRecommended.test_code)">
+          <text>开始探索</text>
+          <text class="hero__cta-arrow">→</text>
+        </button>
+        <view class="hero__foot">
+          <view class="hero__avatars">
+            <text>🦊</text>
+            <text>🐱</text>
+            <text>🐰</text>
+            <text>🦄</text>
+          </view>
+          <text class="hero__count">{{ heroParticipants }}人参与中</text>
         </view>
       </view>
-      <view class="hero__foot">
-        <view class="hero__avatars">
-          <text>🦊</text>
-          <text>🐱</text>
-          <text>🐰</text>
-          <text>🦄</text>
-        </view>
-        <text>{{ heroParticipants }}人参与中</text>
+      <view class="hero__mascot">
+        <XiaoCe expression="happy" size="lg" :animated="true" />
+      </view>
+    </view>
+
+    <view class="quick-grid d3">
+      <view class="quick-item" @tap="openSoulCard">
+        <view class="quick-item__icon" style="background: linear-gradient(135deg, #9B7ED8, #C9B5F0)">🧬</view>
+        <text class="quick-item__label">灵魂画像</text>
+      </view>
+      <view class="quick-item" @tap="() => uni.switchTab({ url: '/pages/match/index' })">
+        <view class="quick-item__icon" style="background: linear-gradient(135deg, #E8729A, #F4A5BF)">💞</view>
+        <text class="quick-item__label">灵魂匹配</text>
+      </view>
+      <view class="quick-item" @tap="openDailyPanel">
+        <view class="quick-item__icon" style="background: linear-gradient(135deg, #7CC5B2, #A8DDD0)">📅</view>
+        <text class="quick-item__label">运势日历</text>
+      </view>
+      <view class="quick-item" @tap="openSoulCard">
+        <view class="quick-item__icon" style="background: linear-gradient(135deg, #D4A853, #E5C97E)">🏅</view>
+        <text class="quick-item__label">成就勋章</text>
       </view>
     </view>
 
@@ -462,26 +487,37 @@ onUnload(() => {
             v-for="(item, index) in hotTests"
             :key="item.test_code"
             class="hot-card"
-            :style="{ background: item.cover_gradient || fallbackGradient(index) }"
             @tap="openDetail(item.test_code)"
           >
-            <text class="hot-card__tag">热门</text>
-            <text class="hot-card__emoji">{{ iconForCategory(item.category, index) }}</text>
-            <text class="hot-card__title">{{ item.name }}</text>
-            <text class="hot-card__desc">{{ item.category }} · {{ item.duration_hint || "约5分钟" }}</text>
-            <text class="hot-card__meta">{{ item.participant_count }}人参与</text>
+            <view class="hot-card__img" :style="{ background: item.cover_gradient || fallbackGradient(index) }">
+              <text class="hot-card__tag">🔥 热门</text>
+              <text class="hot-card__emoji">{{ iconForCategory(item.category, index) }}</text>
+            </view>
+            <view class="hot-card__body">
+              <text class="hot-card__title">{{ item.name }}</text>
+              <text class="hot-card__desc">{{ item.description || item.category }}</text>
+              <view class="hot-card__meta">
+                <text>📝 {{ item.question_count }}题</text>
+                <text>⏱️ {{ item.duration_hint || "约5分钟" }}</text>
+                <text>👥 {{ item.participant_count }}</text>
+              </view>
+            </view>
           </view>
         </view>
       </scroll-view>
     </view>
 
-    <view class="limited d5">
+    <view class="limited d5" @tap="tests.length && openDetail(tests[0].test_code)">
       <view class="limited__glint" />
-      <view>
+      <text class="limited__icon">⏰</text>
+      <view class="limited__body">
         <text class="limited__title">限时热测：MBTI 快速版</text>
         <text class="limited__meta">今日完成可解锁限定徽章</text>
       </view>
-      <view class="limited__time">{{ formatCountDown(bannerCountDown) }}</view>
+      <view class="limited__timer">
+        <text class="limited__timer-val">{{ formatCountDown(bannerCountDown) }}</text>
+        <text class="limited__timer-label">剩余时间</text>
+      </view>
     </view>
 
     <view class="section d5">
@@ -538,7 +574,7 @@ onUnload(() => {
 
 <style lang="scss" scoped>
 .page {
-  padding: 20rpx 24rpx 40rpx;
+  padding: 20rpx 24rpx calc(#{$xc-tab-h} + 40rpx);
 }
 
 .glass {
@@ -549,6 +585,7 @@ onUnload(() => {
   @include glass-strong;
 }
 
+/* --- Topbar --- */
 .topbar {
   position: sticky;
   top: 0;
@@ -567,29 +604,48 @@ onUnload(() => {
 }
 
 .brand__logo {
-  width: 56rpx;
-  height: 56rpx;
-  border-radius: 16rpx;
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 18rpx;
   background: linear-gradient(135deg, $xc-purple, $xc-pink);
   color: $xc-white;
-  font-size: 30rpx;
-  font-weight: 800;
+  font-size: 28rpx;
+  font-weight: 900;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 4px 16px rgba(155, 126, 216, 0.35);
+  position: relative;
+  overflow: hidden;
+}
+
+.brand__logo-text {
+  position: relative;
+  z-index: 1;
+}
+
+.brand__logo-shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent 40%, rgba(255, 255, 255, 0.25) 50%, transparent 60%);
+  animation: shimmer 3s infinite;
+  background-size: 200% 100%;
 }
 
 .brand__name {
   display: block;
-  font-size: 30rpx;
-  font-weight: 800;
+  font-family: $xc-font-serif;
+  font-size: 32rpx;
+  font-weight: 900;
+  @include text-gradient;
 }
 
 .brand__sub {
   display: block;
   margin-top: 2rpx;
-  color: $xc-muted;
-  font-size: 20rpx;
+  color: $xc-hint;
+  font-size: 18rpx;
+  letter-spacing: 1px;
 }
 
 .topbar__actions {
@@ -607,19 +663,25 @@ onUnload(() => {
   align-items: center;
   justify-content: center;
   background: rgba(255, 255, 255, 0.75);
+  transition: transform 0.2s $xc-spring;
+
+  &:active {
+    transform: scale(0.9);
+  }
 }
 
 .bell__badge {
   position: absolute;
-  right: -4rpx;
+  right: -6rpx;
   top: -6rpx;
   min-width: 28rpx;
-  padding: 2rpx 6rpx;
+  padding: 2rpx 7rpx;
   border-radius: 999rpx;
   background: $xc-pink;
   color: $xc-white;
   font-size: 18rpx;
   text-align: center;
+  font-weight: 600;
 }
 
 .avatar {
@@ -633,6 +695,7 @@ onUnload(() => {
   font-size: 28rpx;
 }
 
+/* --- Search --- */
 .search {
   margin-top: 16rpx;
   border-radius: 999rpx;
@@ -640,21 +703,46 @@ onUnload(() => {
   display: flex;
   align-items: center;
   gap: 10rpx;
+  transition: box-shadow 0.3s;
+
+  &:active {
+    box-shadow: $xc-sh-md;
+  }
 }
 
 .search__placeholder {
-  color: $xc-muted;
+  color: $xc-hint;
   font-size: 24rpx;
 }
 
+/* --- Ticker --- */
 .ticker {
   margin-top: 14rpx;
   border-radius: 20rpx;
   padding: 0 18rpx;
   height: 56rpx;
   overflow: hidden;
-  background: $xc-purple-p;
+  background: linear-gradient(90deg, $xc-purple-p, $xc-pink-p);
   color: $xc-purple-d;
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.ticker__dot {
+  width: 10rpx;
+  height: 10rpx;
+  border-radius: 50%;
+  background: $xc-pink;
+  flex-shrink: 0;
+  animation: pulse 1.5s infinite;
+}
+
+.ticker__wrap {
+  flex: 1;
+  height: 56rpx;
+  overflow: hidden;
+  position: relative;
 }
 
 .ticker__inner {
@@ -667,72 +755,103 @@ onUnload(() => {
   height: 56rpx;
   line-height: 56rpx;
   font-size: 22rpx;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
+/* --- Hero --- */
 .hero {
   margin-top: 18rpx;
   border-radius: $xc-r-lg;
   overflow: hidden;
   position: relative;
+  min-height: 340rpx;
 }
 
 .hero__bg {
   position: absolute;
   inset: 0;
-  @include gradient-hero;
+  background: linear-gradient(135deg, #7C5DBF 0%, #B57FE0 30%, #E8729A 60%, #F2A68B 100%);
+  z-index: 0;
 }
 
-.hero__body {
+.hero__bg-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.15), transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.12), transparent 40%);
+}
+
+.hero__content {
   position: relative;
-  z-index: 1;
-  padding: 24rpx;
-  display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 16rpx;
-}
-
-.hero__left :deep(.xc-bubble) {
-  margin-top: 10rpx;
-}
-
-.hero__right {
+  z-index: 2;
+  padding: 36rpx 28rpx 20rpx;
   color: $xc-white;
 }
 
-.hero__hint {
-  display: block;
+.hero__badge-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6rpx;
+  padding: 8rpx 16rpx;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 999rpx;
   font-size: 20rpx;
-  opacity: 0.85;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  // #ifdef H5
+  backdrop-filter: blur(8px);
+  // #endif
 }
 
 .hero__title {
   display: block;
+  margin-top: 16rpx;
+  font-family: $xc-font-serif;
+  font-size: 38rpx;
+  font-weight: 900;
+  line-height: 1.35;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.hero__desc {
+  display: block;
   margin-top: 8rpx;
-  font-size: 30rpx;
-  font-weight: 700;
-  line-height: 1.4;
+  font-size: 24rpx;
+  opacity: 0.85;
+  line-height: 1.6;
 }
 
 .hero__cta {
-  margin-top: 18rpx;
-  height: 64rpx;
-  line-height: 64rpx;
-  border-radius: 999rpx;
+  margin-top: 24rpx;
+  display: inline-flex;
+  align-items: center;
+  gap: 10rpx;
+  padding: 16rpx 36rpx;
   background: $xc-white;
   color: $xc-purple-d;
-  font-size: 24rpx;
+  border-radius: 999rpx;
+  font-size: 28rpx;
   font-weight: 700;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s $xc-spring;
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.hero__cta-arrow {
+  font-size: 26rpx;
 }
 
 .hero__foot {
-  position: relative;
-  z-index: 1;
-  padding: 0 24rpx 18rpx;
-  color: rgba(255, 255, 255, 0.92);
-  font-size: 22rpx;
   display: flex;
   align-items: center;
   gap: 10rpx;
+  margin-top: 18rpx;
 }
 
 .hero__avatars {
@@ -740,12 +859,12 @@ onUnload(() => {
 }
 
 .hero__avatars text {
-  margin-left: -8rpx;
-  width: 34rpx;
-  height: 34rpx;
+  margin-left: -10rpx;
+  width: 36rpx;
+  height: 36rpx;
   border-radius: 50%;
-  border: 2rpx solid rgba(255, 255, 255, 0.7);
-  background: rgba(255, 255, 255, 0.24);
+  border: 2rpx solid rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -756,6 +875,64 @@ onUnload(() => {
   margin-left: 0;
 }
 
+.hero__count {
+  font-size: 22rpx;
+  opacity: 0.85;
+}
+
+.hero__mascot {
+  position: absolute;
+  right: 24rpx;
+  top: 24rpx;
+  z-index: 3;
+  animation: gentleBounce 2s infinite;
+}
+
+/* --- Quick Grid --- */
+.quick-grid {
+  margin-top: 20rpx;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14rpx;
+}
+
+.quick-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10rpx;
+  padding: 18rpx 10rpx;
+  border-radius: $xc-r;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid $xc-line;
+  box-shadow: $xc-sh-sm;
+  transition: transform 0.2s $xc-spring;
+
+  &:active {
+    transform: scale(0.95);
+    box-shadow: $xc-sh-md;
+  }
+}
+
+.quick-item__icon {
+  width: 68rpx;
+  height: 68rpx;
+  border-radius: 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 34rpx;
+  color: $xc-white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.quick-item__label {
+  font-size: 20rpx;
+  font-weight: 600;
+  color: $xc-ink;
+}
+
+/* --- Sections --- */
 .section {
   margin-top: 28rpx;
 }
@@ -764,51 +941,58 @@ onUnload(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 14rpx;
 }
 
 .section__title {
   font-size: 30rpx;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .section__more {
-  color: $xc-muted;
+  color: $xc-hint;
   font-size: 22rpx;
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
 }
 
+/* --- Soul Card --- */
 .soul-card {
-  padding: 20rpx;
+  padding: 24rpx;
 }
 
 .soul-locked,
 .soul-seed {
   margin-top: 14rpx;
   border-radius: 20rpx;
-  padding: 24rpx;
-  background: linear-gradient(145deg, rgba(58, 46, 66, 0.9), rgba(95, 75, 119, 0.82));
+  padding: 28rpx;
+  background: linear-gradient(145deg, rgba(58, 46, 66, 0.92), rgba(95, 75, 119, 0.85));
   color: $xc-white;
 }
 
 .soul-locked__icon {
   font-size: 48rpx;
+  animation: hiddenShake 2s infinite;
 }
 
 .soul-locked__text,
 .soul-seed__meta {
   display: block;
-  margin-top: 8rpx;
+  margin-top: 10rpx;
   font-size: 24rpx;
   opacity: 0.9;
+  line-height: 1.6;
 }
 
 .soul-seed__title {
-  font-size: 28rpx;
+  font-size: 30rpx;
   font-weight: 700;
 }
 
 .soul-seed__tags,
 .soul-full__tags {
-  margin-top: 12rpx;
+  margin-top: 14rpx;
   display: flex;
   flex-wrap: wrap;
   gap: 10rpx;
@@ -816,79 +1000,113 @@ onUnload(() => {
 
 .soul-seed__tags text,
 .soul-full__tags text {
-  padding: 6rpx 14rpx;
+  padding: 6rpx 16rpx;
   border-radius: 999rpx;
   background: rgba(255, 255, 255, 0.16);
   font-size: 20rpx;
 }
 
 .soul-full {
-  margin-top: 8rpx;
+  margin-top: 10rpx;
 }
 
 .soul-full__meta {
-  margin-top: 8rpx;
+  margin-top: 12rpx;
   font-size: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
+/* --- Daily Soul Question --- */
 .daily {
-  padding: 24rpx;
+  padding: 28rpx;
   border-radius: $xc-r-lg;
   background: linear-gradient(160deg, rgba(58, 46, 66, 0.95), rgba(80, 62, 100, 0.85));
   color: $xc-white;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: -30rpx;
+    right: -30rpx;
+    width: 120rpx;
+    height: 120rpx;
+    border-radius: 50%;
+    background: rgba(212, 168, 83, 0.12);
+  }
 }
 
 .daily__title {
   color: $xc-gold-l;
   font-size: 24rpx;
   font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
 }
 
 .daily__question {
   display: block;
-  margin-top: 12rpx;
+  margin-top: 14rpx;
   font-size: 30rpx;
-  line-height: 1.45;
+  font-weight: 500;
+  line-height: 1.5;
 }
 
 .daily__options {
-  margin-top: 16rpx;
+  margin-top: 18rpx;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12rpx;
 }
 
 .daily__option {
-  height: 72rpx;
+  height: 76rpx;
   border-radius: 16rpx;
-  background: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.14);
   color: $xc-white;
   font-size: 22rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6rpx;
+  gap: 8rpx;
+  transition: all 0.2s $xc-spring;
+  // #ifdef H5
+  backdrop-filter: blur(4px);
+  // #endif
+
+  &:active {
+    background: rgba(155, 126, 216, 0.45);
+    transform: scale(0.96);
+  }
 }
 
 .daily__result {
-  margin-top: 16rpx;
+  margin-top: 18rpx;
   font-size: 23rpx;
   display: flex;
   flex-direction: column;
-  gap: 8rpx;
+  gap: 10rpx;
+  animation: fadeInUp 0.4s $xc-ease;
 }
 
 .daily__badge {
   display: inline-block;
   align-self: flex-start;
-  padding: 5rpx 14rpx;
+  padding: 6rpx 16rpx;
   border-radius: 999rpx;
   background: rgba(212, 168, 83, 0.3);
   color: $xc-gold-l;
+  font-size: 22rpx;
+  font-weight: 600;
 }
 
+/* --- Memory Bar --- */
 .memory {
-  padding: 22rpx;
+  padding: 24rpx;
   border-radius: $xc-r-lg;
 }
 
@@ -899,11 +1117,12 @@ onUnload(() => {
   margin-top: 10rpx;
   font-size: 23rpx;
   color: $xc-muted;
+  line-height: 1.5;
 }
 
 .memory__track {
-  margin-top: 12rpx;
-  height: 12rpx;
+  margin-top: 14rpx;
+  height: 14rpx;
   border-radius: 999rpx;
   background: rgba(155, 126, 216, 0.12);
   overflow: hidden;
@@ -913,8 +1132,10 @@ onUnload(() => {
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, $xc-purple, $xc-pink);
+  transition: width 0.6s $xc-ease;
 }
 
+/* --- Category Tabs --- */
 .cats {
   margin-top: 22rpx;
 }
@@ -926,19 +1147,24 @@ onUnload(() => {
 
 .cats__item {
   flex-shrink: 0;
-  padding: 12rpx 20rpx;
+  padding: 14rpx 22rpx;
   border-radius: 999rpx;
   background: rgba(255, 255, 255, 0.9);
   color: $xc-muted;
   font-size: 22rpx;
-  border: 1px solid rgba(155, 126, 216, 0.08);
+  font-weight: 600;
+  border: 1.5px solid rgba(155, 126, 216, 0.08);
+  transition: all 0.3s;
 }
 
 .cats__item--active {
-  background: $xc-purple;
+  background: linear-gradient(135deg, $xc-purple, $xc-pink);
   color: $xc-white;
+  border-color: transparent;
+  box-shadow: 0 4px 12px rgba(155, 126, 216, 0.25);
 }
 
+/* --- Hot Cards --- */
 .hot {
   margin-top: 12rpx;
 }
@@ -950,94 +1176,157 @@ onUnload(() => {
 
 .hot-card {
   flex-shrink: 0;
-  width: 280rpx;
-  padding: 20rpx;
+  width: 320rpx;
   border-radius: 22rpx;
-  color: $xc-white;
+  overflow: hidden;
+  transition: transform 0.2s $xc-ease;
+
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+.hot-card__img {
+  height: 200rpx;
   position: relative;
+  overflow: hidden;
 }
 
 .hot-card__tag {
   position: absolute;
-  right: 16rpx;
+  right: 14rpx;
   top: 14rpx;
   font-size: 18rpx;
-  padding: 4rpx 10rpx;
+  padding: 5rpx 12rpx;
   border-radius: 999rpx;
-  background: rgba(255, 70, 90, 0.88);
+  background: rgba(232, 114, 154, 0.85);
+  color: $xc-white;
+  font-weight: 700;
+  // #ifdef H5
+  backdrop-filter: blur(4px);
+  // #endif
 }
 
 .hot-card__emoji {
-  font-size: 38rpx;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 72rpx;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15));
+}
+
+.hot-card__body {
+  padding: 16rpx 18rpx;
+  background: $xc-card-solid;
+  border: 1px solid rgba(155, 126, 216, 0.06);
+  border-top: none;
+  border-radius: 0 0 22rpx 22rpx;
 }
 
 .hot-card__title {
   display: block;
-  margin-top: 10rpx;
-  font-size: 27rpx;
+  font-size: 26rpx;
   font-weight: 700;
 }
 
-.hot-card__desc,
-.hot-card__meta {
+.hot-card__desc {
   display: block;
-  margin-top: 8rpx;
-  font-size: 21rpx;
-  opacity: 0.9;
+  margin-top: 4rpx;
+  font-size: 22rpx;
+  color: $xc-muted;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
+.hot-card__meta {
+  display: flex;
+  gap: 10rpx;
+  margin-top: 10rpx;
+  font-size: 20rpx;
+  color: $xc-hint;
+}
+
+/* --- Limited Banner --- */
 .limited {
   margin-top: 26rpx;
   border-radius: 22rpx;
-  padding: 18rpx 20rpx;
-  background: linear-gradient(135deg, $xc-purple-p, $xc-pink-p, $xc-peach-p);
-  border: 2rpx solid rgba(155, 126, 216, 0.16);
+  padding: 20rpx 22rpx;
+  background: linear-gradient(135deg, #FFF0E8, #FDE6EF);
+  border: 1.5px solid rgba(232, 114, 154, 0.15);
   position: relative;
   overflow: hidden;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 16rpx;
+  transition: transform 0.2s;
+
+  &:active {
+    transform: scale(0.98);
+  }
 }
 
 .limited__glint {
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
   background-size: 200% 100%;
-  animation: shimmer 2.4s linear infinite;
+  animation: shimmer 3s infinite;
 }
 
-.limited__title,
-.limited__meta {
-  display: block;
+.limited__icon {
+  font-size: 48rpx;
+  position: relative;
+  z-index: 1;
+}
+
+.limited__body {
+  flex: 1;
   position: relative;
   z-index: 1;
 }
 
 .limited__title {
+  display: block;
   font-size: 26rpx;
   font-weight: 700;
-  color: $xc-purple-d;
+  color: $xc-pink;
 }
 
 .limited__meta {
-  margin-top: 6rpx;
+  display: block;
+  margin-top: 4rpx;
   font-size: 21rpx;
   color: $xc-muted;
 }
 
-.limited__time {
+.limited__timer {
   position: relative;
   z-index: 1;
-  font-size: 26rpx;
-  color: $xc-purple-d;
-  font-weight: 800;
+  text-align: center;
 }
 
+.limited__timer-val {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 900;
+  color: $xc-pink;
+  font-variant-numeric: tabular-nums;
+}
+
+.limited__timer-label {
+  display: block;
+  font-size: 18rpx;
+  color: $xc-hint;
+}
+
+/* --- Status panels --- */
 .panel {
-  padding: 24rpx;
+  padding: 28rpx;
   border-radius: 22rpx;
   background: rgba(255, 255, 255, 0.88);
+  text-align: center;
 }
 
 .panel__text {
@@ -1047,8 +1336,13 @@ onUnload(() => {
 
 .panel--error {
   background: rgba(255, 240, 245, 0.88);
+
+  .panel__text {
+    color: $xc-pink;
+  }
 }
 
+/* --- All Tests List --- */
 .all-list {
   margin-top: 12rpx;
   display: flex;
@@ -1061,29 +1355,37 @@ onUnload(() => {
   padding: 18rpx;
   display: flex;
   align-items: center;
-  gap: 14rpx;
+  gap: 16rpx;
   position: relative;
   overflow: hidden;
-}
+  transition: transform 0.2s $xc-ease, box-shadow 0.2s;
 
-.all-item::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  border: 1px solid transparent;
-  animation: rainbow 5s linear infinite;
-  pointer-events: none;
+  &:active {
+    transform: scale(0.98);
+    box-shadow: $xc-sh-md;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: -2rpx;
+    border-radius: inherit;
+    border: 2px solid transparent;
+    animation: rainbow 5s linear infinite;
+    pointer-events: none;
+    opacity: 0.5;
+  }
 }
 
 .all-item__icon {
-  width: 74rpx;
-  height: 74rpx;
-  border-radius: 18rpx;
+  width: 76rpx;
+  height: 76rpx;
+  border-radius: 20rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 34rpx;
+  font-size: 36rpx;
+  position: relative;
 }
 
 .all-item__body {
@@ -1106,15 +1408,18 @@ onUnload(() => {
 }
 
 .all-item__arrow {
-  color: $xc-muted;
-  font-size: 34rpx;
+  color: $xc-hint;
+  font-size: 30rpx;
 }
 
+/* --- Friend Tests --- */
 .friend {
   border-radius: 24rpx;
   border: 2rpx solid rgba(232, 114, 154, 0.32);
   background: rgba(255, 255, 255, 0.86);
-  padding: 20rpx;
+  padding: 24rpx;
+  position: relative;
+  overflow: hidden;
 }
 
 .friend__title {
@@ -1131,7 +1436,7 @@ onUnload(() => {
 }
 
 .friend__list {
-  margin-top: 12rpx;
+  margin-top: 14rpx;
   display: flex;
   flex-direction: column;
   gap: 10rpx;
@@ -1139,13 +1444,20 @@ onUnload(() => {
 
 .friend__item {
   border-radius: 16rpx;
-  padding: 14rpx 16rpx;
-  background: rgba(253, 230, 239, 0.62);
+  padding: 16rpx 18rpx;
+  background: linear-gradient(135deg, rgba(253, 230, 239, 0.6), rgba(255, 240, 232, 0.6));
   display: flex;
   justify-content: space-between;
-  font-size: 22rpx;
+  align-items: center;
+  font-size: 24rpx;
+  transition: transform 0.2s;
+
+  &:active {
+    transform: scale(0.98);
+  }
 }
 
+/* --- Cascading animations --- */
 .d1,
 .d2,
 .d3,

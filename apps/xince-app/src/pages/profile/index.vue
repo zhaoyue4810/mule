@@ -1306,6 +1306,7 @@ onUnload(() => {
 </template>
 
 <style lang="scss" scoped>
+/* ── Page shell ── */
 .page {
   padding: 28rpx 28rpx 40rpx;
 }
@@ -1321,24 +1322,31 @@ onUnload(() => {
   gap: 20rpx;
 }
 
+/* ── Hero header (first-pass base, overridden later) ── */
 .hero {
   padding: 36rpx 30rpx;
   border-radius: 28rpx;
-  background:
-    radial-gradient(circle at top right, rgba(255, 241, 223, 0.98), rgba(255, 215, 184, 0.92)),
-    #fff8f1;
+  background: linear-gradient(135deg, #7C5DBF, #E8729A);
   box-shadow: $xc-shadow;
+  color: #fff;
 }
 
 .hero__avatar {
   display: inline-flex;
-  width: 88rpx;
-  height: 88rpx;
+  width: 160rpx;
+  height: 160rpx;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.72);
-  font-size: 44rpx;
+  background: rgba(255, 255, 255, 0.18);
+  border: 6rpx solid rgba(255, 255, 255, 0.4);
+  font-size: 64rpx;
+  box-shadow: 0 4rpx 24rpx rgba(0, 0, 0, 0.12);
+  transition: transform $xc-fast $xc-spring;
+
+  &:active {
+    transform: scale(0.95);
+  }
 }
 
 .hero__eyebrow {
@@ -1346,7 +1354,7 @@ onUnload(() => {
   margin-top: 20rpx;
   font-size: 22rpx;
   letter-spacing: 2rpx;
-  color: $xc-accent;
+  color: rgba(255, 255, 255, 0.85);
   text-transform: uppercase;
 }
 
@@ -1355,6 +1363,7 @@ onUnload(() => {
   margin-top: 12rpx;
   font-size: 40rpx;
   font-weight: 700;
+  color: #fff;
 }
 
 .hero__meta,
@@ -1362,13 +1371,14 @@ onUnload(() => {
   display: block;
   margin-top: 12rpx;
   font-size: 24rpx;
-  color: rgba(58, 46, 66, 0.72);
+  color: rgba(255, 255, 255, 0.8);
 }
 
+/* ── Stats row ── */
 .stats {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16rpx;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14rpx;
 }
 
 .quick-actions {
@@ -1379,27 +1389,34 @@ onUnload(() => {
 
 .quick-actions__button {
   border-radius: 22rpx;
-  background: linear-gradient(135deg, #9B7ED8, #7C5DBF);
-  color: #FBF7F4;
+  @include btn-primary;
   font-size: 24rpx;
 }
 
 .quick-actions__button--ghost {
   background: rgba(255, 246, 237, 0.96);
   color: $xc-accent;
+  box-shadow: none;
 }
 
+/* ── Panels ── */
 .panel {
   padding: 28rpx;
   border-radius: 24rpx;
   background: rgba(255, 255, 255, 0.85);
   border: 2rpx solid $xc-line;
+  transition: transform $xc-fast $xc-ease, box-shadow $xc-fast $xc-ease;
+
+  &:active {
+    transform: scale(0.995);
+  }
 }
 
 .panel__title {
   display: block;
   font-size: 32rpx;
   font-weight: 600;
+  @include text-gradient;
 }
 
 .panel__body {
@@ -1417,8 +1434,7 @@ onUnload(() => {
 .panel__button {
   margin-top: 24rpx;
   border-radius: 999rpx;
-  background: linear-gradient(135deg, #9B7ED8, #7C5DBF);
-  color: #FBF7F4;
+  @include btn-primary;
 }
 
 .panel__button--wechat {
@@ -1446,6 +1462,12 @@ onUnload(() => {
   background: rgba(255, 250, 244, 0.96);
   border: 2rpx solid rgba(155, 126, 216, 0.12);
   font-size: 28rpx;
+  transition: border-color $xc-fast $xc-ease, box-shadow $xc-fast $xc-ease;
+
+  &:focus {
+    border-color: $xc-purple-l;
+    box-shadow: 0 0 0 4rpx rgba(155, 126, 216, 0.1);
+  }
 }
 
 .field-input--grow {
@@ -1458,6 +1480,12 @@ onUnload(() => {
   background: rgba(155, 126, 216, 0.12);
   color: $xc-accent;
   font-size: 24rpx;
+  transition: transform $xc-fast $xc-spring;
+
+  &:active {
+    transform: scale(0.96);
+    background: rgba(155, 126, 216, 0.2);
+  }
 }
 
 .sound-setting {
@@ -1582,13 +1610,18 @@ onUnload(() => {
 }
 
 .calendar-month__cell {
-  min-height: 92rpx;
-  border-radius: 18rpx;
+  aspect-ratio: 1;
+  border-radius: 12rpx;
   padding: 10rpx;
   border: 2rpx solid rgba(155, 126, 216, 0.08);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  transition: transform $xc-fast $xc-spring, background $xc-fast $xc-ease;
+
+  &:active {
+    transform: scale(0.93);
+  }
 }
 
 .calendar-month__cell--empty {
@@ -1611,24 +1644,29 @@ onUnload(() => {
 }
 
 .calendar-year__grid {
-  display: flex;
-  gap: 8rpx;
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(7, 22rpx);
+  gap: 6rpx;
   padding-bottom: 4rpx;
 }
 
 .calendar-year__week {
-  display: grid;
-  grid-template-rows: repeat(7, 22rpx);
-  gap: 8rpx;
+  display: contents;
 }
 
 .calendar-year__cell {
   width: 22rpx;
   height: 22rpx;
-  border-radius: 8rpx;
+  border-radius: 6rpx;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: transform $xc-fast $xc-spring;
+
+  &:active {
+    transform: scale(1.4);
+  }
 }
 
 .calendar-year__cell--empty {
@@ -1645,6 +1683,11 @@ onUnload(() => {
   border-radius: 18rpx;
   background: rgba(255, 248, 238, 0.96);
   border: 2rpx solid rgba(155, 126, 216, 0.12);
+  transition: transform $xc-fast $xc-spring, box-shadow $xc-fast $xc-ease;
+
+  &:active {
+    transform: scale(0.95);
+  }
 }
 
 .badge-card__emoji {
@@ -1745,10 +1788,16 @@ onUnload(() => {
   border-radius: 16rpx;
   background: rgba(255, 255, 255, 0.72);
   border: 2rpx solid rgba(155, 126, 216, 0.08);
+  transition: transform $xc-fast $xc-spring;
+
+  &:active {
+    transform: scale(0.96);
+  }
 }
 
 .fragment-column__item--locked {
-  opacity: 0.55;
+  opacity: 0.5;
+  filter: grayscale(0.4);
 }
 
 .fragment-column__item-emoji {
@@ -1778,11 +1827,18 @@ onUnload(() => {
   padding: 20rpx;
   border-radius: 20rpx;
   background: rgba(255, 247, 238, 0.96);
-  border: 2rpx solid rgba(155, 126, 216, 0.08);
+  border: 2rpx solid rgba($xc-gold, 0.18);
+  transition: transform $xc-fast $xc-spring;
+
+  &:active {
+    transform: scale(0.98);
+  }
 }
 
 .capsule-card--open {
-  background: linear-gradient(145deg, rgba(255, 245, 220, 0.96), rgba(255, 233, 193, 0.92));
+  background: linear-gradient(145deg, rgba(253, 244, 222, 0.98), rgba(255, 233, 193, 0.94));
+  border-color: rgba($xc-gold, 0.35);
+  box-shadow: 0 4rpx 20rpx rgba($xc-gold, 0.15);
 }
 
 .capsule-card__icon {
@@ -1800,7 +1856,7 @@ onUnload(() => {
   display: block;
   margin-top: 8rpx;
   font-size: 22rpx;
-  color: $xc-accent;
+  color: $xc-gold;
 }
 
 .capsule-card__body {
@@ -1872,23 +1928,23 @@ onUnload(() => {
 }
 
 .heatmap-cell--level-0 {
-  background: rgba(255, 250, 244, 0.72);
+  background: rgba(247, 241, 255, 0.45);
 }
 
 .heatmap-cell--level-1 {
-  background: rgba(255, 234, 214, 0.96);
+  background: $xc-purple-p;
 }
 
 .heatmap-cell--level-2 {
-  background: rgba(246, 200, 163, 0.96);
+  background: rgba($xc-purple-l, 0.65);
 }
 
 .heatmap-cell--level-3 {
-  background: rgba(230, 153, 101, 0.94);
+  background: rgba($xc-purple, 0.72);
 }
 
 .heatmap-cell--level-4 {
-  background: rgba(191, 83, 33, 0.92);
+  background: rgba($xc-purple-d, 0.88);
 }
 
 .heatmap-cell__day,
@@ -1974,6 +2030,12 @@ onUnload(() => {
   background: rgba(255, 245, 235, 0.96);
   color: $xc-ink;
   border: 2rpx solid rgba(155, 126, 216, 0.12);
+  transition: transform $xc-fast $xc-spring, background $xc-fast $xc-ease;
+
+  &:active {
+    transform: scale(0.97);
+    background: rgba($xc-purple-p, 0.8);
+  }
 }
 
 .daily-question-result {
@@ -2030,8 +2092,13 @@ onUnload(() => {
 .stat-card {
   padding: 24rpx;
   border-radius: 22rpx;
-  background: rgba(255, 253, 248, 0.96);
-  border: 2rpx solid rgba(155, 126, 216, 0.08);
+  @include glass;
+  box-shadow: $xc-sh-md;
+  transition: transform $xc-fast $xc-spring;
+
+  &:active {
+    transform: scale(0.97);
+  }
 }
 
 .stat-card__label {
@@ -2043,9 +2110,9 @@ onUnload(() => {
 .stat-card__value {
   display: block;
   margin-top: 10rpx;
-  font-size: 32rpx;
+  font-size: 34rpx;
   font-weight: 700;
-  color: $xc-ink;
+  @include text-gradient;
 }
 
 .chips {
@@ -2122,6 +2189,11 @@ onUnload(() => {
   border-radius: 22rpx;
   background: rgba(255, 250, 244, 0.96);
   border: 2rpx solid rgba(155, 126, 216, 0.08);
+  transition: transform $xc-fast $xc-spring;
+
+  &:active {
+    transform: scale(0.98);
+  }
 }
 
 .history-card__top {
@@ -2165,7 +2237,7 @@ onUnload(() => {
 .sheet {
   position: fixed;
   inset: 0;
-  z-index: 80;
+  z-index: $xc-z-modal;
   display: flex;
   align-items: flex-end;
 }
@@ -2174,20 +2246,28 @@ onUnload(() => {
   position: absolute;
   inset: 0;
   background: rgba(33, 20, 16, 0.46);
+  // #ifdef H5
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  // #endif
 }
 
 .sheet__mask--dreamy {
   background: rgba(28, 18, 34, 0.58);
-  backdrop-filter: blur(10px);
+  // #ifdef H5
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  // #endif
 }
 
 .sheet__panel {
   position: relative;
   width: 100%;
-  padding: 34rpx 30rpx 42rpx;
-  border-radius: 32rpx 32rpx 0 0;
+  padding: 34rpx 30rpx calc(42rpx + #{$xc-safe-b});
+  border-radius: 56rpx 56rpx 0 0;
   background: #fffaf5;
-  animation: sheet-rise 0.24s ease-out;
+  box-shadow: $xc-sh-lg;
+  animation: sheet-rise 0.32s $xc-ease;
 }
 
 .sheet__panel--dreamy {
@@ -2223,6 +2303,11 @@ onUnload(() => {
   padding: 16rpx 18rpx;
   border-radius: 16rpx;
   background: rgba(255, 247, 238, 0.96);
+  transition: transform $xc-fast $xc-spring;
+
+  &:active {
+    transform: scale(0.97);
+  }
 }
 
 .sheet__event-emoji {
@@ -2254,6 +2339,11 @@ onUnload(() => {
   border-radius: 18rpx;
   background: rgba(255, 242, 228, 0.96);
   font-size: 30rpx;
+  transition: transform $xc-fast $xc-spring;
+
+  &:active {
+    transform: scale(1.2);
+  }
 }
 
 .fragment-reveal__emoji {
@@ -2304,16 +2394,30 @@ onUnload(() => {
   }
 }
 
+/* ── Polished overrides ── */
 .profile {
   gap: 24rpx;
 }
 
 .hero {
-  @include gradient-hero;
+  background: linear-gradient(135deg, #7C5DBF, #E8729A);
   border-radius: $xc-r-xl;
   padding: 30rpx;
   color: #fff;
   box-shadow: $xc-sh-lg;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: -30%;
+    right: -20%;
+    width: 260rpx;
+    height: 260rpx;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+  }
 }
 
 .hero__top {
@@ -2323,11 +2427,11 @@ onUnload(() => {
 }
 
 .hero__avatar-wrap {
-  width: 110rpx;
-  height: 110rpx;
+  width: 160rpx;
+  height: 160rpx;
   border-radius: 50%;
   padding: 4rpx;
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.35);
   box-shadow: 0 0 24rpx rgba(155, 126, 216, 0.55);
 }
 
@@ -2336,7 +2440,7 @@ onUnload(() => {
   height: 100%;
   margin: 0;
   border-radius: 50%;
-  border: 3rpx solid rgba(255, 255, 255, 0.85);
+  border: 6rpx solid rgba(255, 255, 255, 0.4);
   background: rgba(255, 255, 255, 0.2);
 }
 
@@ -2372,6 +2476,12 @@ onUnload(() => {
   color: #fff;
   border: 2rpx solid rgba(255, 255, 255, 0.3);
   font-size: 22rpx;
+  transition: transform $xc-fast $xc-spring, background $xc-fast $xc-ease;
+
+  &:active {
+    transform: scale(0.94);
+    background: rgba(255, 255, 255, 0.35);
+  }
 }
 
 .hero__tag-btn {
@@ -2395,7 +2505,7 @@ onUnload(() => {
 }
 
 .stat-card--highlight .stat-card__value {
-  color: $xc-purple-d;
+  @include text-gradient;
   font-size: 38rpx;
 }
 
@@ -2406,6 +2516,10 @@ onUnload(() => {
 
 .panel {
   @include card-base;
+}
+
+.soul-panel {
+  @include glass-strong;
 }
 
 .panel__head {
@@ -2472,6 +2586,11 @@ onUnload(() => {
   background: rgba(155, 126, 216, 0.12);
   color: $xc-purple-d;
   font-size: 20rpx;
+  transition: transform $xc-fast $xc-spring;
+
+  &:active {
+    transform: scale(0.94);
+  }
 }
 
 .memory-panel__head {
@@ -2519,6 +2638,11 @@ onUnload(() => {
   border-radius: 18rpx;
   background: rgba(255, 255, 255, 0.88);
   border: 2rpx solid rgba(232, 114, 154, 0.16);
+  transition: transform $xc-fast $xc-spring;
+
+  &:active {
+    transform: scale(0.97);
+  }
 }
 
 .match-card__avatars {
@@ -2568,11 +2692,37 @@ onUnload(() => {
 
 .badge-card {
   position: relative;
+  overflow: visible;
+}
+
+.badge-card--unlocked {
+  border-color: $xc-purple-l;
+  box-shadow: $xc-sh-sm;
+}
+
+.badge-card--locked {
+  opacity: 0.5;
+  filter: grayscale(0.4);
+}
+
+.badge-card--new::after {
+  content: "NEW";
+  position: absolute;
+  top: -10rpx;
+  right: -10rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 999rpx;
+  background: $xc-pink;
+  color: #fff;
+  font-size: 18rpx;
+  font-weight: 700;
+  letter-spacing: 1rpx;
+  box-shadow: 0 2rpx 8rpx rgba($xc-pink, 0.35);
 }
 
 .badge-card--duo {
   border-color: rgba(232, 114, 154, 0.24);
-  background: rgba(253, 230, 239, 0.7);
+  background: linear-gradient(145deg, rgba(253, 230, 239, 0.8), rgba($xc-pink-p, 0.6));
 }
 
 .badge-card--t1 {
@@ -2587,16 +2737,17 @@ onUnload(() => {
 }
 
 .badge-card--t3 {
-  border-color: rgba(212, 168, 83, 0.48);
-  box-shadow: 0 0 18rpx rgba(212, 168, 83, 0.28);
-  animation: glowPulse 2s ease-in-out infinite;
+  border-color: rgba($xc-gold, 0.55);
+  box-shadow: 0 0 20rpx rgba($xc-gold, 0.32);
+  animation: glowGold 2s ease-in-out infinite;
 }
 
 .badge-card--t4 {
-  border-color: rgba(185, 242, 255, 0.75);
+  border-color: rgba($xc-purple-l, 0.75);
   background:
-    linear-gradient(120deg, rgba(185, 242, 255, 0.34), rgba(201, 181, 240, 0.24), rgba(255, 255, 255, 0.9));
-  box-shadow: 0 0 24rpx rgba(185, 242, 255, 0.45);
+    linear-gradient(120deg, rgba(185, 242, 255, 0.34), rgba($xc-purple-p, 0.4), rgba(255, 255, 255, 0.9));
+  box-shadow: 0 0 28rpx rgba($xc-purple, 0.35);
+  animation: glowPurple 2s ease-in-out infinite;
 }
 
 .fragment-map__grid {
@@ -2620,7 +2771,8 @@ onUnload(() => {
 }
 
 .fragment-column__item--locked {
-  filter: grayscale(0.75);
+  filter: grayscale(0.4);
+  opacity: 0.5;
 }
 
 .calendar-panel__header {
@@ -2635,8 +2787,9 @@ onUnload(() => {
 
 .calendar-month__cell--today,
 .calendar-year__cell--today {
-  border-color: rgba(155, 126, 216, 0.82);
-  box-shadow: 0 0 0 2rpx rgba(155, 126, 216, 0.2);
+  border: 3rpx solid $xc-purple;
+  font-weight: 700;
+  box-shadow: 0 0 0 3rpx rgba($xc-purple, 0.15);
 }
 
 .heatmap-cell--level-0 {
@@ -2672,6 +2825,11 @@ onUnload(() => {
   gap: 12rpx;
   min-height: 82rpx;
   border-bottom: 1px solid rgba(155, 126, 216, 0.08);
+  transition: background $xc-fast $xc-ease;
+
+  &:active {
+    background: rgba($xc-purple-p, 0.4);
+  }
 }
 
 .settings-item:last-child {
@@ -2690,5 +2848,110 @@ onUnload(() => {
   font-size: 24rpx;
   color: $xc-hint;
   text-align: right;
+}
+
+/* ── Cascading entrance animations ── */
+.profile > :nth-child(1) { animation: cascadeIn 0.4s $xc-ease both; animation-delay: 0s; }
+.profile > :nth-child(2) { animation: cascadeIn 0.4s $xc-ease both; animation-delay: 0.06s; }
+.profile > :nth-child(3) { animation: cascadeIn 0.4s $xc-ease both; animation-delay: 0.12s; }
+.profile > :nth-child(4) { animation: cascadeIn 0.4s $xc-ease both; animation-delay: 0.18s; }
+.profile > :nth-child(5) { animation: cascadeIn 0.4s $xc-ease both; animation-delay: 0.24s; }
+.profile > :nth-child(6) { animation: cascadeIn 0.4s $xc-ease both; animation-delay: 0.30s; }
+.profile > :nth-child(7) { animation: cascadeIn 0.4s $xc-ease both; animation-delay: 0.36s; }
+.profile > :nth-child(8) { animation: cascadeIn 0.4s $xc-ease both; animation-delay: 0.42s; }
+.profile > :nth-child(9) { animation: cascadeIn 0.4s $xc-ease both; animation-delay: 0.48s; }
+.profile > :nth-child(10) { animation: cascadeIn 0.4s $xc-ease both; animation-delay: 0.54s; }
+.profile > :nth-child(n+11) { animation: cascadeIn 0.4s $xc-ease both; animation-delay: 0.6s; }
+
+@keyframes cascadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(28rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Gold glow for tier-3 badges ── */
+@keyframes glowGold {
+  0%, 100% {
+    box-shadow: 0 0 16rpx rgba($xc-gold, 0.28);
+  }
+  50% {
+    box-shadow: 0 0 28rpx rgba($xc-gold, 0.48);
+  }
+}
+
+/* ── Purple glow for tier-4 (diamond) badges ── */
+@keyframes glowPurple {
+  0%, 100% {
+    box-shadow: 0 0 20rpx rgba($xc-purple, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 36rpx rgba($xc-purple, 0.55);
+  }
+}
+
+/* ── Celebration overlay popIn ── */
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  60% {
+    transform: scale(1.06);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ── Calendar stats value -- gradient text ── */
+.calendar-stats__value {
+  @include text-gradient;
+}
+
+/* ── Daily question stat value -- gradient text ── */
+.daily-question-stat__value {
+  @include text-gradient;
+}
+
+/* ── Calendar toggle active state ── */
+.calendar-toggle__button {
+  transition: transform $xc-fast $xc-spring, background $xc-fast $xc-ease;
+
+  &:active {
+    transform: scale(0.94);
+  }
+}
+
+/* ── Calendar toolbar arrow active ── */
+.calendar-toolbar__arrow {
+  transition: transform $xc-fast $xc-spring;
+
+  &:active {
+    transform: scale(0.9);
+  }
+}
+
+/* ── Retro chip active ── */
+.daily-question-retro__chip {
+  transition: transform $xc-fast $xc-spring;
+
+  &:active {
+    transform: scale(0.94);
+  }
+}
+
+/* ── Chip active ── */
+.chip {
+  transition: transform $xc-fast $xc-spring;
+
+  &:active {
+    transform: scale(0.95);
+  }
 }
 </style>
