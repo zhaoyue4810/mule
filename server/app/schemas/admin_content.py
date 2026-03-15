@@ -128,6 +128,13 @@ class AdminTestVersionContentUpdateRequest(BaseModel):
     personas: list[AdminPersonaPayload] = Field(default_factory=list)
 
 
+class AdminCreateVersionRequest(BaseModel):
+    source_version_id: int | None = None
+    source_version: int | None = None
+    clone_content: bool = True
+    description: str | None = None
+
+
 class PublishVersionRequest(BaseModel):
     version_id: int | None = None
     version: int | None = None

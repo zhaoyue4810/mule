@@ -28,6 +28,10 @@ export const useTestCatalogStore = defineStore("testCatalog", () => {
     error.value = "";
     try {
       tests.value = await fetchPublishedTests();
+      if (force) {
+        detailMap.value = {};
+        questionnaireMap.value = {};
+      }
       return tests.value;
     } catch (err) {
       error.value = err instanceof Error ? err.message : "测试列表加载失败";

@@ -23,7 +23,6 @@ const tabs: Array<{ key: NotificationTab; label: string }> = [
 
 const activeTab = ref<NotificationTab>("all");
 
-// TODO: 接入后端通知 API
 const notifications = ref<NotificationItem[]>([
   {
     id: 1,

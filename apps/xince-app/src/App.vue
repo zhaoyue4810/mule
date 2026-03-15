@@ -46,12 +46,9 @@ onLaunch(() => {
   ensureH5GlobalLayers();
   // #endif
   ensureAppSession()
-    .then((user) => {
-      if (!user.onboarding_completed) {
-        uni.reLaunch({
-          url: "/pages/profile/onboarding",
-        });
-      }
+    .then(() => {
+      // H5 should open the home/test flow directly. Redirecting during app launch
+      // can leave the initial route blank before the router is fully ready.
     })
     .catch((error) => {
       console.warn("Failed to establish session on launch", error);
@@ -151,6 +148,16 @@ button {
   animation-timing-function: linear;
   animation-iteration-count: infinite;
 }
+
+/* H5 scrollbar hiding must stay global. Scoped ::v-deep rules can compile into
+ * a blanket [data-v-xxxx] selector that hides the whole page. */
+/* #ifdef H5 */
+::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+/* #endif */
 
 .xc-particle-1 {
   left: 7%;

@@ -13,7 +13,7 @@ uni-app 有新版本发布，请执行 `npx @dcloudio/uvm@latest` 更新，更�
 
   ➜  Local:   http://127.0.0.1:5173/
 
-  ready in 889ms.
+  ready in 875ms.
 
 DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
 
@@ -24,10 +24,10 @@ DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be remo
 More info and automated migrator: https://sass-lang.com/d/import
 
    ╷
-54 │ @import "@/styles/tokens.scss";
+74 │ @import "@/styles/tokens.scss";
    │         ^^^^^^^^^^^^^^^^^^^^^^
    ╵
-    src/App.vue 54:9  root stylesheet
+    src/App.vue 74:9  root stylesheet
 
 DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
 
@@ -38,10 +38,10 @@ DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be remo
 More info and automated migrator: https://sass-lang.com/d/import
 
    ╷
-54 │ @import "@/styles/tokens.scss";
+74 │ @import "@/styles/tokens.scss";
    │         ^^^^^^^^^^^^^^^^^^^^^^
    ╵
-    src/pages/home/index.vue 54:9  root stylesheet
+    src/pages/home/index.vue 74:9  root stylesheet
 
 DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
 
@@ -52,10 +52,10 @@ DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be remo
 More info and automated migrator: https://sass-lang.com/d/import
 
    ╷
-54 │ @import "@/styles/tokens.scss";
+74 │ @import "@/styles/tokens.scss";
    │         ^^^^^^^^^^^^^^^^^^^^^^
    ╵
-    src/components/profile/PersonaRadarCanvas.vue 54:9  root stylesheet
+    src/components/mascot/TabBuddy.vue 74:9  root stylesheet
 
 DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
 
@@ -66,10 +66,10 @@ DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be remo
 More info and automated migrator: https://sass-lang.com/d/import
 
    ╷
-54 │ @import "@/styles/tokens.scss";
+74 │ @import "@/styles/tokens.scss";
    │         ^^^^^^^^^^^^^^^^^^^^^^
    ╵
-    src/components/mascot/XcBubble.vue 54:9  root stylesheet
+    src/components/profile/PersonaRadarCanvas.vue 74:9  root stylesheet
 
 DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
 
@@ -80,10 +80,10 @@ DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be remo
 More info and automated migrator: https://sass-lang.com/d/import
 
    ╷
-54 │ @import "@/styles/tokens.scss";
+74 │ @import "@/styles/tokens.scss";
    │         ^^^^^^^^^^^^^^^^^^^^^^
    ╵
-    src/components/mascot/XiaoCe.vue 54:9  root stylesheet
+    src/components/mascot/XiaoCe.vue 74:9  root stylesheet
 
 DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
 
@@ -94,10 +94,10 @@ DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be remo
 More info and automated migrator: https://sass-lang.com/d/import
 
    ╷
-54 │ @import "@/styles/tokens.scss";
+74 │ @import "@/styles/tokens.scss";
    │         ^^^^^^^^^^^^^^^^^^^^^^
    ╵
-    src/components/feedback/TimeCapsuleReveal.vue 54:9  root stylesheet
+    src/components/feedback/TimeCapsuleReveal.vue 74:9  root stylesheet
 
 DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
 
@@ -108,10 +108,10 @@ DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be remo
 More info and automated migrator: https://sass-lang.com/d/import
 
    ╷
-54 │ @import "@/styles/tokens.scss";
+74 │ @import "@/styles/tokens.scss";
    │         ^^^^^^^^^^^^^^^^^^^^^^
    ╵
-    src/components/mascot/TabBuddy.vue 54:9  root stylesheet
+    src/pages/test/detail.vue 74:9  root stylesheet
 
 DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
 
@@ -122,8 +122,680 @@ DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be remo
 More info and automated migrator: https://sass-lang.com/d/import
 
    ╷
-54 │ @import "@/styles/tokens.scss";
+74 │ @import "@/styles/tokens.scss";
    │         ^^^^^^^^^^^^^^^^^^^^^^
    ╵
-    src/pages/profile/onboarding.vue 54:9  root stylesheet
+    src/pages/test/answer.vue 74:9  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/components/mascot/XcMicroFeedback.vue 74:9  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/components/feedback/ReportReveal.vue 74:9  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/components/feedback/ConfettiCanvas.vue 74:9  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/components/question-renderers/ConstellationRenderer.vue 74:9  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/components/question-renderers/BubbleRenderer.vue 74:9  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/components/question-renderers/FortuneRenderer.vue 74:9  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/components/question-renderers/HotColdRenderer.vue 74:9  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/components/question-renderers/ColorPickRenderer.vue 74:9  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/components/question-renderers/PressureRenderer.vue 74:9  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/components/question-renderers/Plot2dRenderer.vue 74:9  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/components/question-renderers/OptionListFallback.vue 74:9  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/components/question-renderers/RankRenderer.vue 74:9  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/components/question-renderers/ScratchRenderer.vue 74:9  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/components/question-renderers/StarRenderer.vue 74:9  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/components/question-renderers/SliderRenderer.vue 74:9  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/components/question-renderers/ScenarioRenderer.vue 74:9  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/components/question-renderers/SwipeRenderer.vue 74:9  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/components/question-renderers/VersusRenderer.vue 74:9  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/components/question-renderers/TarotRenderer.vue 74:9  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/pages/test/result.vue 74:9  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/components/mascot/XcBubble.vue 74:9  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/components/report/ReportDeepAnalysis.vue 74:9  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/components/report/ReportHeroPanels.vue 74:9  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/pages/test/share-poster.vue 74:9  root stylesheet
+
+8:38:27 PM [vite] ✨ new dependencies optimized: qrcode-terminal/vendor/QRCode, qrcode-terminal/vendor/QRCode/QRErrorCorrectLevel
+8:47:30 PM [vite] hmr update /src/pages/test/detail.vue, /src/pages/test/detail.vue?vue&type=style&index=0&scoped=1f47adf2&lang.scss
+8:49:39 PM [vite] hmr update /src/pages/test/answer.vue, /src/pages/test/answer.vue?vue&type=style&index=0&scoped=4fdfb405&lang.scss
+8:52:25 PM [vite] hmr update /src/components/question-renderers/SwipeRenderer.vue, /src/components/question-renderers/SwipeRenderer.vue?vue&type=style&index=0&scoped=3c0e146a&lang.scss
+8:52:25 PM [vite] hmr update /src/components/question-renderers/BubbleRenderer.vue?vue&type=style&index=0&scoped=033295b4&lang.scss, /src/components/question-renderers/BubbleRenderer.vue
+8:52:25 PM [vite] hmr update /src/components/question-renderers/StarRenderer.vue?vue&type=style&index=0&scoped=abc61e38&lang.scss, /src/components/question-renderers/StarRenderer.vue
+8:52:25 PM [vite] hmr update /src/components/question-renderers/SliderRenderer.vue, /src/components/question-renderers/SliderRenderer.vue?vue&type=style&index=0&scoped=65a29b21&lang.scss
+8:52:25 PM [vite] hmr update /src/components/question-renderers/FortuneRenderer.vue?vue&type=style&index=0&scoped=743ab850&lang.scss, /src/components/question-renderers/FortuneRenderer.vue
+8:52:25 PM [vite] hmr update /src/components/question-renderers/TarotRenderer.vue?vue&type=style&index=0&scoped=32bc96fc&lang.scss, /src/components/question-renderers/TarotRenderer.vue
+8:52:43 PM [vite] hmr update /src/components/question-renderers/TarotRenderer.vue?vue&type=style&index=0&scoped=32bc96fc&lang.scss, /src/components/question-renderers/TarotRenderer.vue
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/pages/test/detail.vue 74:9  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/pages/test/detail.vue 74:9  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/pages/test/answer.vue 74:9  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/pages/test/answer.vue 74:9  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/components/question-renderers/BubbleRenderer.vue 74:9  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/components/question-renderers/StarRenderer.vue 74:9  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/components/question-renderers/TarotRenderer.vue 74:9  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/components/question-renderers/SliderRenderer.vue 74:9  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/components/question-renderers/SwipeRenderer.vue 74:9  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/components/question-renderers/FortuneRenderer.vue 74:9  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/components/question-renderers/BubbleRenderer.vue 74:9  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/components/question-renderers/FortuneRenderer.vue 74:9  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/components/question-renderers/SliderRenderer.vue 74:9  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/components/question-renderers/SwipeRenderer.vue 74:9  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/components/question-renderers/StarRenderer.vue 74:9  root stylesheet
+
+9:07:35 PM [vite] hmr update /src/components/report/ReportHeroPanels.vue, /src/components/report/ReportHeroPanels.vue?vue&type=style&index=0&scoped=0c3931c9&lang.scss
+9:08:41 PM [vite] hmr update /src/components/report/ReportDeepAnalysis.vue, /src/components/report/ReportDeepAnalysis.vue?vue&type=style&index=0&scoped=c880eb67&lang.scss
+9:14:07 PM [vite] hmr update /src/pages/test/result.vue, /src/pages/test/result.vue?vue&type=style&index=0&scoped=9f63e1f9&lang.scss
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/pages/test/result.vue 74:9  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/pages/test/result.vue 74:9  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/components/report/ReportHeroPanels.vue 74:9  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/components/report/ReportDeepAnalysis.vue 74:9  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/components/report/ReportHeroPanels.vue 74:9  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/components/report/ReportDeepAnalysis.vue 74:9  root stylesheet
+
+9:24:51 PM [vite] hmr update /src/pages/test/result.vue
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/pages/test/result.vue 74:9  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+74 │ @import "@/styles/tokens.scss";
+   │         ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/pages/test/result.vue 74:9  root stylesheet
 

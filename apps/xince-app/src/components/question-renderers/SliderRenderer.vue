@@ -33,6 +33,12 @@ const currentEmoji = computed(() =>
 const currentLabel = computed(
   () => props.labels?.[Math.round(current.value - minVal.value)] || `等级 ${current.value}`,
 );
+const tickValues = computed(() =>
+  Array.from(
+    { length: maxVal.value - minVal.value + 1 },
+    (_, index) => minVal.value + index,
+  ),
+);
 
 function onInput(event: { detail: { value: number } }) {
   const value = Number(event.detail.value);
@@ -53,14 +59,15 @@ function onChange(event: { detail: { value: number } }) {
 <template>
   <view class="slider q-enter">
     <view v-if="flash" class="edge-flash" />
+    <text class="slider__face">{{ currentEmoji }}</text>
+    <text class="slider__value-label">{{ currentLabel }}</text>
     <view class="slider__labels">
       <text>{{ labels?.[0] || "低" }}</text>
       <text>{{ rightLabel }}</text>
     </view>
     <view class="slider__control">
       <view class="slider__tooltip" :style="{ left: `${percent}%` }">
-        <text class="slider__tooltip-emoji">{{ currentEmoji }}</text>
-        <text class="slider__tooltip-label">{{ currentLabel }}</text>
+        <text class="slider__tooltip-emoji">✦</text>
       </view>
       <view class="slider__track">
         <view class="slider__fill" :style="{ width: `${percent}%` }" />
@@ -79,13 +86,33 @@ function onChange(event: { detail: { value: number } }) {
         @change="onChange"
       />
     </view>
+    <view class="slider__ticks">
+      <text v-for="item in tickValues" :key="item" class="slider__tick">{{ item }}</text>
+    </view>
   </view>
 </template>
 
 <style lang="scss" scoped>
 .slider {
   position: relative;
-  padding: 22rpx 8rpx 10rpx;
+  text-align: center;
+  padding: 10rpx 8rpx 10rpx;
+}
+
+.slider__face {
+  display: block;
+  font-size: 96rpx;
+  margin-bottom: 8rpx;
+  filter: drop-shadow(0 8rpx 18rpx rgba(0, 0, 0, 0.08));
+}
+
+.slider__value-label {
+  display: block;
+  min-height: 40rpx;
+  margin-bottom: 20rpx;
+  font-size: 28rpx;
+  font-weight: 800;
+  color: $xc-purple;
 }
 
 .slider__labels {
@@ -97,25 +124,23 @@ function onChange(event: { detail: { value: number } }) {
 
 .slider__control {
   position: relative;
-  margin-top: 12rpx;
-  padding-top: 76rpx;
+  margin-top: 10rpx;
+  padding-top: 64rpx;
 }
 
 .slider__tooltip {
   position: absolute;
   top: 0;
   transform: translateX(-50%);
-  min-width: 124rpx;
-  padding: 8rpx 18rpx;
-  border-radius: 24rpx;
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid rgba(155, 126, 216, 0.2);
-  color: $xc-purple-d;
-  box-shadow: 0 10rpx 24rpx rgba(155, 126, 216, 0.12);
+  width: 76rpx;
+  height: 76rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, $xc-purple, $xc-pink);
+  color: $xc-white;
+  box-shadow: 0 10rpx 24rpx rgba(155, 126, 216, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8rpx;
   transition: left 0.12s ease;
   z-index: 2;
 }
@@ -124,31 +149,41 @@ function onChange(event: { detail: { value: number } }) {
   font-size: 24rpx;
 }
 
-.slider__tooltip-label {
-  font-size: 20rpx;
-}
-
 .slider__track {
   position: absolute;
   left: 18rpx;
   right: 18rpx;
-  top: 104rpx;
+  top: 100rpx;
   height: 8rpx;
   border-radius: 999rpx;
-  background: linear-gradient(90deg, rgba(155, 126, 216, 0.28), rgba(232, 114, 154, 0.28));
+  background: linear-gradient(90deg, $xc-purple-p, $xc-pink-p, $xc-peach-p, $xc-gold-p);
   overflow: hidden;
 }
 
 .slider__fill {
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, #B59FDD, #F4A5BF);
+  background: linear-gradient(90deg, $xc-purple, $xc-pink);
   box-shadow: 0 0 12rpx rgba(180, 138, 214, 0.28);
 }
 
 .slider__native {
   position: relative;
   z-index: 1;
+}
+
+.slider__ticks {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 14rpx;
+  padding: 0 12rpx;
+}
+
+.slider__tick {
+  width: 54rpx;
+  text-align: center;
+  font-size: 18rpx;
+  color: $xc-hint;
 }
 
 .edge-flash {

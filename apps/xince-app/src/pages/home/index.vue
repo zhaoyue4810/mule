@@ -180,6 +180,10 @@ function openSoulCard() {
   uni.switchTab({ url: "/pages/profile/index" });
 }
 
+function openMatchCenter() {
+  uni.switchTab({ url: "/pages/match/index" });
+}
+
 function openNotifications() {
   uni.navigateTo({
     url: "/pages/profile/notifications",
@@ -378,7 +382,7 @@ onUnload(() => {
         <view class="quick-item__icon" style="background: linear-gradient(135deg, #9B7ED8, #C9B5F0)">🧬</view>
         <text class="quick-item__label">灵魂画像</text>
       </view>
-      <view class="quick-item" @tap="() => uni.switchTab({ url: '/pages/match/index' })">
+      <view class="quick-item" @tap="openMatchCenter">
         <view class="quick-item__icon" style="background: linear-gradient(135deg, #E8729A, #F4A5BF)">💞</view>
         <text class="quick-item__label">灵魂匹配</text>
       </view>
@@ -1484,12 +1488,6 @@ onUnload(() => {
 
 .d5 {
   animation-delay: 0.3s;
-}
-
-::v-deep(::-webkit-scrollbar) {
-  display: none;
-  width: 0;
-  height: 0;
 }
 
 @keyframes tickerY {

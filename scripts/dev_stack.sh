@@ -49,6 +49,29 @@ pid_is_running() {
   kill -0 "${pid}" >/dev/null 2>&1
 }
 
+list_listening_pids() {
+  local port="$1"
+  if ! command -v lsof >/dev/null 2>&1; then
+    return
+  fi
+  lsof -ti "tcp:${port}" -sTCP:LISTEN 2>/dev/null || true
+}
+
+stop_pid() {
+  local pid="$1"
+  if [[ -z "${pid}" ]]; then
+    return
+  fi
+
+  if pid_is_running "${pid}"; then
+    kill "${pid}" >/dev/null 2>&1 || true
+    sleep 1
+    if pid_is_running "${pid}"; then
+      kill -9 "${pid}" >/dev/null 2>&1 || true
+    fi
+  fi
+}
+
 stop_process() {
   local name="$1"
   local pid_file="$2"
@@ -60,13 +83,33 @@ stop_process() {
   pid="$(cat "${pid_file}")"
   if [[ -n "${pid}" ]] && pid_is_running "${pid}"; then
     log "停止 ${name} (PID ${pid})"
-    kill "${pid}" >/dev/null 2>&1 || true
-    sleep 1
-    if pid_is_running "${pid}"; then
-      kill -9 "${pid}" >/dev/null 2>&1 || true
-    fi
+    stop_pid "${pid}"
   fi
   rm -f "${pid_file}"
+}
+
+cleanup_port() {
+  local port="$1"
+  local name="$2"
+  local pid
+
+  while IFS= read -r pid; do
+    if [[ -z "${pid}" ]]; then
+      continue
+    fi
+    log "清理占用 ${name} 端口 ${port} 的残留进程 (PID ${pid})"
+    stop_pid "${pid}"
+  done < <(list_listening_pids "${port}")
+}
+
+ensure_clean_stack() {
+  stop_process "用户端 H5" "${APP_PID_FILE}"
+  stop_process "管理后台" "${ADMIN_PID_FILE}"
+  stop_process "后端" "${SERVER_PID_FILE}"
+
+  cleanup_port "${APP_PORT}" "用户端 H5"
+  cleanup_port "${ADMIN_PORT}" "管理后台"
+  cleanup_port "${SERVER_PORT}" "后端"
 }
 
 print_status_line() {
@@ -221,6 +264,7 @@ build_mp() {
 
 up() {
   ensure_command bash
+  ensure_clean_stack
   ensure_python_env
   ensure_node_deps
   prepare_envs
@@ -239,6 +283,11 @@ up() {
   printf '管理后台默认登录:\n'
   printf '  username: admin\n'
   printf '  password: xince-admin-2026\n'
+  if [[ -f "${ROOT_DIR}/mock/imports/xince-full-mock-import.html" ]]; then
+    printf '\n'
+    printf '模拟导入包:\n'
+    printf '  %s\n' "${ROOT_DIR}/mock/imports/xince-full-mock-import.html"
+  fi
 }
 
 down() {

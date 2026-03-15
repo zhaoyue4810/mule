@@ -28,3 +28,20 @@ def test_parse_docx_outline_preview() -> None:
     assert preview.summary["heading_count"] >= 1
     assert preview.title
     assert preview.draft["kind"] == "document_outline"
+
+
+def test_parse_structured_mock_html_preview() -> None:
+    service = ImportService()
+
+    preview = service.parse_html_demo(
+        REPO_ROOT / "mock" / "imports" / "xince-full-mock-import.html"
+    )
+
+    assert preview.file_type == "html"
+    assert preview.summary["structured_payload"] is True
+    assert preview.summary["test_count"] >= 1
+    assert preview.draft["kind"] == "test_catalog"
+    first_test = preview.draft["tests"][0]
+    assert first_test["dimensions"]
+    assert first_test["questions"]
+    assert first_test["personas"]

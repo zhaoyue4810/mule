@@ -2,6 +2,7 @@ export interface PublishedTestSummary {
   test_code: string;
   name: string;
   category: string;
+  description?: string | null;
   is_match_enabled: boolean;
   participant_count: number;
   version: number;

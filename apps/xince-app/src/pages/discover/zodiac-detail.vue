@@ -248,7 +248,6 @@ const zodiacKey = ref("aries");
 const zodiacName = ref("白羊");
 const zodiacEmoji = ref("♈");
 
-// TODO: 接入后端星座 API
 const fortune = computed(() => fortuneMap[zodiacKey.value] || fortuneMap.aries);
 const ringStyle = computed(() => ({
   background: `conic-gradient(#9B7ED8 0 ${fortune.value.overall}%, rgba(255,255,255,0.55) ${fortune.value.overall}% 100%)`,

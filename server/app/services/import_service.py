@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -22,6 +23,45 @@ class ImportService:
         path = Path(html_path)
         source = path.read_text(encoding="utf-8")
         soup = BeautifulSoup(source, "html.parser")
+
+        mock_payload = self._extract_structured_payload(soup)
+        if mock_payload is not None:
+            title = str(mock_payload.get("title") or path.stem)
+            tests = mock_payload.get("tests") or []
+            summary = {
+                "page_title": title,
+                "test_count": len(tests),
+                "tests": [
+                    {
+                        "code": item.get("test_code", ""),
+                        "name": item.get("name", ""),
+                        "question_count": len(item.get("questions") or []),
+                        "persona_count": len(item.get("personas") or []),
+                    }
+                    for item in tests
+                ],
+                "interaction_types": sorted(
+                    {
+                        question.get("interaction_type", "")
+                        for item in tests
+                        for question in item.get("questions") or []
+                        if question.get("interaction_type")
+                    }
+                ),
+                "source_kind": mock_payload.get("kind", "test_catalog"),
+                "structured_payload": True,
+            }
+            warnings = [
+                "Structured mock bundle detected.",
+                "After import approval, test drafts will include dimensions, questions, and personas.",
+            ]
+            return ImportPreview(
+                file_type="html",
+                title=title,
+                summary=summary,
+                draft=mock_payload,
+                warnings=warnings,
+            )
 
         title = soup.title.string.strip() if soup.title and soup.title.string else path.name
         tests_block = self._extract_js_array(source, "T")
@@ -147,3 +187,21 @@ class ImportService:
                     return source[start : index + 1]
 
         return ""
+
+    def _extract_structured_payload(self, soup: BeautifulSoup) -> dict | None:
+        script = soup.find("script", {"id": "xince-mock-import"})
+        if script is None:
+            return None
+
+        payload_text = script.string or script.get_text()
+        if not payload_text.strip():
+            raise ValueError("Structured mock payload is empty")
+
+        payload = json.loads(payload_text)
+        if not isinstance(payload, dict):
+            raise ValueError("Structured mock payload must be a JSON object")
+        if payload.get("kind") != "test_catalog":
+            raise ValueError("Structured mock payload kind must be test_catalog")
+        if not isinstance(payload.get("tests"), list):
+            raise ValueError("Structured mock payload tests must be a list")
+        return payload

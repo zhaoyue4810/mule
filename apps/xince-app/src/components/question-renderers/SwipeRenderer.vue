@@ -24,6 +24,8 @@ const rotation = computed(() => offsetX.value * 0.1);
 const swipeRatio = computed(() => Math.min(1, Math.abs(offsetX.value) / threshold));
 const leftOpacity = computed(() => (offsetX.value < 0 ? swipeRatio.value : 0));
 const rightOpacity = computed(() => (offsetX.value > 0 ? swipeRatio.value : 0));
+const leftActive = computed(() => offsetX.value < -30);
+const rightActive = computed(() => offsetX.value > 30);
 const bgTint = computed(() => {
   if (offsetX.value > 0) {
     return "rgba(124, 197, 178, 0.12)";
@@ -121,76 +123,145 @@ function onMouseUp() {
 <template>
   <view class="swipe q-enter">
     <view v-if="flash" class="edge-flash" />
-    <text class="swipe__hint swipe__hint--left" :style="{ opacity: leftOpacity }">
-      {{ leftLabel || "不像我" }}
-    </text>
-    <view
-      class="swipe__card"
-      :style="cardStyle"
-      @touchstart.stop.prevent="onTouchStart"
-      @touchmove.stop.prevent="onTouchMove"
-      @touchend.stop.prevent="onTouchEnd"
-      @touchcancel.stop.prevent="onTouchEnd"
-      @mousedown.stop.prevent="onMouseDown"
-      @mousemove.stop.prevent="onMouseMove"
-      @mouseup.stop.prevent="onMouseUp"
-      @mouseleave="onMouseUp"
-    >
-      <text class="swipe__emoji">🫧</text>
-      <text class="swipe__title">拖动选择你的倾向</text>
+    <view class="swipe__zone">
+      <view
+        class="swipe__card"
+        :style="cardStyle"
+        @touchstart.stop.prevent="onTouchStart"
+        @touchmove.stop.prevent="onTouchMove"
+        @touchend.stop.prevent="onTouchEnd"
+        @touchcancel.stop.prevent="onTouchEnd"
+        @mousedown.stop.prevent="onMouseDown"
+        @mousemove.stop.prevent="onMouseMove"
+        @mouseup.stop.prevent="onMouseUp"
+        @mouseleave="onMouseUp"
+      >
+        <text class="swipe__stamp swipe__stamp--left" :style="{ opacity: leftOpacity }">不太像我</text>
+        <text class="swipe__stamp swipe__stamp--right" :style="{ opacity: rightOpacity }">很像我</text>
+        <text class="swipe__emoji">💭</text>
+        <text class="swipe__title">拖动这张灵魂卡，选出更接近你的方向</text>
+      </view>
     </view>
-    <text class="swipe__hint swipe__hint--right" :style="{ opacity: rightOpacity }">
-      {{ rightLabel || "很像我" }}
-    </text>
+    <view class="swipe__hints">
+      <text class="swipe__hint swipe__hint--left" :class="{ 'swipe__hint--active-no': leftActive }">
+        ← {{ leftLabel || "不太像我" }}
+      </text>
+      <text class="swipe__hint swipe__hint--right" :class="{ 'swipe__hint--active-yes': rightActive }">
+        {{ rightLabel || "很像我" }} →
+      </text>
+    </view>
   </view>
 </template>
 
 <style lang="scss" scoped>
 .swipe {
   position: relative;
-  min-height: 260rpx;
-  border-radius: 24rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 460rpx;
+  perspective: 800px;
+}
+
+.swipe__zone {
   display: flex;
   align-items: center;
   justify-content: center;
+  min-height: 320rpx;
 }
 
 .swipe__card {
+  position: relative;
   width: 82%;
-  border-radius: 26rpx;
-  border: 2rpx solid rgba(155, 126, 216, 0.16);
-  box-shadow: $xc-sh-md;
-  padding: 38rpx 20rpx;
+  padding: 40rpx 24rpx;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: $xc-r-lg;
+  box-shadow: $xc-sh-lg;
   text-align: center;
+  user-select: none;
+  touch-action: none;
+  cursor: grab;
   will-change: transform, opacity;
 }
 
 .swipe__emoji {
   display: block;
-  font-size: 46rpx;
+  font-size: 56rpx;
+  margin-bottom: 12rpx;
 }
 
 .swipe__title {
   display: block;
-  margin-top: 12rpx;
   font-size: 26rpx;
+  font-weight: 700;
+  line-height: 1.55;
+  color: $xc-ink;
+}
+
+.swipe__stamp {
+  position: absolute;
+  top: 22rpx;
+  font-size: 24rpx;
+  font-weight: 900;
+  padding: 8rpx 16rpx;
+  border-radius: 14rpx;
+  border: 4rpx solid;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.swipe__stamp--left {
+  left: 16rpx;
+  transform: rotate(-15deg);
+  color: $xc-pink;
+  border-color: $xc-pink;
+  background: $xc-pink-p;
+}
+
+.swipe__stamp--right {
+  right: 16rpx;
+  transform: rotate(15deg);
+  color: $xc-mint;
+  border-color: $xc-mint;
+  background: $xc-mint-p;
+}
+
+.swipe__hints {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 20rpx;
+  margin-top: 18rpx;
 }
 
 .swipe__hint {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  color: $xc-muted;
+  display: flex;
+  align-items: center;
+  gap: 5rpx;
   font-size: 22rpx;
-  transition: opacity 0.12s ease;
+  font-weight: 700;
+  padding: 12rpx 18rpx;
+  border-radius: 999rpx;
+  transition: all 0.3s;
 }
 
 .swipe__hint--left {
-  left: 8rpx;
+  color: $xc-pink;
+  background: $xc-pink-p;
 }
 
 .swipe__hint--right {
-  right: 8rpx;
+  color: $xc-mint;
+  background: $xc-mint-p;
+}
+
+.swipe__hint--active-no {
+  box-shadow: 0 8rpx 18rpx rgba(232, 114, 154, 0.16);
+  transform: translateX(-6rpx) scale(1.02);
+}
+
+.swipe__hint--active-yes {
+  box-shadow: 0 8rpx 18rpx rgba(124, 197, 178, 0.16);
+  transform: translateX(6rpx) scale(1.02);
 }
 
 .edge-flash {

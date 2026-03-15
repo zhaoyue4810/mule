@@ -1,12 +1,15 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.test import Dimension, Option, Question, Test, TestPersona, TestVersion
-from app.schemas.admin_content import AdminTestVersionContentUpdateRequest
+from app.schemas.admin_content import (
+    AdminCreateVersionRequest,
+    AdminTestVersionContentUpdateRequest,
+)
 
 
 class AdminContentService:
@@ -68,6 +71,57 @@ class AdminContentService:
             "published_version_id": published.id if published else None,
             "published_version": published.version if published else None,
         }
+
+    async def create_version(
+        self,
+        test_code: str,
+        payload: AdminCreateVersionRequest,
+    ) -> TestVersion:
+        test = await self.db.scalar(select(Test).where(Test.test_code == test_code))
+        if test is None:
+            raise LookupError(f"Test not found: {test_code}")
+
+        source_version: TestVersion | None = None
+        if payload.source_version_id is not None or payload.source_version is not None:
+            _, source_version = await self._get_test_and_version(
+                test_code,
+                version_id=payload.source_version_id,
+                version_number=payload.source_version,
+            )
+        elif payload.clone_content:
+            source_version = await self.db.scalar(
+                select(TestVersion)
+                .where(TestVersion.test_id == test.id)
+                .order_by(TestVersion.version.desc())
+            )
+
+        next_version = await self._next_version_number(test.id)
+        version = TestVersion(
+            test_id=test.id,
+            version=next_version,
+            status="DRAFT",
+            description=(
+                payload.description
+                if payload.description is not None
+                else source_version.description
+                if source_version is not None
+                else None
+            ),
+            duration_hint=source_version.duration_hint if source_version else None,
+            cover_gradient=source_version.cover_gradient if source_version else None,
+            report_template_code=(
+                source_version.report_template_code if source_version else None
+            ),
+        )
+        self.db.add(version)
+        await self.db.flush()
+
+        if payload.clone_content and source_version is not None:
+            await self._clone_version_content(source_version.id, version.id)
+
+        await self.db.commit()
+        await self.db.refresh(version)
+        return version
 
     async def get_version_detail(
         self,
@@ -349,13 +403,13 @@ class AdminContentService:
         if target is None:
             raise LookupError(f"Version not found for test: {test_code}")
 
-        if target.status not in {"DRAFT", "IMPORTED_DRAFT", "PUBLISHED"}:
+        if target.status not in {"DRAFT", "IMPORTED_DRAFT", "PUBLISHED", "ARCHIVED"}:
             raise ValueError(f"Version status {target.status!r} cannot be published")
 
         all_versions = await self.db.scalars(
             select(TestVersion).where(TestVersion.test_id == test.id)
         )
-        published_at = datetime.now(timezone.utc)
+        published_at = self._published_timestamp()
 
         for item in all_versions:
             if item.id == target.id:
@@ -367,6 +421,113 @@ class AdminContentService:
         await self.db.commit()
         await self.db.refresh(target)
         return target
+
+    @staticmethod
+    def _published_timestamp() -> datetime:
+        # Postgres stores xc_test_version.published_at as a naive timestamp.
+        return datetime.now(UTC).replace(tzinfo=None)
+
+    async def _next_version_number(self, test_id: int) -> int:
+        current = await self.db.scalar(
+            select(func.max(TestVersion.version)).where(TestVersion.test_id == test_id)
+        )
+        return int(current or 0) + 1
+
+    async def _clone_version_content(
+        self,
+        source_version_id: int,
+        target_version_id: int,
+    ) -> None:
+        dimensions = list(
+            await self.db.scalars(
+                select(Dimension)
+                .where(Dimension.version_id == source_version_id)
+                .order_by(Dimension.sort_order.asc(), Dimension.id.asc())
+            )
+        )
+        for item in dimensions:
+            self.db.add(
+                Dimension(
+                    version_id=target_version_id,
+                    dim_code=item.dim_code,
+                    dim_name=item.dim_name,
+                    max_score=item.max_score,
+                    sort_order=item.sort_order,
+                )
+            )
+
+        questions = list(
+            await self.db.scalars(
+                select(Question)
+                .where(Question.version_id == source_version_id)
+                .order_by(Question.seq.asc(), Question.id.asc())
+            )
+        )
+        question_ids = [item.id for item in questions]
+        options_by_question: dict[int, list[Option]] = {}
+        if question_ids:
+            options = list(
+                await self.db.scalars(
+                    select(Option)
+                    .where(Option.question_id.in_(question_ids))
+                    .order_by(Option.seq.asc(), Option.id.asc())
+                )
+            )
+            for option in options:
+                options_by_question.setdefault(option.question_id, []).append(option)
+
+        for item in questions:
+            question = Question(
+                version_id=target_version_id,
+                question_code=item.question_code,
+                seq=item.seq,
+                question_text=item.question_text,
+                interaction_type=item.interaction_type,
+                emoji=item.emoji,
+                config=item.config,
+                dim_weights=item.dim_weights,
+            )
+            self.db.add(question)
+            await self.db.flush()
+
+            for option in options_by_question.get(item.id, []):
+                self.db.add(
+                    Option(
+                        question_id=question.id,
+                        option_code=option.option_code,
+                        seq=option.seq,
+                        label=option.label,
+                        emoji=option.emoji,
+                        value=option.value,
+                        score_rules=option.score_rules,
+                        ext_config=option.ext_config,
+                    )
+                )
+
+        personas = list(
+            await self.db.scalars(
+                select(TestPersona)
+                .where(TestPersona.version_id == source_version_id)
+                .order_by(TestPersona.id.asc())
+            )
+        )
+        for item in personas:
+            self.db.add(
+                TestPersona(
+                    version_id=target_version_id,
+                    persona_key=item.persona_key,
+                    persona_name=item.persona_name,
+                    emoji=item.emoji,
+                    rarity_percent=item.rarity_percent,
+                    description=item.description,
+                    soul_signature=item.soul_signature,
+                    keywords=item.keywords,
+                    dim_pattern=item.dim_pattern,
+                    capsule_prompt=item.capsule_prompt,
+                )
+            )
+
+        await self.db.flush()
 
     async def _get_test_and_version(
         self,

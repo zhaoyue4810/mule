@@ -6,7 +6,6 @@ import { SoundManager } from "@/shared/utils/sound-manager";
 
 const activeTab = ref<"hot" | "story" | "zodiac">("hot");
 
-// TODO: 接入后端 API
 const hotPosts = ref([
   {
     id: 1,
@@ -65,7 +64,6 @@ const hotPosts = ref([
   },
 ]);
 
-// TODO: 接入后端 API
 const stories = ref([
   {
     id: 1,
@@ -629,12 +627,5 @@ function openZodiac(item: { key: string; name: string; emoji: string }) {
 
 .d5 {
   animation-delay: 0.36s;
-}
-
-/* ─── Scrollbar hide ─── */
-::v-deep(::-webkit-scrollbar) {
-  display: none;
-  width: 0;
-  height: 0;
 }
 </style>

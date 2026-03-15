@@ -31,16 +31,20 @@ function pick(value: string) {
   <view class="choices q-enter">
     <view v-if="flash" class="edge-flash" />
     <view
-      v-for="option in question.options"
+      v-for="(option, index) in question.options"
       :key="option.option_code || option.seq"
       class="choice"
-      :class="{
-        'choice--active': modelValue === (option.option_code || String(option.seq)),
-        'choice--dimmed':
-          hasSelection && modelValue !== (option.option_code || String(option.seq)),
-      }"
+      :class="[
+        `choice--c${index % 4}`,
+        {
+          'choice--active': modelValue === (option.option_code || String(option.seq)),
+          'choice--dimmed':
+            hasSelection && modelValue !== (option.option_code || String(option.seq)),
+        },
+      ]"
       @tap="pick(option.option_code || String(option.seq))"
     >
+      <view class="choice__gloss" />
       <text class="choice__emoji">{{ option.emoji || "🫧" }}</text>
       <text class="choice__label">{{ option.label }}</text>
     </view>
@@ -52,51 +56,93 @@ function pick(value: string) {
   position: relative;
   display: flex;
   flex-wrap: wrap;
-  gap: 18rpx;
+  gap: 16rpx;
   justify-content: center;
+  align-content: center;
+  min-height: 420rpx;
 }
 
 .choice {
-  width: 180rpx;
-  height: 180rpx;
+  position: relative;
+  width: calc(50% - 10rpx);
+  aspect-ratio: 1;
   border-radius: 50%;
-  background: $xc-purple-p;
-  border: 2rpx solid rgba(155, 126, 216, 0.2);
+  overflow: hidden;
+  border: 2rpx solid rgba(155, 126, 216, 0.12);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 8rpx;
+  padding: 18rpx;
   transform: scale(1);
   opacity: 1;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.4s $xc-spring;
+}
+
+.choice--c0 {
+  background: linear-gradient(135deg, $xc-purple-p, #ddd5f7);
+  border-color: rgba(201, 181, 240, 0.8);
+}
+
+.choice--c1 {
+  background: linear-gradient(135deg, $xc-pink-p, #f9d0e0);
+  border-color: rgba(244, 165, 191, 0.8);
+}
+
+.choice--c2 {
+  background: linear-gradient(135deg, $xc-peach-p, #fcddc8);
+  border-color: rgba(248, 201, 181, 0.8);
+}
+
+.choice--c3 {
+  background: linear-gradient(135deg, $xc-mint-p, #c5ebe0);
+  border-color: rgba(168, 221, 208, 0.88);
 }
 
 .choice--active {
-  transform: scale(1.15);
+  transform: scale(1.08);
   opacity: 1;
-  color: $xc-white;
-  background: linear-gradient(135deg, $xc-purple, $xc-pink);
+  color: $xc-ink;
+  border-color: $xc-purple;
   box-shadow:
-    0 0 20rpx rgba(155, 126, 216, 0.4),
-    0 0 40rpx rgba(155, 126, 216, 0.15);
-  animation: bubblePop 0.3s $xc-spring both;
+    0 0 24rpx rgba(155, 126, 216, 0.28),
+    0 10rpx 26rpx rgba(155, 126, 216, 0.16);
+  animation: bubblePop 0.5s $xc-spring both;
 }
 
 .choice--dimmed {
-  transform: scale(0.88);
-  opacity: 0.5;
+  transform: scale(0.74);
+  opacity: 0.36;
+}
+
+.choice__gloss {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.66), transparent 60%);
+  pointer-events: none;
 }
 
 .choice__emoji {
-  font-size: 34rpx;
+  position: relative;
+  z-index: 1;
+  font-size: 38rpx;
+  transition: transform 0.3s $xc-spring;
 }
 
 .choice__label {
-  margin-top: 8rpx;
-  width: 120rpx;
+  position: relative;
+  z-index: 1;
+  width: 128rpx;
   text-align: center;
   font-size: 22rpx;
-  line-height: 1.45;
+  font-weight: 700;
+  line-height: 1.38;
+}
+
+.choice--active .choice__emoji {
+  transform: scale(1.2);
 }
 
 .edge-flash {
@@ -113,10 +159,21 @@ function pick(value: string) {
 
 @keyframes bubblePop {
   0% {
-    transform: scale(0.8);
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.18);
   }
   100% {
-    transform: scale(1.15);
+    transform: scale(1.08);
+  }
+
+}
+
+@keyframes bubbleShrink {
+  to {
+    transform: scale(0.5);
+    opacity: 0;
   }
 }
 

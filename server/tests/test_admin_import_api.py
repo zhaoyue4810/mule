@@ -218,6 +218,116 @@ def test_admin_content_publish_flow() -> None:
         asyncio.run(engine.dispose())
 
 
+def test_admin_can_clone_published_version_to_new_draft() -> None:
+    engine = create_async_engine("sqlite+aiosqlite:///:memory:", future=True)
+    session_factory = async_sessionmaker(engine, expire_on_commit=False)
+
+    async def override_get_db():
+        async with session_factory() as session:
+            yield session
+
+    app.dependency_overrides[get_db] = override_get_db
+
+    try:
+        import asyncio
+
+        asyncio.run(_prepare_db(engine))
+        client = TestClient(app)
+
+        task_id = client.post(
+            "/api/admin/import/tasks",
+            json={"file_type": "html", "file_path": str(REPO_ROOT / "index.html")},
+        ).json()["id"]
+        client.post(f"/api/admin/import/tasks/{task_id}/parse", json={"force": True})
+        client.post(f"/api/admin/import/tasks/{task_id}/apply", json={"note": "apply"})
+
+        version_id = client.get("/api/admin/content/tests/mbti/versions").json()[0]["id"]
+        client.put(
+            f"/api/admin/content/tests/mbti/versions/{version_id}/content",
+            json={
+                "title": "MBTI 16型速测",
+                "category": "性格测试",
+                "is_match_enabled": False,
+                "participant_count": 500,
+                "sort_order": 1,
+                "description": "内容团队编辑稿",
+                "duration_hint": "5分钟",
+                "cover_gradient": "dawn",
+                "report_template_code": "mbti_editorial_v1",
+                "dimensions": [
+                    {
+                        "dim_code": "ei",
+                        "dim_name": "外倾-内倾",
+                        "max_score": 100,
+                        "sort_order": 1,
+                    }
+                ],
+                "questions": [
+                    {
+                        "question_code": "q1",
+                        "seq": 1,
+                        "question_text": "你更期待哪种聚会？",
+                        "interaction_type": "bubble",
+                        "dim_weights": {"ei": 1},
+                        "options": [
+                            {
+                                "option_code": "a",
+                                "seq": 1,
+                                "label": "热闹社交局",
+                                "value": 2,
+                                "score_rules": {"dimension_code": "ei", "value": 2},
+                            }
+                        ],
+                    }
+                ],
+                "personas": [
+                    {
+                        "persona_key": "entp",
+                        "persona_name": "脑洞探索家",
+                        "keywords": ["轻快"],
+                        "dim_pattern": {"ei": "E"},
+                    }
+                ],
+            },
+        )
+        client.post("/api/admin/content/tests/mbti/publish", json={"version_id": version_id})
+
+        create_response = client.post(
+            "/api/admin/content/tests/mbti/versions",
+            json={"source_version_id": version_id, "clone_content": True},
+        )
+        assert create_response.status_code == 200
+        created_version = create_response.json()
+        assert created_version["version"] == 2
+        assert created_version["status"] == "DRAFT"
+
+        draft_content_response = client.get(
+            f"/api/admin/content/tests/mbti/versions/{created_version['id']}/content"
+        )
+        assert draft_content_response.status_code == 200
+        draft_content = draft_content_response.json()
+        assert draft_content["description"] == "内容团队编辑稿"
+        assert draft_content["questions"][0]["question_text"] == "你更期待哪种聚会？"
+        assert draft_content["questions"][0]["options"][0]["label"] == "热闹社交局"
+        assert draft_content["personas"][0]["persona_key"] == "entp"
+
+        publish_response = client.post(
+            "/api/admin/content/tests/mbti/publish",
+            json={"version_id": created_version["id"]},
+        )
+        assert publish_response.status_code == 200
+        assert publish_response.json()["version"] == 2
+
+        detail_response = client.get("/api/admin/content/tests/mbti")
+        assert detail_response.status_code == 200
+        assert detail_response.json()["published_version"] == 2
+    finally:
+        app.dependency_overrides.clear()
+        import asyncio
+
+        asyncio.run(engine.dispose())
+
+
 async def _prepare_db(engine) -> None:
     async with engine.begin() as conn:
         await conn.run_sync(get_metadata().create_all)

@@ -1,0 +1,2543 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>XinCe Full Mock Import Bundle</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: "PingFang SC", "Helvetica Neue", sans-serif;
+        background: linear-gradient(180deg, #fffaf6 0%, #f5efe6 100%);
+        color: #3f3027;
+      }
+      main {
+        max-width: 880px;
+        margin: 0 auto;
+        padding: 48px 24px 72px;
+      }
+      h1 {
+        margin: 0 0 12px;
+        font-size: 34px;
+      }
+      p {
+        line-height: 1.7;
+        color: #6f6158;
+      }
+      .card {
+        margin-top: 24px;
+        padding: 20px 24px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.88);
+        box-shadow: 0 16px 40px rgba(140, 103, 78, 0.08);
+      }
+      code {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 999px;
+        background: #f1e4d7;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>XinCe Full Mock Import Bundle</h1>
+      <p>这是一份给心测后台“内容导入”页面使用的完整 mock 导入包。</p>
+      <div class="card">
+        <p>使用方式：</p>
+        <p>1. 启动 <code>./scripts/dev_stack.sh up</code></p>
+        <p>2. 进入后台“内容导入”上传本文件</p>
+        <p>3. 通过导入后，去“测试管理”发布你要给 H5 看的版本</p>
+      </div>
+    </main>
+    <script id="xince-mock-import" type="application/json">
+{
+  "kind": "test_catalog",
+  "source_type": "xince_yaml_mock_bundle",
+  "title": "XinCe Full Mock Import Bundle",
+  "tests": [
+    {
+      "test_code": "bff",
+      "name": "闺蜜默契度",
+      "category": "关系匹配",
+      "description": "测测你们的友谊有多深厚。",
+      "duration_hint": "5分钟",
+      "is_match_enabled": true,
+      "participant_count": 13876,
+      "sort_order": 1,
+      "cover_gradient": "linear-gradient(135deg,#9B7ED8,#E8729A)",
+      "report_template_code": "bff_mock_v1",
+      "dimensions": [
+        {
+          "dim_code": "trust",
+          "dim_name": "信任度",
+          "max_score": 100,
+          "sort_order": 1
+        },
+        {
+          "dim_code": "communication",
+          "dim_name": "沟通力",
+          "max_score": 100,
+          "sort_order": 2
+        },
+        {
+          "dim_code": "tolerance",
+          "dim_name": "包容度",
+          "max_score": 100,
+          "sort_order": 3
+        },
+        {
+          "dim_code": "chemistry",
+          "dim_name": "默契值",
+          "max_score": 100,
+          "sort_order": 4
+        },
+        {
+          "dim_code": "loyalty",
+          "dim_name": "忠诚度",
+          "max_score": 100,
+          "sort_order": 5
+        }
+      ],
+      "questions": [
+        {
+          "question_code": "bff_q1",
+          "seq": 1,
+          "question_text": "朋友遇到困难时你会？",
+          "interaction_type": "bubble",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {},
+          "options": [
+            {
+              "option_code": "a",
+              "seq": 1,
+              "label": "立刻赶到身边",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "loyalty",
+                "value": 1.0
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "b",
+              "seq": 2,
+              "label": "打电话安慰",
+              "emoji": null,
+              "value": 0.9,
+              "score_rules": {
+                "dimension_code": "communication",
+                "value": 0.9
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "c",
+              "seq": 3,
+              "label": "给出实际建议",
+              "emoji": null,
+              "value": 0.8,
+              "score_rules": {
+                "dimension_code": "trust",
+                "value": 0.8
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "d",
+              "seq": 4,
+              "label": "默默陪伴",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "tolerance",
+                "value": 1.0
+              },
+              "ext_config": null
+            }
+          ]
+        },
+        {
+          "question_code": "bff_q2",
+          "seq": 2,
+          "question_text": "我会毫无保留地和好友分享秘密。",
+          "interaction_type": "swipe",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {
+            "trust": 1.0
+          },
+          "options": []
+        },
+        {
+          "question_code": "bff_q3",
+          "seq": 3,
+          "question_text": "我认为好朋友不需要天天联系。",
+          "interaction_type": "versus",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {},
+          "options": [
+            {
+              "option_code": "a",
+              "seq": 1,
+              "label": "同意，真朋友不需要",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "trust",
+                "value": 1.0
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "b",
+              "seq": 2,
+              "label": "不同意，要常联系",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "communication",
+                "value": 1.0
+              },
+              "ext_config": null
+            }
+          ]
+        },
+        {
+          "question_code": "bff_q4",
+          "seq": 4,
+          "question_text": "你们最可能一起做什么？",
+          "interaction_type": "bubble",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {},
+          "options": [
+            {
+              "option_code": "a",
+              "seq": 1,
+              "label": "一起旅行",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "chemistry",
+                "value": 1.0
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "b",
+              "seq": 2,
+              "label": "深夜聊天",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "communication",
+                "value": 1.0
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "c",
+              "seq": 3,
+              "label": "一起学习",
+              "emoji": null,
+              "value": 0.7,
+              "score_rules": {
+                "dimension_code": "loyalty",
+                "value": 0.7
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "d",
+              "seq": 4,
+              "label": "吃喝玩乐",
+              "emoji": null,
+              "value": 0.8,
+              "score_rules": {
+                "dimension_code": "chemistry",
+                "value": 0.8
+              },
+              "ext_config": null
+            }
+          ]
+        },
+        {
+          "question_code": "bff_q5",
+          "seq": 5,
+          "question_text": "我会直接指出朋友的问题。",
+          "interaction_type": "slider",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {
+            "communication": 1.0
+          },
+          "options": []
+        },
+        {
+          "question_code": "bff_q6",
+          "seq": 6,
+          "question_text": "闺蜜找你借了 500 块，一个月了还没提还钱...",
+          "interaction_type": "scenario",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {},
+          "options": [
+            {
+              "option_code": "a",
+              "seq": 1,
+              "label": "直接提醒她还钱",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "communication",
+                "value": 1.0
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "b",
+              "seq": 2,
+              "label": "旁敲侧击暗示一下",
+              "emoji": null,
+              "value": 0.7,
+              "score_rules": {
+                "dimension_code": "tolerance",
+                "value": 0.7
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "c",
+              "seq": 3,
+              "label": "算了不计较",
+              "emoji": null,
+              "value": 0.8,
+              "score_rules": {
+                "dimension_code": "loyalty",
+                "value": 0.8
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "d",
+              "seq": 4,
+              "label": "默默记住以后不借了",
+              "emoji": null,
+              "value": 0.2,
+              "score_rules": {
+                "dimension_code": "trust",
+                "value": 0.2
+              },
+              "ext_config": null
+            }
+          ]
+        }
+      ],
+      "personas": [
+        {
+          "persona_key": "steadfast_bestie",
+          "persona_name": "稳定型闺蜜",
+          "emoji": "✨",
+          "rarity_percent": 87,
+          "description": "稳定型闺蜜 是 闺蜜默契度 的导入联调人格样本。",
+          "soul_signature": "在 关系匹配 场景里，稳定型闺蜜 往往会表现出稳定而鲜明的偏好。",
+          "keywords": [
+            "关系匹配",
+            "联调样本",
+            "稳定型闺蜜"
+          ],
+          "dim_pattern": {
+            "trust": 0.9,
+            "communication": 0.7,
+            "tolerance": 0.8,
+            "chemistry": 0.6,
+            "loyalty": 0.9
+          },
+          "capsule_prompt": "如果未来的你再次看到「稳定型闺蜜」这一面，最想提醒今天的自己什么？"
+        },
+        {
+          "persona_key": "lively_confidante",
+          "persona_name": "灵动知己",
+          "emoji": "🪐",
+          "rarity_percent": 74,
+          "description": "灵动知己 是 闺蜜默契度 的导入联调人格样本。",
+          "soul_signature": "在 关系匹配 场景里，灵动知己 往往会表现出稳定而鲜明的偏好。",
+          "keywords": [
+            "关系匹配",
+            "联调样本",
+            "灵动知己"
+          ],
+          "dim_pattern": {
+            "trust": 0.7,
+            "communication": 0.9,
+            "tolerance": 0.6,
+            "chemistry": 0.95,
+            "loyalty": 0.7
+          },
+          "capsule_prompt": "如果未来的你再次看到「灵动知己」这一面，最想提醒今天的自己什么？"
+        }
+      ]
+    },
+    {
+      "test_code": "bigfive",
+      "name": "大五人格测试",
+      "category": "性格测试",
+      "description": "基于经典大五人格模型，全面评估你的性格维度。",
+      "duration_hint": "8分钟",
+      "is_match_enabled": false,
+      "participant_count": 15752,
+      "sort_order": 2,
+      "cover_gradient": "linear-gradient(135deg,#E8729A,#F2A68B)",
+      "report_template_code": "bigfive_mock_v1",
+      "dimensions": [
+        {
+          "dim_code": "openness",
+          "dim_name": "开放性",
+          "max_score": 100,
+          "sort_order": 1
+        },
+        {
+          "dim_code": "conscientiousness",
+          "dim_name": "尽责性",
+          "max_score": 100,
+          "sort_order": 2
+        },
+        {
+          "dim_code": "extraversion",
+          "dim_name": "外向性",
+          "max_score": 100,
+          "sort_order": 3
+        },
+        {
+          "dim_code": "agreeableness",
+          "dim_name": "宜人性",
+          "max_score": 100,
+          "sort_order": 4
+        },
+        {
+          "dim_code": "emotional_stability",
+          "dim_name": "情绪稳定度",
+          "max_score": 100,
+          "sort_order": 5
+        }
+      ],
+      "questions": [
+        {
+          "question_code": "bigfive_q1",
+          "seq": 1,
+          "question_text": "我喜欢结交新朋友，在社交场合感到自在。",
+          "interaction_type": "swipe",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {
+            "extraversion": 1.0
+          },
+          "options": []
+        },
+        {
+          "question_code": "bigfive_q2",
+          "seq": 2,
+          "question_text": "我经常会为各种事情感到担忧。",
+          "interaction_type": "slider",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {
+            "emotional_stability": 1.0
+          },
+          "options": []
+        },
+        {
+          "question_code": "bigfive_q3",
+          "seq": 3,
+          "question_text": "我对艺术和美学有浓厚的兴趣。",
+          "interaction_type": "star",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {
+            "openness": 1.0
+          },
+          "options": []
+        },
+        {
+          "question_code": "bigfive_q4",
+          "seq": 4,
+          "question_text": "我愿意帮助他人，即使需要牺牲自己的时间。",
+          "interaction_type": "swipe",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {
+            "agreeableness": 1.0
+          },
+          "options": []
+        },
+        {
+          "question_code": "bigfive_q5",
+          "seq": 5,
+          "question_text": "我做事有条理，能坚持完成任务。",
+          "interaction_type": "slider",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {
+            "conscientiousness": 1.0
+          },
+          "options": []
+        }
+      ],
+      "personas": [
+        {
+          "persona_key": "balanced_explorer",
+          "persona_name": "平衡探索者",
+          "emoji": "🪐",
+          "rarity_percent": 87,
+          "description": "平衡探索者 是 大五人格测试 的导入联调人格样本。",
+          "soul_signature": "在 性格测试 场景里，平衡探索者 往往会表现出稳定而鲜明的偏好。",
+          "keywords": [
+            "性格测试",
+            "联调样本",
+            "平衡探索者"
+          ],
+          "dim_pattern": {
+            "openness": 0.8,
+            "conscientiousness": 0.7,
+            "extraversion": 0.6,
+            "agreeableness": 0.7,
+            "emotional_stability": 0.6
+          },
+          "capsule_prompt": "如果未来的你再次看到「平衡探索者」这一面，最想提醒今天的自己什么？"
+        },
+        {
+          "persona_key": "calm_builder",
+          "persona_name": "沉静建构者",
+          "emoji": "🌙",
+          "rarity_percent": 74,
+          "description": "沉静建构者 是 大五人格测试 的导入联调人格样本。",
+          "soul_signature": "在 性格测试 场景里，沉静建构者 往往会表现出稳定而鲜明的偏好。",
+          "keywords": [
+            "性格测试",
+            "联调样本",
+            "沉静建构者"
+          ],
+          "dim_pattern": {
+            "openness": 0.5,
+            "conscientiousness": 0.9,
+            "extraversion": 0.3,
+            "agreeableness": 0.6,
+            "emotional_stability": 0.8
+          },
+          "capsule_prompt": "如果未来的你再次看到「沉静建构者」这一面，最想提醒今天的自己什么？"
+        }
+      ]
+    },
+    {
+      "test_code": "career",
+      "name": "职业天赋探测",
+      "category": "职业测评",
+      "description": "发现你的隐藏天赋和最佳职业方向。",
+      "duration_hint": "10分钟",
+      "is_match_enabled": false,
+      "participant_count": 17628,
+      "sort_order": 3,
+      "cover_gradient": "linear-gradient(135deg,#7CC5B2,#9B7ED8)",
+      "report_template_code": "career_mock_v1",
+      "dimensions": [
+        {
+          "dim_code": "leadership",
+          "dim_name": "领导力",
+          "max_score": 100,
+          "sort_order": 1
+        },
+        {
+          "dim_code": "creativity",
+          "dim_name": "创造力",
+          "max_score": 100,
+          "sort_order": 2
+        },
+        {
+          "dim_code": "analysis",
+          "dim_name": "分析力",
+          "max_score": 100,
+          "sort_order": 3
+        },
+        {
+          "dim_code": "social",
+          "dim_name": "社交力",
+          "max_score": 100,
+          "sort_order": 4
+        },
+        {
+          "dim_code": "execution",
+          "dim_name": "执行力",
+          "max_score": 100,
+          "sort_order": 5
+        },
+        {
+          "dim_code": "resilience",
+          "dim_name": "抗压力",
+          "max_score": 100,
+          "sort_order": 6
+        }
+      ],
+      "questions": [
+        {
+          "question_code": "career_q1",
+          "seq": 1,
+          "question_text": "你更喜欢哪种工作环境？",
+          "interaction_type": "bubble",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {},
+          "options": [
+            {
+              "option_code": "a",
+              "seq": 1,
+              "label": "自由灵活远程",
+              "emoji": null,
+              "value": 0.8,
+              "score_rules": {
+                "dimension_code": "creativity",
+                "value": 0.8
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "b",
+              "seq": 2,
+              "label": "结构化办公室",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "execution",
+                "value": 1.0
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "c",
+              "seq": 3,
+              "label": "户外实地工作",
+              "emoji": null,
+              "value": 0.8,
+              "score_rules": {
+                "dimension_code": "resilience",
+                "value": 0.8
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "d",
+              "seq": 4,
+              "label": "创意工作室",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "creativity",
+                "value": 1.0
+              },
+              "ext_config": null
+            }
+          ]
+        },
+        {
+          "question_code": "career_q2",
+          "seq": 2,
+          "question_text": "我喜欢领导团队完成项目。",
+          "interaction_type": "swipe",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {
+            "leadership": 1.0
+          },
+          "options": []
+        },
+        {
+          "question_code": "career_q3",
+          "seq": 3,
+          "question_text": "我擅长处理数据和分析。",
+          "interaction_type": "star",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {
+            "analysis": 1.0
+          },
+          "options": []
+        },
+        {
+          "question_code": "career_q4",
+          "seq": 4,
+          "question_text": "面对一个全新的项目，你首先会？",
+          "interaction_type": "versus",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {},
+          "options": [
+            {
+              "option_code": "a",
+              "seq": 1,
+              "label": "制定详细计划再动手",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "execution",
+                "value": 1.0
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "b",
+              "seq": 2,
+              "label": "先行动再边做边调整",
+              "emoji": null,
+              "value": 0.9,
+              "score_rules": {
+                "dimension_code": "resilience",
+                "value": 0.9
+              },
+              "ext_config": null
+            }
+          ]
+        },
+        {
+          "question_code": "career_q5",
+          "seq": 5,
+          "question_text": "领导突然让你明天做一个从没接触过的领域的汇报...",
+          "interaction_type": "scenario",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {},
+          "options": [
+            {
+              "option_code": "a",
+              "seq": 1,
+              "label": "加班通宵也要做好",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "resilience",
+                "value": 1.0
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "b",
+              "seq": 2,
+              "label": "找同事求助分担",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "social",
+                "value": 1.0
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "c",
+              "seq": 3,
+              "label": "坦白说自己不太了解能否延期",
+              "emoji": null,
+              "value": 0.6,
+              "score_rules": {
+                "dimension_code": "analysis",
+                "value": 0.6
+              },
+              "ext_config": null
+            }
+          ]
+        },
+        {
+          "question_code": "career_q6",
+          "seq": 6,
+          "question_text": "你如何看待工作与生活的平衡？",
+          "interaction_type": "versus",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {},
+          "options": [
+            {
+              "option_code": "a",
+              "seq": 1,
+              "label": "工作是生活的一部分",
+              "emoji": null,
+              "value": 0.8,
+              "score_rules": {
+                "dimension_code": "execution",
+                "value": 0.8
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "b",
+              "seq": 2,
+              "label": "工作和生活要严格分开",
+              "emoji": null,
+              "value": 0.7,
+              "score_rules": {
+                "dimension_code": "resilience",
+                "value": 0.7
+              },
+              "ext_config": null
+            }
+          ]
+        },
+        {
+          "question_code": "career_q7",
+          "seq": 7,
+          "question_text": "我愿意承担风险追求高回报。",
+          "interaction_type": "slider",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {
+            "leadership": 1.0
+          },
+          "options": []
+        },
+        {
+          "question_code": "career_q8",
+          "seq": 8,
+          "question_text": "我喜欢与人打交道胜过独自工作。",
+          "interaction_type": "swipe",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {
+            "social": 1.0
+          },
+          "options": []
+        },
+        {
+          "question_code": "career_q9",
+          "seq": 9,
+          "question_text": "在星空中选择最能代表你职业理想的词。",
+          "interaction_type": "constellation",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {},
+          "options": [
+            {
+              "option_code": "a",
+              "seq": 1,
+              "label": "创造",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "creativity",
+                "value": 1.0
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "b",
+              "seq": 2,
+              "label": "稳定",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "execution",
+                "value": 1.0
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "c",
+              "seq": 3,
+              "label": "影响力",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "leadership",
+                "value": 1.0
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "d",
+              "seq": 4,
+              "label": "自由",
+              "emoji": null,
+              "value": 0.8,
+              "score_rules": {
+                "dimension_code": "resilience",
+                "value": 0.8
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "e",
+              "seq": 5,
+              "label": "成长",
+              "emoji": null,
+              "value": 0.8,
+              "score_rules": {
+                "dimension_code": "analysis",
+                "value": 0.8
+              },
+              "ext_config": null
+            }
+          ]
+        },
+        {
+          "question_code": "career_q10",
+          "seq": 10,
+          "question_text": "转动命运轮盘，看看你的职业天赋。",
+          "interaction_type": "fortune",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {},
+          "options": [
+            {
+              "option_code": "a",
+              "seq": 1,
+              "label": "领袖型",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "leadership",
+                "value": 1.0
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "b",
+              "seq": 2,
+              "label": "创造型",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "creativity",
+                "value": 1.0
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "c",
+              "seq": 3,
+              "label": "分析型",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "analysis",
+                "value": 1.0
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "d",
+              "seq": 4,
+              "label": "协调型",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "social",
+                "value": 1.0
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "e",
+              "seq": 5,
+              "label": "执行型",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "execution",
+                "value": 1.0
+              },
+              "ext_config": null
+            }
+          ]
+        }
+      ],
+      "personas": [
+        {
+          "persona_key": "strategic_captain",
+          "persona_name": "战略领航者",
+          "emoji": "🌙",
+          "rarity_percent": 87,
+          "description": "战略领航者 是 职业天赋探测 的导入联调人格样本。",
+          "soul_signature": "在 职业测评 场景里，战略领航者 往往会表现出稳定而鲜明的偏好。",
+          "keywords": [
+            "职业测评",
+            "联调样本",
+            "战略领航者"
+          ],
+          "dim_pattern": {
+            "leadership": 0.95,
+            "creativity": 0.6,
+            "analysis": 0.8,
+            "social": 0.75,
+            "execution": 0.85,
+            "resilience": 0.8
+          },
+          "capsule_prompt": "如果未来的你再次看到「战略领航者」这一面，最想提醒今天的自己什么？"
+        },
+        {
+          "persona_key": "inventive_builder",
+          "persona_name": "创造建构者",
+          "emoji": "🌿",
+          "rarity_percent": 74,
+          "description": "创造建构者 是 职业天赋探测 的导入联调人格样本。",
+          "soul_signature": "在 职业测评 场景里，创造建构者 往往会表现出稳定而鲜明的偏好。",
+          "keywords": [
+            "职业测评",
+            "联调样本",
+            "创造建构者"
+          ],
+          "dim_pattern": {
+            "leadership": 0.5,
+            "creativity": 0.95,
+            "analysis": 0.7,
+            "social": 0.6,
+            "execution": 0.8,
+            "resilience": 0.7
+          },
+          "capsule_prompt": "如果未来的你再次看到「创造建构者」这一面，最想提醒今天的自己什么？"
+        }
+      ]
+    },
+    {
+      "test_code": "couple",
+      "name": "CP默契挑战",
+      "category": "关系匹配",
+      "description": "你们在一起有多默契？来挑战吧。",
+      "duration_hint": "6分钟",
+      "is_match_enabled": true,
+      "participant_count": 19504,
+      "sort_order": 4,
+      "cover_gradient": "linear-gradient(135deg,#D4A853,#F2A68B)",
+      "report_template_code": "couple_mock_v1",
+      "dimensions": [
+        {
+          "dim_code": "communication",
+          "dim_name": "沟通质量",
+          "max_score": 100,
+          "sort_order": 1
+        },
+        {
+          "dim_code": "connection",
+          "dim_name": "情感连接",
+          "max_score": 100,
+          "sort_order": 2
+        },
+        {
+          "dim_code": "values",
+          "dim_name": "价值匹配",
+          "max_score": 100,
+          "sort_order": 3
+        },
+        {
+          "dim_code": "lifestyle",
+          "dim_name": "生活习惯",
+          "max_score": 100,
+          "sort_order": 4
+        },
+        {
+          "dim_code": "future",
+          "dim_name": "未来愿景",
+          "max_score": 100,
+          "sort_order": 5
+        }
+      ],
+      "questions": [
+        {
+          "question_code": "couple_q1",
+          "seq": 1,
+          "question_text": "周末最喜欢一起做什么？",
+          "interaction_type": "bubble",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {},
+          "options": [
+            {
+              "option_code": "a",
+              "seq": 1,
+              "label": "宅家看剧",
+              "emoji": null,
+              "value": 0.8,
+              "score_rules": {
+                "dimension_code": "lifestyle",
+                "value": 0.8
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "b",
+              "seq": 2,
+              "label": "出去探店",
+              "emoji": null,
+              "value": 0.8,
+              "score_rules": {
+                "dimension_code": "connection",
+                "value": 0.8
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "c",
+              "seq": 3,
+              "label": "各做各的",
+              "emoji": null,
+              "value": 0.5,
+              "score_rules": {
+                "dimension_code": "values",
+                "value": 0.5
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "d",
+              "seq": 4,
+              "label": "运动锻炼",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "lifestyle",
+                "value": 1.0
+              },
+              "ext_config": null
+            }
+          ]
+        },
+        {
+          "question_code": "couple_q2",
+          "seq": 2,
+          "question_text": "对方最让你感动的是？",
+          "interaction_type": "bubble",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {},
+          "options": [
+            {
+              "option_code": "a",
+              "seq": 1,
+              "label": "记住小细节",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "connection",
+                "value": 1.0
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "b",
+              "seq": 2,
+              "label": "默默付出",
+              "emoji": null,
+              "value": 0.9,
+              "score_rules": {
+                "dimension_code": "values",
+                "value": 0.9
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "c",
+              "seq": 3,
+              "label": "坦诚沟通",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "communication",
+                "value": 1.0
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "d",
+              "seq": 4,
+              "label": "给予自由",
+              "emoji": null,
+              "value": 0.8,
+              "score_rules": {
+                "dimension_code": "future",
+                "value": 0.8
+              },
+              "ext_config": null
+            }
+          ]
+        },
+        {
+          "question_code": "couple_q3",
+          "seq": 3,
+          "question_text": "我们能坦然讨论金钱问题。",
+          "interaction_type": "swipe",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {
+            "values": 1.0
+          },
+          "options": []
+        },
+        {
+          "question_code": "couple_q4",
+          "seq": 4,
+          "question_text": "我了解对方的梦想和目标。",
+          "interaction_type": "star",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {
+            "future": 1.0
+          },
+          "options": []
+        },
+        {
+          "question_code": "couple_q5",
+          "seq": 5,
+          "question_text": "你们对于「要不要养宠物」意见不同...",
+          "interaction_type": "scenario",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {},
+          "options": [
+            {
+              "option_code": "a",
+              "seq": 1,
+              "label": "继续软磨硬泡",
+              "emoji": null,
+              "value": 0.6,
+              "score_rules": {
+                "dimension_code": "connection",
+                "value": 0.6
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "b",
+              "seq": 2,
+              "label": "尊重对方意见放弃",
+              "emoji": null,
+              "value": 0.8,
+              "score_rules": {
+                "dimension_code": "communication",
+                "value": 0.8
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "c",
+              "seq": 3,
+              "label": "提出先养一周试试看",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "lifestyle",
+                "value": 1.0
+              },
+              "ext_config": null
+            }
+          ]
+        },
+        {
+          "question_code": "couple_q6",
+          "seq": 6,
+          "question_text": "我认为我们的未来规划是一致的。",
+          "interaction_type": "slider",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {
+            "future": 1.0
+          },
+          "options": []
+        }
+      ],
+      "personas": [
+        {
+          "persona_key": "gentle_teammates",
+          "persona_name": "温柔搭档",
+          "emoji": "🌿",
+          "rarity_percent": 87,
+          "description": "温柔搭档 是 CP默契挑战 的导入联调人格样本。",
+          "soul_signature": "在 关系匹配 场景里，温柔搭档 往往会表现出稳定而鲜明的偏好。",
+          "keywords": [
+            "关系匹配",
+            "联调样本",
+            "温柔搭档"
+          ],
+          "dim_pattern": {
+            "communication": 0.8,
+            "connection": 0.85,
+            "values": 0.8,
+            "lifestyle": 0.7,
+            "future": 0.75
+          },
+          "capsule_prompt": "如果未来的你再次看到「温柔搭档」这一面，最想提醒今天的自己什么？"
+        },
+        {
+          "persona_key": "future_builders",
+          "persona_name": "共建未来型",
+          "emoji": "🔥",
+          "rarity_percent": 74,
+          "description": "共建未来型 是 CP默契挑战 的导入联调人格样本。",
+          "soul_signature": "在 关系匹配 场景里，共建未来型 往往会表现出稳定而鲜明的偏好。",
+          "keywords": [
+            "关系匹配",
+            "联调样本",
+            "共建未来型"
+          ],
+          "dim_pattern": {
+            "communication": 0.75,
+            "connection": 0.7,
+            "values": 0.85,
+            "lifestyle": 0.8,
+            "future": 0.95
+          },
+          "capsule_prompt": "如果未来的你再次看到「共建未来型」这一面，最想提醒今天的自己什么？"
+        }
+      ]
+    },
+    {
+      "test_code": "ennea",
+      "name": "九型人格测试",
+      "category": "性格测试",
+      "description": "揭示你内心深处的核心动机与恐惧。",
+      "duration_hint": "12分钟",
+      "is_match_enabled": false,
+      "participant_count": 21380,
+      "sort_order": 5,
+      "cover_gradient": "linear-gradient(135deg,#4DA68C,#A8DDD0)",
+      "report_template_code": "ennea_mock_v1",
+      "dimensions": [
+        {
+          "dim_code": "perfectionist",
+          "dim_name": "完美型",
+          "max_score": 100,
+          "sort_order": 1
+        },
+        {
+          "dim_code": "helper",
+          "dim_name": "助人型",
+          "max_score": 100,
+          "sort_order": 2
+        },
+        {
+          "dim_code": "achiever",
+          "dim_name": "成就型",
+          "max_score": 100,
+          "sort_order": 3
+        },
+        {
+          "dim_code": "individualist",
+          "dim_name": "自我型",
+          "max_score": 100,
+          "sort_order": 4
+        },
+        {
+          "dim_code": "thinker",
+          "dim_name": "思考型",
+          "max_score": 100,
+          "sort_order": 5
+        }
+      ],
+      "questions": [
+        {
+          "question_code": "ennea_q1",
+          "seq": 1,
+          "question_text": "你最害怕的是什么？",
+          "interaction_type": "bubble",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {},
+          "options": [
+            {
+              "option_code": "a",
+              "seq": 1,
+              "label": "被认为不完美",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "perfectionist",
+                "value": 1.0
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "b",
+              "seq": 2,
+              "label": "不被人需要",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "helper",
+                "value": 1.0
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "c",
+              "seq": 3,
+              "label": "没有成就",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "achiever",
+                "value": 1.0
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "d",
+              "seq": 4,
+              "label": "失去自我",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "individualist",
+                "value": 1.0
+              },
+              "ext_config": null
+            }
+          ]
+        },
+        {
+          "question_code": "ennea_q2",
+          "seq": 2,
+          "question_text": "我追求完美，对细节要求很高。",
+          "interaction_type": "swipe",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {
+            "perfectionist": 1.0
+          },
+          "options": []
+        },
+        {
+          "question_code": "ennea_q3",
+          "seq": 3,
+          "question_text": "帮助别人时我感到最有价值。",
+          "interaction_type": "slider",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {
+            "helper": 1.0
+          },
+          "options": []
+        },
+        {
+          "question_code": "ennea_q4",
+          "seq": 4,
+          "question_text": "我非常注重效率和目标达成。",
+          "interaction_type": "star",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {
+            "achiever": 1.0
+          },
+          "options": []
+        },
+        {
+          "question_code": "ennea_q5",
+          "seq": 5,
+          "question_text": "深夜一个人在家，突然感到一阵莫名的不安...",
+          "interaction_type": "scenario",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {},
+          "options": [
+            {
+              "option_code": "a",
+              "seq": 1,
+              "label": "打开手机找人聊天",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "helper",
+                "value": 1.0
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "b",
+              "seq": 2,
+              "label": "列一个待办清单让自己安心",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "perfectionist",
+                "value": 1.0
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "c",
+              "seq": 3,
+              "label": "戴上耳机听音乐沉浸自己",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "individualist",
+                "value": 1.0
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "d",
+              "seq": 4,
+              "label": "分析焦虑的来源试图理解它",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "thinker",
+                "value": 1.0
+              },
+              "ext_config": null
+            }
+          ]
+        },
+        {
+          "question_code": "ennea_q6",
+          "seq": 6,
+          "question_text": "安全感和冒险精神，你更偏向？",
+          "interaction_type": "versus",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {},
+          "options": [
+            {
+              "option_code": "a",
+              "seq": 1,
+              "label": "安全感和稳定",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "perfectionist",
+                "value": 1.0
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "b",
+              "seq": 2,
+              "label": "冒险和新鲜感",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "individualist",
+                "value": 1.0
+              },
+              "ext_config": null
+            }
+          ]
+        },
+        {
+          "question_code": "ennea_q7",
+          "seq": 7,
+          "question_text": "我总在寻找新的刺激和体验。",
+          "interaction_type": "star",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {
+            "individualist": 1.0
+          },
+          "options": []
+        },
+        {
+          "question_code": "ennea_q8",
+          "seq": 8,
+          "question_text": "命运给你三扇门，你推开哪一扇？",
+          "interaction_type": "tarot",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {},
+          "options": [
+            {
+              "option_code": "a",
+              "seq": 1,
+              "label": "通往真相之门",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "thinker",
+                "value": 1.0
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "b",
+              "seq": 2,
+              "label": "通往自由之门",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "individualist",
+                "value": 1.0
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "c",
+              "seq": 3,
+              "label": "通往爱之门",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "helper",
+                "value": 1.0
+              },
+              "ext_config": null
+            }
+          ]
+        }
+      ],
+      "personas": [
+        {
+          "persona_key": "principled_helper",
+          "persona_name": "温柔秩序者",
+          "emoji": "🔥",
+          "rarity_percent": 87,
+          "description": "温柔秩序者 是 九型人格测试 的导入联调人格样本。",
+          "soul_signature": "在 性格测试 场景里，温柔秩序者 往往会表现出稳定而鲜明的偏好。",
+          "keywords": [
+            "性格测试",
+            "联调样本",
+            "温柔秩序者"
+          ],
+          "dim_pattern": {
+            "perfectionist": 0.8,
+            "helper": 0.7,
+            "achiever": 0.4,
+            "individualist": 0.3,
+            "thinker": 0.5
+          },
+          "capsule_prompt": "如果未来的你再次看到「温柔秩序者」这一面，最想提醒今天的自己什么？"
+        },
+        {
+          "persona_key": "intense_seeker",
+          "persona_name": "深度求索者",
+          "emoji": "🫧",
+          "rarity_percent": 74,
+          "description": "深度求索者 是 九型人格测试 的导入联调人格样本。",
+          "soul_signature": "在 性格测试 场景里，深度求索者 往往会表现出稳定而鲜明的偏好。",
+          "keywords": [
+            "性格测试",
+            "联调样本",
+            "深度求索者"
+          ],
+          "dim_pattern": {
+            "perfectionist": 0.4,
+            "helper": 0.3,
+            "achiever": 0.6,
+            "individualist": 0.9,
+            "thinker": 0.8
+          },
+          "capsule_prompt": "如果未来的你再次看到「深度求索者」这一面，最想提醒今天的自己什么？"
+        }
+      ]
+    },
+    {
+      "test_code": "love",
+      "name": "恋爱人格图鉴",
+      "category": "关系匹配",
+      "description": "探索你的爱情模式，找到最适合你的 TA。",
+      "duration_hint": "6分钟",
+      "is_match_enabled": true,
+      "participant_count": 23256,
+      "sort_order": 6,
+      "cover_gradient": "linear-gradient(135deg,#D4894D,#F8C9B5)",
+      "report_template_code": "love_mock_v1",
+      "dimensions": [
+        {
+          "dim_code": "communication",
+          "dim_name": "沟通力",
+          "max_score": 100,
+          "sort_order": 1
+        },
+        {
+          "dim_code": "security",
+          "dim_name": "安全感",
+          "max_score": 100,
+          "sort_order": 2
+        },
+        {
+          "dim_code": "intimacy",
+          "dim_name": "亲密度",
+          "max_score": 100,
+          "sort_order": 3
+        },
+        {
+          "dim_code": "conflict",
+          "dim_name": "冲突力",
+          "max_score": 100,
+          "sort_order": 4
+        },
+        {
+          "dim_code": "values",
+          "dim_name": "价值观",
+          "max_score": 100,
+          "sort_order": 5
+        }
+      ],
+      "questions": [
+        {
+          "question_code": "love_q1",
+          "seq": 1,
+          "question_text": "你的理想约会方式是？",
+          "interaction_type": "bubble",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {},
+          "options": [
+            {
+              "option_code": "a",
+              "seq": 1,
+              "label": "一起烹饪晚餐",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "intimacy",
+                "value": 1.0
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "b",
+              "seq": 2,
+              "label": "户外冒险活动",
+              "emoji": null,
+              "value": 0.8,
+              "score_rules": {
+                "dimension_code": "values",
+                "value": 0.8
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "c",
+              "seq": 3,
+              "label": "安静的咖啡馆",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "communication",
+                "value": 1.0
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "d",
+              "seq": 4,
+              "label": "看电影或演出",
+              "emoji": null,
+              "value": 0.7,
+              "score_rules": {
+                "dimension_code": "intimacy",
+                "value": 0.7
+              },
+              "ext_config": null
+            }
+          ]
+        },
+        {
+          "question_code": "love_q2",
+          "seq": 2,
+          "question_text": "吵架后你通常会？",
+          "interaction_type": "bubble",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {},
+          "options": [
+            {
+              "option_code": "a",
+              "seq": 1,
+              "label": "主动和好",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "conflict",
+                "value": 1.0
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "b",
+              "seq": 2,
+              "label": "等对方先道歉",
+              "emoji": null,
+              "value": 0.3,
+              "score_rules": {
+                "dimension_code": "security",
+                "value": 0.3
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "c",
+              "seq": 3,
+              "label": "冷静后再沟通",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "communication",
+                "value": 1.0
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "d",
+              "seq": 4,
+              "label": "假装没发生",
+              "emoji": null,
+              "value": 0.1,
+              "score_rules": {
+                "dimension_code": "conflict",
+                "value": 0.1
+              },
+              "ext_config": null
+            }
+          ]
+        },
+        {
+          "question_code": "love_q3",
+          "seq": 3,
+          "question_text": "在感情中安全感对我非常重要。",
+          "interaction_type": "swipe",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {
+            "security": 1.0
+          },
+          "options": []
+        },
+        {
+          "question_code": "love_q4",
+          "seq": 4,
+          "question_text": "你和 TA 在逛街时看到一件很贵的东西...",
+          "interaction_type": "scenario",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {},
+          "options": [
+            {
+              "option_code": "a",
+              "seq": 1,
+              "label": "偷偷记住回来买给 TA",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "intimacy",
+                "value": 1.0
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "b",
+              "seq": 2,
+              "label": "一起讨论要不要买",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "communication",
+                "value": 1.0
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "c",
+              "seq": 3,
+              "label": "装作没注意到",
+              "emoji": null,
+              "value": 0.2,
+              "score_rules": {
+                "dimension_code": "security",
+                "value": 0.2
+              },
+              "ext_config": null
+            }
+          ]
+        },
+        {
+          "question_code": "love_q5",
+          "seq": 5,
+          "question_text": "你认为健康的关系最需要？",
+          "interaction_type": "versus",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {},
+          "options": [
+            {
+              "option_code": "a",
+              "seq": 1,
+              "label": "相互信任",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "security",
+                "value": 1.0
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "b",
+              "seq": 2,
+              "label": "保持激情",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "intimacy",
+                "value": 1.0
+              },
+              "ext_config": null
+            }
+          ]
+        },
+        {
+          "question_code": "love_q6",
+          "seq": 6,
+          "question_text": "我喜欢用言语表达爱意。",
+          "interaction_type": "slider",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {
+            "communication": 1.0
+          },
+          "options": []
+        },
+        {
+          "question_code": "love_q7",
+          "seq": 7,
+          "question_text": "你更看重伴侣的哪个特质？",
+          "interaction_type": "bubble",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {},
+          "options": [
+            {
+              "option_code": "a",
+              "seq": 1,
+              "label": "幽默风趣",
+              "emoji": null,
+              "value": 0.8,
+              "score_rules": {
+                "dimension_code": "communication",
+                "value": 0.8
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "b",
+              "seq": 2,
+              "label": "温柔体贴",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "security",
+                "value": 1.0
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "c",
+              "seq": 3,
+              "label": "上进有担当",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "values",
+                "value": 1.0
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "d",
+              "seq": 4,
+              "label": "浪漫有情调",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "intimacy",
+                "value": 1.0
+              },
+              "ext_config": null
+            }
+          ]
+        },
+        {
+          "question_code": "love_q8",
+          "seq": 8,
+          "question_text": "我需要一定的个人空间。",
+          "interaction_type": "star",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {
+            "conflict": 1.0
+          },
+          "options": []
+        },
+        {
+          "question_code": "love_q9",
+          "seq": 9,
+          "question_text": "你对「浪漫」的温度是？",
+          "interaction_type": "hotcold",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {
+            "intimacy": 1.0
+          },
+          "options": []
+        }
+      ],
+      "personas": [
+        {
+          "persona_key": "warm_guardian",
+          "persona_name": "温暖守护者",
+          "emoji": "🫧",
+          "rarity_percent": 87,
+          "description": "温暖守护者 是 恋爱人格图鉴 的导入联调人格样本。",
+          "soul_signature": "在 关系匹配 场景里，温暖守护者 往往会表现出稳定而鲜明的偏好。",
+          "keywords": [
+            "关系匹配",
+            "联调样本",
+            "温暖守护者"
+          ],
+          "dim_pattern": {
+            "communication": 0.7,
+            "security": 0.9,
+            "intimacy": 0.7,
+            "conflict": 0.6,
+            "values": 0.7
+          },
+          "capsule_prompt": "如果未来的你再次看到「温暖守护者」这一面，最想提醒今天的自己什么？"
+        },
+        {
+          "persona_key": "passionate_resonator",
+          "persona_name": "热烈共振者",
+          "emoji": "🌟",
+          "rarity_percent": 74,
+          "description": "热烈共振者 是 恋爱人格图鉴 的导入联调人格样本。",
+          "soul_signature": "在 关系匹配 场景里，热烈共振者 往往会表现出稳定而鲜明的偏好。",
+          "keywords": [
+            "关系匹配",
+            "联调样本",
+            "热烈共振者"
+          ],
+          "dim_pattern": {
+            "communication": 0.8,
+            "security": 0.5,
+            "intimacy": 0.95,
+            "conflict": 0.7,
+            "values": 0.8
+          },
+          "capsule_prompt": "如果未来的你再次看到「热烈共振者」这一面，最想提醒今天的自己什么？"
+        }
+      ]
+    },
+    {
+      "test_code": "mbti",
+      "name": "MBTI 16型人格",
+      "category": "性格测试",
+      "description": "探索你的认知功能偏好，解锁你独特的性格密码。",
+      "duration_hint": "10分钟",
+      "is_match_enabled": false,
+      "participant_count": 25132,
+      "sort_order": 7,
+      "cover_gradient": "linear-gradient(135deg,#9B7ED8,#E8729A)",
+      "report_template_code": "mbti_mock_v1",
+      "dimensions": [
+        {
+          "dim_code": "ei",
+          "dim_name": "外向/内向",
+          "max_score": 100,
+          "sort_order": 1
+        },
+        {
+          "dim_code": "sn",
+          "dim_name": "感觉/直觉",
+          "max_score": 100,
+          "sort_order": 2
+        },
+        {
+          "dim_code": "tf",
+          "dim_name": "思考/情感",
+          "max_score": 100,
+          "sort_order": 3
+        },
+        {
+          "dim_code": "jp",
+          "dim_name": "判断/知觉",
+          "max_score": 100,
+          "sort_order": 4
+        }
+      ],
+      "questions": [
+        {
+          "question_code": "mbti_q1",
+          "seq": 1,
+          "question_text": "参加社交活动后，你通常感到？",
+          "interaction_type": "versus",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {},
+          "options": [
+            {
+              "option_code": "a",
+              "seq": 1,
+              "label": "精力充沛想继续",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "ei",
+                "value": 1.0
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "b",
+              "seq": 2,
+              "label": "有些疲惫需要休息",
+              "emoji": null,
+              "value": 0.0,
+              "score_rules": {
+                "dimension_code": "ei",
+                "value": 0.0
+              },
+              "ext_config": null
+            }
+          ]
+        },
+        {
+          "question_code": "mbti_q2",
+          "seq": 2,
+          "question_text": "做决定时，你更依赖？",
+          "interaction_type": "bubble",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {},
+          "options": [
+            {
+              "option_code": "a",
+              "seq": 1,
+              "label": "逻辑分析",
+              "emoji": null,
+              "value": 0.0,
+              "score_rules": {
+                "dimension_code": "tf",
+                "value": 0.0
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "b",
+              "seq": 2,
+              "label": "内心感受",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "tf",
+                "value": 1.0
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "c",
+              "seq": 3,
+              "label": "过去经验",
+              "emoji": null,
+              "value": 0.0,
+              "score_rules": {
+                "dimension_code": "sn",
+                "value": 0.0
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "d",
+              "seq": 4,
+              "label": "直觉灵感",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "sn",
+                "value": 1.0
+              },
+              "ext_config": null
+            }
+          ]
+        },
+        {
+          "question_code": "mbti_q3",
+          "seq": 3,
+          "question_text": "我更喜欢按计划行事而非随性而为。",
+          "interaction_type": "swipe",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {
+            "jp": 1.0
+          },
+          "options": []
+        },
+        {
+          "question_code": "mbti_q4",
+          "seq": 4,
+          "question_text": "我更关注当下的现实而非未来的可能。",
+          "interaction_type": "slider",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {
+            "sn": 1.0
+          },
+          "options": []
+        }
+      ],
+      "personas": [
+        {
+          "persona_key": "warm_connector",
+          "persona_name": "温暖连接者",
+          "emoji": "🌟",
+          "rarity_percent": 87,
+          "description": "温暖连接者 是 MBTI 16型人格 的导入联调人格样本。",
+          "soul_signature": "在 性格测试 场景里，温暖连接者 往往会表现出稳定而鲜明的偏好。",
+          "keywords": [
+            "性格测试",
+            "联调样本",
+            "温暖连接者"
+          ],
+          "dim_pattern": {
+            "ei": 0.8,
+            "sn": 0.6,
+            "tf": 0.9,
+            "jp": 0.4
+          },
+          "capsule_prompt": "如果未来的你再次看到「温暖连接者」这一面，最想提醒今天的自己什么？"
+        },
+        {
+          "persona_key": "rational_strategist",
+          "persona_name": "理性探索家",
+          "emoji": "🦊",
+          "rarity_percent": 74,
+          "description": "理性探索家 是 MBTI 16型人格 的导入联调人格样本。",
+          "soul_signature": "在 性格测试 场景里，理性探索家 往往会表现出稳定而鲜明的偏好。",
+          "keywords": [
+            "性格测试",
+            "联调样本",
+            "理性探索家"
+          ],
+          "dim_pattern": {
+            "ei": 0.3,
+            "sn": 0.8,
+            "tf": 0.2,
+            "jp": 0.8
+          },
+          "capsule_prompt": "如果未来的你再次看到「理性探索家」这一面，最想提醒今天的自己什么？"
+        }
+      ]
+    },
+    {
+      "test_code": "work",
+      "name": "职场人格图鉴",
+      "category": "职业测评",
+      "description": "了解你在职场中的隐藏技能树。",
+      "duration_hint": "7分钟",
+      "is_match_enabled": false,
+      "participant_count": 27008,
+      "sort_order": 8,
+      "cover_gradient": "linear-gradient(135deg,#E8729A,#F2A68B)",
+      "report_template_code": "work_mock_v1",
+      "dimensions": [
+        {
+          "dim_code": "initiative",
+          "dim_name": "主动性",
+          "max_score": 100,
+          "sort_order": 1
+        },
+        {
+          "dim_code": "collaboration",
+          "dim_name": "协作性",
+          "max_score": 100,
+          "sort_order": 2
+        },
+        {
+          "dim_code": "time_management",
+          "dim_name": "时间管理",
+          "max_score": 100,
+          "sort_order": 3
+        },
+        {
+          "dim_code": "communication",
+          "dim_name": "沟通力",
+          "max_score": 100,
+          "sort_order": 4
+        },
+        {
+          "dim_code": "resilience",
+          "dim_name": "抗压力",
+          "max_score": 100,
+          "sort_order": 5
+        }
+      ],
+      "questions": [
+        {
+          "question_code": "work_q1",
+          "seq": 1,
+          "question_text": "开会时你更倾向于？",
+          "interaction_type": "bubble",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {},
+          "options": [
+            {
+              "option_code": "a",
+              "seq": 1,
+              "label": "主导讨论",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "initiative",
+                "value": 1.0
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "b",
+              "seq": 2,
+              "label": "认真记录",
+              "emoji": null,
+              "value": 0.8,
+              "score_rules": {
+                "dimension_code": "time_management",
+                "value": 0.8
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "c",
+              "seq": 3,
+              "label": "提出创新想法",
+              "emoji": null,
+              "value": 0.9,
+              "score_rules": {
+                "dimension_code": "communication",
+                "value": 0.9
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "d",
+              "seq": 4,
+              "label": "倾听并总结",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "collaboration",
+                "value": 1.0
+              },
+              "ext_config": null
+            }
+          ]
+        },
+        {
+          "question_code": "work_q2",
+          "seq": 2,
+          "question_text": "我喜欢同时处理多个任务。",
+          "interaction_type": "swipe",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {
+            "time_management": 1.0
+          },
+          "options": []
+        },
+        {
+          "question_code": "work_q3",
+          "seq": 3,
+          "question_text": "截止日期对你来说是？",
+          "interaction_type": "versus",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {},
+          "options": [
+            {
+              "option_code": "a",
+              "seq": 1,
+              "label": "必须严格遵守",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "time_management",
+                "value": 1.0
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "b",
+              "seq": 2,
+              "label": "一个灵活的参考",
+              "emoji": null,
+              "value": 0.5,
+              "score_rules": {
+                "dimension_code": "resilience",
+                "value": 0.5
+              },
+              "ext_config": null
+            }
+          ]
+        },
+        {
+          "question_code": "work_q4",
+          "seq": 4,
+          "question_text": "我更喜欢口头沟通而非文字。",
+          "interaction_type": "slider",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {
+            "communication": 1.0
+          },
+          "options": []
+        },
+        {
+          "question_code": "work_q5",
+          "seq": 5,
+          "question_text": "下班前 10 分钟，同事突然丢给你一个紧急任务...",
+          "interaction_type": "scenario",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {},
+          "options": [
+            {
+              "option_code": "a",
+              "seq": 1,
+              "label": "留下来帮忙",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "collaboration",
+                "value": 1.0
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "b",
+              "seq": 2,
+              "label": "告诉 TA 你明天一早处理",
+              "emoji": null,
+              "value": 0.9,
+              "score_rules": {
+                "dimension_code": "time_management",
+                "value": 0.9
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "c",
+              "seq": 3,
+              "label": "快速看一眼给个方向就走",
+              "emoji": null,
+              "value": 0.8,
+              "score_rules": {
+                "dimension_code": "initiative",
+                "value": 0.8
+              },
+              "ext_config": null
+            }
+          ]
+        },
+        {
+          "question_code": "work_q6",
+          "seq": 6,
+          "question_text": "面对批评你会？",
+          "interaction_type": "bubble",
+          "emoji": null,
+          "config": null,
+          "dim_weights": {},
+          "options": [
+            {
+              "option_code": "a",
+              "seq": 1,
+              "label": "理性分析接受",
+              "emoji": null,
+              "value": 1.0,
+              "score_rules": {
+                "dimension_code": "resilience",
+                "value": 1.0
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "b",
+              "seq": 2,
+              "label": "有些难过但改进",
+              "emoji": null,
+              "value": 0.7,
+              "score_rules": {
+                "dimension_code": "resilience",
+                "value": 0.7
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "c",
+              "seq": 3,
+              "label": "觉得不公平反驳",
+              "emoji": null,
+              "value": 0.4,
+              "score_rules": {
+                "dimension_code": "communication",
+                "value": 0.4
+              },
+              "ext_config": null
+            },
+            {
+              "option_code": "d",
+              "seq": 4,
+              "label": "记住教训改进",
+              "emoji": null,
+              "value": 0.8,
+              "score_rules": {
+                "dimension_code": "initiative",
+                "value": 0.8
+              },
+              "ext_config": null
+            }
+          ]
+        }
+      ],
+      "personas": [
+        {
+          "persona_key": "dependable_operator",
+          "persona_name": "稳定执行者",
+          "emoji": "🦊",
+          "rarity_percent": 87,
+          "description": "稳定执行者 是 职场人格图鉴 的导入联调人格样本。",
+          "soul_signature": "在 职业测评 场景里，稳定执行者 往往会表现出稳定而鲜明的偏好。",
+          "keywords": [
+            "职业测评",
+            "联调样本",
+            "稳定执行者"
+          ],
+          "dim_pattern": {
+            "initiative": 0.7,
+            "collaboration": 0.8,
+            "time_management": 0.95,
+            "communication": 0.6,
+            "resilience": 0.8
+          },
+          "capsule_prompt": "如果未来的你再次看到「稳定执行者」这一面，最想提醒今天的自己什么？"
+        },
+        {
+          "persona_key": "expressive_driver",
+          "persona_name": "外放驱动者",
+          "emoji": "✨",
+          "rarity_percent": 74,
+          "description": "外放驱动者 是 职场人格图鉴 的导入联调人格样本。",
+          "soul_signature": "在 职业测评 场景里，外放驱动者 往往会表现出稳定而鲜明的偏好。",
+          "keywords": [
+            "职业测评",
+            "联调样本",
+            "外放驱动者"
+          ],
+          "dim_pattern": {
+            "initiative": 0.9,
+            "collaboration": 0.7,
+            "time_management": 0.7,
+            "communication": 0.95,
+            "resilience": 0.75
+          },
+          "capsule_prompt": "如果未来的你再次看到「外放驱动者」这一面，最想提醒今天的自己什么？"
+        }
+      ]
+    }
+  ]
+}
+    </script>
+  </body>
+</html>

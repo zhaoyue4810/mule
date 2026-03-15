@@ -57,6 +57,10 @@ function select(value: number) {
         {{ (modelValue || 0) >= value ? "★" : "☆" }}
       </text>
     </view>
+    <view class="stars__labels">
+      <text>完全不是我</text>
+      <text>就是我本人</text>
+    </view>
     <text class="stars__caption">{{ caption }}</text>
   </view>
 </template>
@@ -65,30 +69,43 @@ function select(value: number) {
 .stars {
   position: relative;
   text-align: center;
+  padding: 18rpx 0 10rpx;
 }
 
 .stars__row {
   display: flex;
   justify-content: center;
-  gap: 16rpx;
+  gap: 12rpx;
 }
 
 .stars__item {
-  font-size: 56rpx;
-  color: rgba(123, 110, 133, 0.42);
-  transition: transform 0.2s ease;
+  font-size: 68rpx;
+  color: rgba(123, 110, 133, 0.3);
+  transition: all 0.25s $xc-spring;
+  filter: grayscale(1) opacity(0.42);
 }
 
 .stars__item--active {
   color: $xc-gold;
-  animation: starPulse 0.3s $xc-spring both;
+  filter: none;
+  animation: starPulse 0.4s $xc-spring both;
+}
+
+.stars__labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10rpx;
+  padding: 0 12rpx;
+  font-size: 18rpx;
+  color: $xc-hint;
 }
 
 .stars__caption {
-  margin-top: 10rpx;
+  margin-top: 14rpx;
   display: block;
-  color: $xc-muted;
-  font-size: 22rpx;
+  color: $xc-purple;
+  font-size: 26rpx;
+  font-weight: 800;
 }
 
 .edge-flash {

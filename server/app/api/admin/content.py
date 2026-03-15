@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.schemas.admin_content import (
+    AdminCreateVersionRequest,
     AdminTestDetail,
     AdminTestSummary,
     AdminTestVersionContent,
@@ -35,6 +36,28 @@ async def get_test_detail(
     except LookupError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     return AdminTestDetail(**detail)
+
+
+@router.post("/tests/{test_code}/versions", response_model=AdminTestVersionSummary)
+async def create_version(
+    test_code: str,
+    payload: AdminCreateVersionRequest,
+    db: AsyncSession = Depends(get_db),
+) -> AdminTestVersionSummary:
+    service = AdminContentService(db)
+    try:
+        version = await service.create_version(test_code, payload)
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return AdminTestVersionSummary(
+        id=version.id,
+        version=version.version,
+        status=version.status,
+        description=version.description,
+        duration_hint=version.duration_hint,
+        published_at=version.published_at,
+        created_at=version.created_at,
+    )
 
 
 @router.get("/tests/{test_code}/versions", response_model=list[AdminTestVersionSummary])

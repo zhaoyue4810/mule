@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, getCurrentInstance, onBeforeUnmount, ref } from "vue";
-import { onLoad, onReady, onUnload } from "@dcloudio/uni-app";
+import { onLoad, onUnload } from "@dcloudio/uni-app";
 
 import XiaoCe from "@/components/mascot/XiaoCe.vue";
 import XcBubble from "@/components/mascot/XcBubble.vue";
@@ -30,13 +30,13 @@ const capsuleSaving = ref(false);
 const capsuleCreated = ref(false);
 const suggestPayload = ref<MemorySuggestPayload | null>(null);
 const countdown = ref(7265);
-const activeDeepPanel = ref<DeepPanelKey | null>(null);
+const activeDeepPanel = ref<DeepPanelKey | null>("strength");
+const activeMetaphorIndex = ref<number | null>(0);
 const percentileValues = ref([0, 0, 0, 0]);
 const percentileAnimated = ref(false);
 const dnaVisible = ref(false);
 const hiddenUnlocked = ref(false);
 const hiddenUnlockAnimating = ref(false);
-const hiddenExpanded = ref(false);
 let currentRecordId = 0;
 let pollTimer: ReturnType<typeof setInterval> | null = null;
 let countdownTimer: ReturnType<typeof setInterval> | null = null;
@@ -88,6 +88,54 @@ const topThreeDimensions = computed(() =>
     .slice(0, 3),
 );
 
+const quoteText = computed(
+  () =>
+    report.value?.persona.description ||
+    report.value?.summary ||
+    "你正在成为更真实、更稳定、更自由的自己。",
+);
+
+const personaKeywords = computed(() => {
+  const source = [
+    ...(report.value?.persona.keywords || []),
+    ...(report.value?.persona_tags || []).map((item) => item.label),
+    ...topThreeDimensions.value.map((item) => item.label),
+  ];
+  return Array.from(new Set(source.filter(Boolean))).slice(0, 4);
+});
+
+const heroStatChips = computed(() => {
+  const source = report.value?.share_card?.stat_chips?.filter(Boolean) || [];
+  if (source.length) {
+    return source.slice(0, 3);
+  }
+  return [
+    tierText.value,
+    `${topThreeDimensions.value[0]?.label || "平衡"}突出`,
+    `${totalScore.value} 分`,
+  ];
+});
+
+const heroHighlightLines = computed(() => {
+  const source = report.value?.share_card?.highlight_lines?.filter(Boolean) || [];
+  if (source.length) {
+    return source.slice(0, 2);
+  }
+  return [
+    report.value?.summary || "",
+    report.value?.action_guides?.[0]?.description || "",
+  ].filter(Boolean);
+});
+
+const heroFooterText = computed(
+  () => report.value?.share_card?.footer || `长按保存分享给好友 · ${report.value?.test_name || "心测"}`,
+);
+
+const rarityText = computed(() => {
+  const percentile = Math.max(28, Math.min(98, scoreProgress.value + 6));
+  return `超越 ${percentile}% 同类用户`;
+});
+
 const mascotComment = computed(() => {
   const hint = `${report.value?.persona.persona_name || ""}${report.value?.persona.persona_key || ""}`.toLowerCase();
   if (hint.includes("行动") || hint.includes("fire")) {
@@ -101,6 +149,8 @@ const mascotComment = computed(() => {
   }
   return "这份报告很有你自己的味道，小测超喜欢。";
 });
+
+const guidePreview = computed(() => (report.value?.action_guides || []).slice(0, 3));
 
 const metaphorCards = computed(() => {
   if (report.value?.metaphor_cards?.length) {
@@ -219,6 +269,29 @@ const hiddenPersonaText = computed(() => {
   return `在${weakest}这一面，你其实比自己以为的更敏感。它不是短板，而是你感知世界的备用翅膀。`;
 });
 
+const weatherMoodText = computed(
+  () => report.value?.soul_weather.mood || `${soulWeather.value.title}的一天`,
+);
+
+const weatherGoodTags = computed(() => soulWeather.value.tags.slice(0, 2));
+
+const weatherCautionTags = computed(() => {
+  const source = [
+    report.value?.soul_weather.mood,
+    weakestDimension.value ? `留意${weakestDimension.value.label}` : "",
+    report.value?.action_guides?.[0]?.title,
+  ];
+  return Array.from(new Set(source.filter(Boolean) as string[])).slice(0, 2);
+});
+
+const dnaIntro = computed(() => {
+  const pair = topThreeDimensions.value
+    .slice(0, 2)
+    .map((item) => item.label)
+    .join(" + ");
+  return `${personaName.value} 的人格组成更偏向 ${pair || "稳定 + 觉察"}。`;
+});
+
 const aiSections = computed(() => {
   const ai = (report.value?.ai_text || "").trim();
   const lines = ai
@@ -241,11 +314,10 @@ const aiSections = computed(() => {
   ];
 });
 
-const quoteText = computed(
-  () =>
-    report.value?.persona.description ||
-    report.value?.summary ||
-    "你正在成为更真实、更稳定、更自由的自己。",
+const reportSummary = computed(() => report.value?.summary || quoteText.value);
+
+const quoteAttr = computed(
+  () => `—— 你的灵魂说明书 · ${report.value?.test_name || "心测"}`,
 );
 
 const capsulePrompt = computed(
@@ -255,6 +327,10 @@ const capsulePrompt = computed(
 const futureLetter = computed(
   () =>
     `亲爱的现在的我：\n\n谢谢你在这个阶段认真地认识自己。你并不需要马上成为完美的人，只要继续保持 ${personaName.value} 的勇气和温柔，未来会自然展开。\n\n愿你在下次打开胶囊时，依旧记得今天的初心。`,
+);
+
+const limitedBannerTitle = computed(
+  () => `限时挑战 · ${report.value?.test_name || "灵魂进阶版"}`,
 );
 
 const nextTest = computed(() => suggestPayload.value?.items?.[0] || null);
@@ -270,6 +346,20 @@ const countdownText = computed(() => {
   const second = `${safe % 60}`.padStart(2, "0");
   return `${hour}:${minute}:${second}`;
 });
+
+function resolveNextTestEmoji(category?: string) {
+  const hint = (category || "").toLowerCase();
+  if (hint.includes("关系")) {
+    return "💞";
+  }
+  if (hint.includes("职业")) {
+    return "🚀";
+  }
+  if (hint.includes("性格")) {
+    return "🪞";
+  }
+  return "✨";
+}
 
 function backHome() {
   uni.switchTab({
@@ -309,6 +399,10 @@ function openDetail(testCode?: string) {
 
 function openNextTest() {
   openDetail(nextTest.value?.test_code);
+}
+
+function toggleMetaphor(index: number) {
+  activeMetaphorIndex.value = activeMetaphorIndex.value === index ? null : index;
 }
 
 function stopPolling() {
@@ -508,6 +602,16 @@ function toggleDeepPanel(key: DeepPanelKey) {
 async function loadReport(recordId: number) {
   loading.value = true;
   error.value = "";
+  percentileAnimated.value = false;
+  percentileValues.value = [0, 0, 0, 0];
+  dnaVisible.value = false;
+  hiddenUnlocked.value = false;
+  hiddenUnlockAnimating.value = false;
+  activeDeepPanel.value = "strength";
+  activeMetaphorIndex.value = 0;
+  capsuleCreated.value = false;
+  capsuleMessage.value = "";
+
   try {
     const [reportPayload, suggest] = await Promise.all([
       fetchReportDetail(recordId),
@@ -541,10 +645,6 @@ onLoad((query) => {
   loadReport(recordId);
 });
 
-onReady(() => {
-  initObservers();
-});
-
 onBeforeUnmount(() => {
   stopPolling();
   stopCountdown();
@@ -562,8 +662,14 @@ onUnload(() => {
 
 <template>
   <scroll-view class="page" scroll-y>
+    <view class="page-bg">
+      <view class="page-glow page-glow--one" />
+      <view class="page-glow page-glow--two" />
+      <view class="page-glow page-glow--three" />
+    </view>
+
     <view v-if="loading" class="state-panel">
-      <text class="state-panel__text">正在生成报告...</text>
+      <text class="state-panel__text">正在生成你的灵魂说明书...</text>
     </view>
 
     <view v-else-if="error" class="state-panel state-panel--error">
@@ -574,45 +680,81 @@ onUnload(() => {
       <ReportHeroPanels
         :hero-style="heroStyle"
         :test-name="report.test_name"
+        :title-text="titleText"
         :persona-emoji="personaEmoji"
         :persona-name="personaName"
         :tier-text="tierText"
         :total-score="totalScore"
         :score-progress="scoreProgress"
+        :rarity-text="rarityText"
         :top-three-dimensions="topThreeDimensions"
         :quote-text="quoteText"
+        :keywords="personaKeywords"
+        :stat-chips="heroStatChips"
+        :highlight-lines="heroHighlightLines"
+        :footer-text="heroFooterText"
         @share="openSharePoster('report')"
       />
 
-      <view class="panel d3">
-        <view class="mascot-comment">
-          <XiaoCe expression="happy" size="md" :animated="true" />
-          <view class="mascot-comment__bubble">
-            <XcBubble :text="mascotComment" :typing="true" :persistent="true" />
+      <view class="report-callout d3">
+        <view class="report-callout__bubble">
+          <XcBubble :text="mascotComment" :typing="true" :persistent="true" />
+        </view>
+        <view class="report-callout__aside">
+          <view class="report-callout__mascot">
+            <XiaoCe expression="happy" size="md" :animated="true" />
+          </view>
+          <view class="report-callout__chips">
+            <text
+              v-for="item in guidePreview"
+              :key="item.title"
+              class="report-callout__chip"
+            >
+              {{ item.title }}
+            </text>
           </view>
         </view>
       </view>
 
-      <view class="panel d4">
-        <text class="panel-title">灵魂隐喻</text>
+      <view class="panel panel--metaphor d4">
+        <view class="section-head">
+          <view>
+            <text class="section-eyebrow">Soul Metaphor</text>
+            <text class="section-title">灵魂隐喻</text>
+          </view>
+        </view>
+        <text class="section-subtitle">如果把你的灵魂具象化，它会更像哪一种存在？</text>
+
         <view class="metaphors">
           <view
-            v-for="item in metaphorCards"
+            v-for="(item, index) in metaphorCards"
             :key="`${item.category}-${item.title}`"
             class="metaphor-card"
-            :class="{ 'metaphor-card--open': hiddenExpanded }"
-            @tap="hiddenExpanded = !hiddenExpanded"
+            :class="{ 'metaphor-card--open': activeMetaphorIndex === index }"
+            @tap="toggleMetaphor(index)"
           >
+            <text class="metaphor-card__watermark">心测 · 灵魂说明书</text>
             <text class="metaphor-card__emoji">{{ item.emoji }}</text>
             <text class="metaphor-card__category">{{ item.category }}</text>
             <text class="metaphor-card__title">{{ item.title }}</text>
             <text class="metaphor-card__body">{{ item.subtitle }}</text>
+            <text class="metaphor-card__toggle">
+              {{ activeMetaphorIndex === index ? "轻点收起" : "展开看看" }}
+            </text>
           </view>
         </view>
       </view>
 
-      <view class="panel js-percentile d5">
-        <text class="panel-title">人群百分比</text>
+      <view class="panel panel--percentile js-percentile d5">
+        <view class="section-head">
+          <view>
+            <text class="section-eyebrow">Percentile</text>
+            <text class="section-title">人群百分位</text>
+          </view>
+          <text class="section-badge">Top Insights</text>
+        </view>
+        <text class="section-subtitle">你的一些维度，已经明显走到了人群前面。</text>
+
         <view class="percentile-grid">
           <view v-for="item in percentileItems" :key="item.label" class="percentile-card">
             <view
@@ -629,16 +771,33 @@ onUnload(() => {
         </view>
       </view>
 
-      <view class="panel">
-        <text class="panel-title">维度分析</text>
+      <view class="panel panel--dimension">
+        <view class="section-head">
+          <view>
+            <text class="section-eyebrow">Dimension Story</text>
+            <text class="section-title">维度分析</text>
+          </view>
+        </view>
+        <text class="section-subtitle">
+          以 {{ topThreeDimensions[0]?.label || "平衡感" }} 为主轴，你的画像已经很清晰了。
+        </text>
+
         <view class="dimension-analysis">
           <view class="dimension-analysis__radar">
             <PersonaRadarCanvas :dimensions="radarCanvasDimensions" />
           </view>
+
           <view class="dimension-analysis__bars">
-            <view v-for="(item, index) in report.radar_dimensions" :key="item.dim_code" class="dimension-bar">
+            <view
+              v-for="(item, index) in report.radar_dimensions"
+              :key="item.dim_code"
+              class="dimension-bar"
+            >
               <view class="dimension-bar__head">
-                <text class="dimension-bar__name">{{ item.label }}</text>
+                <view class="dimension-bar__name-wrap">
+                  <text class="dimension-bar__index">{{ index + 1 }}</text>
+                  <text class="dimension-bar__name">{{ item.label }}</text>
+                </view>
                 <text class="dimension-bar__score">{{ item.score.toFixed(1) }}</text>
               </view>
               <view class="dimension-bar__track">
@@ -653,44 +812,95 @@ onUnload(() => {
       </view>
 
       <view class="panel weather">
-        <text class="panel-title">灵魂天气</text>
-        <view class="weather__head">
-          <text class="weather__emoji">{{ soulWeather.emoji }}</text>
+        <view class="section-head section-head--light">
           <view>
+            <text class="section-eyebrow section-eyebrow--light">Soul Weather</text>
+            <text class="section-title section-title--light">灵魂天气</text>
+          </view>
+          <text class="weather__mood">{{ weatherMoodText }}</text>
+        </view>
+
+        <view class="weather__head">
+          <view class="weather__symbol">
+            <text class="weather__emoji">{{ soulWeather.emoji }}</text>
+          </view>
+          <view class="weather__info">
             <text class="weather__title">{{ soulWeather.title }}</text>
             <text class="weather__temp">{{ soulWeather.temp }}</text>
+            <text class="weather__status">{{ report.soul_weather.title }}</text>
           </view>
         </view>
+
         <text class="weather__desc">{{ report.soul_weather.description }}</text>
+
         <view class="weather__tags">
-          <text v-for="tag in soulWeather.tags" :key="tag" class="weather__tag">{{ tag }}</text>
+          <text
+            v-for="tag in weatherGoodTags"
+            :key="`good-${tag}`"
+            class="weather__tag weather__tag--good"
+          >
+            {{ tag }}
+          </text>
+          <text
+            v-for="tag in weatherCautionTags"
+            :key="`caution-${tag}`"
+            class="weather__tag weather__tag--caution"
+          >
+            {{ tag }}
+          </text>
         </view>
       </view>
 
-      <view class="panel js-dna">
-        <text class="panel-title">人格 DNA</text>
+      <view class="panel panel--dna js-dna">
+        <view class="section-head">
+          <view>
+            <text class="section-eyebrow">DNA Map</text>
+            <text class="section-title">人格 DNA 图谱</text>
+          </view>
+        </view>
+        <text class="section-subtitle">{{ dnaIntro }}</text>
+
         <view class="dna-list">
           <view v-for="(item, index) in report.dna_segments" :key="item.dim_code" class="dna-item">
-            <text class="dna-item__label">{{ item.label }}</text>
+            <view class="dna-item__row">
+              <view class="dna-item__label-wrap">
+                <view class="dna-item__dot" :style="{ background: dnaGradient(index) }" />
+                <text class="dna-item__label">{{ item.label }}</text>
+              </view>
+              <text class="dna-item__value">{{ item.percentage }}%</text>
+            </view>
             <view class="dna-item__track">
               <view
                 class="dna-item__fill"
                 :style="{ width: dnaWidth(item), background: dnaGradient(index), transitionDelay: `${index * 70}ms` }"
               />
             </view>
-            <text class="dna-item__value">{{ item.percentage }}%</text>
           </view>
         </view>
       </view>
 
-      <view class="panel hidden-persona js-hidden-persona" :class="{ 'hidden-persona--unlocked': hiddenUnlocked }">
-        <text class="panel-title">隐藏人格</text>
+      <view
+        class="panel hidden-persona js-hidden-persona"
+        :class="{ 'hidden-persona--unlocked': hiddenUnlocked }"
+      >
+        <view class="section-head section-head--light">
+          <view>
+            <text class="section-eyebrow section-eyebrow--light">Hidden Layer</text>
+            <text class="section-title section-title--light">隐藏人格</text>
+          </view>
+        </view>
+
         <view v-if="!hiddenUnlocked" class="hidden-lock" :class="{ 'hidden-lock--shake': hiddenUnlockAnimating }">
           <text class="hidden-lock__icon">🔒</text>
-          <text class="hidden-lock__hint">↓ 下滑解锁</text>
+          <text class="hidden-lock__hint">继续下滑解锁隐藏人格</text>
+          <view class="hidden-lock__line" />
         </view>
+
         <view v-else class="hidden-unlocked">
-          <text class="hidden-unlocked__title">{{ weakestDimension?.label || "隐藏面向" }}</text>
+          <text class="hidden-unlocked__emoji">{{ personaEmoji }}</text>
+          <text class="hidden-unlocked__title">
+            其实你骨子里也很 {{ weakestDimension?.label || "敏感" }}
+          </text>
           <text class="hidden-unlocked__body">{{ hiddenPersonaText }}</text>
         </view>
       </view>
@@ -699,36 +909,48 @@ onUnload(() => {
         :pending="aiPending"
         :ai-refreshing="aiRefreshing"
         :ai-status="report.ai_status"
+        :summary="reportSummary"
         :sections="aiSections"
         :active-key="activeDeepPanel"
         @toggle="toggleDeepPanel"
         @retry="handleRetryAi"
       />
 
-      <view class="panel quote-card">
+      <view class="quote-card">
         <text class="quote-card__mark">“</text>
         <text class="quote-card__text">{{ quoteText }}</text>
+        <text class="quote-card__attr">{{ quoteAttr }}</text>
       </view>
 
-      <view class="panel capsule-letter">
-        <text class="panel-title">来自未来的你</text>
+      <view class="capsule-letter">
+        <text class="capsule-letter__stamp">💌</text>
+        <text class="capsule-letter__dear">来自未来的你</text>
         <text class="capsule-letter__text">{{ futureLetter }}</text>
+        <text class="capsule-letter__sign">等下次拆封时，你会看见今天的勇气。</text>
       </view>
 
-      <view class="panel">
-        <text class="panel-title">写入时间胶囊</text>
+      <view class="panel panel--capsule-input">
+        <view class="section-head">
+          <view>
+            <text class="section-eyebrow">Time Capsule</text>
+            <text class="section-title">写入时间胶囊</text>
+          </view>
+        </view>
+
         <view v-if="capsuleCreated" class="capsule-success">
           <text class="capsule-success__icon">✨</text>
-          <text class="capsule-success__text">已写入成功，等时间来揭晓答案。</text>
+          <text class="capsule-success__text">已成功封存，未来的你会收到这份答案。</text>
         </view>
+
         <template v-else>
-          <text class="panel-body">{{ capsulePrompt }}</text>
+          <text class="section-subtitle">{{ capsulePrompt }}</text>
           <textarea
             v-model="capsuleMessage"
             class="capsule-input"
             maxlength="1000"
             placeholder="写下此刻的心情、想记住的答案，或者一句想留给未来的提醒。"
           />
+
           <view class="capsule-durations">
             <button
               v-for="value in [30, 90, 365]"
@@ -740,15 +962,16 @@ onUnload(() => {
               {{ value }} 天
             </button>
           </view>
-          <button class="mini-button" :loading="capsuleSaving" @tap="createCapsule">
+
+          <button class="button button--primary" :loading="capsuleSaving" @tap="createCapsule">
             {{ capsuleSaving ? "封存中..." : "封存到时光胶囊" }}
           </button>
         </template>
       </view>
 
-      <view class="panel limited-banner">
+      <view class="limited-banner">
         <view class="limited-banner__shine" />
-        <text class="limited-banner__title">限时挑战 · MBTI 进阶版</text>
+        <text class="limited-banner__title">{{ limitedBannerTitle }}</text>
         <text class="limited-banner__desc">倒计时 {{ countdownText }} 后结束，快邀请好友一起测。</text>
       </view>
 
@@ -759,20 +982,31 @@ onUnload(() => {
       </view>
 
       <view class="panel next-test">
-        <text class="panel-title">推荐下一个测试</text>
-        <view v-if="nextTest" class="next-test__card" @tap="openNextTest">
-          <text class="next-test__name">{{ nextTest.name }}</text>
-          <text class="next-test__meta">
-            {{ nextTest.category }} · {{ nextTest.question_count }} 题 · {{ nextTest.duration_hint || "约 5 分钟" }}
-          </text>
-          <text class="next-test__cta">开始下一测 →</text>
+        <view class="section-head">
+          <view>
+            <text class="section-eyebrow">Next Test</text>
+            <text class="section-title">推荐下一个测试</text>
+          </view>
         </view>
-        <text v-else class="panel-body">去首页看看今天为你准备的热门测试。</text>
+
+        <view v-if="nextTest" class="next-test__card" @tap="openNextTest">
+          <view class="next-test__icon">
+            <text>{{ resolveNextTestEmoji(nextTest.category) }}</text>
+          </view>
+          <view class="next-test__body">
+            <text class="next-test__name">{{ nextTest.name }}</text>
+            <text class="next-test__meta">
+              {{ nextTest.category }} · {{ nextTest.question_count }} 题 · {{ nextTest.duration_hint || "约 5 分钟" }}
+            </text>
+          </view>
+          <text class="next-test__cta">去测试 ›</text>
+        </view>
+        <text v-else class="section-subtitle">去首页看看今天为你准备的热门测试。</text>
       </view>
 
       <view class="bottom-actions">
-        <button class="mini-button mini-button--light" @tap="goProfile">查看我的画像</button>
-        <button class="mini-button mini-button--light" @tap="backHome">返回首页</button>
+        <button class="button button--soft" @tap="goProfile">查看我的画像</button>
+        <button class="button button--soft" @tap="backHome">返回首页</button>
       </view>
     </view>
   </scroll-view>
@@ -780,14 +1014,58 @@ onUnload(() => {
 
 <style lang="scss" scoped>
 .page {
+  position: relative;
+  min-height: 100vh;
   height: 100vh;
+  background:
+    linear-gradient(180deg, #fbf7ff 0%, #fff9f5 44%, #fffdf8 100%);
   animation: fadeInUp 0.45s $xc-ease both;
 }
 
+.page-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.page-glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(24rpx);
+  opacity: 0.8;
+}
+
+.page-glow--one {
+  top: -80rpx;
+  right: -80rpx;
+  width: 360rpx;
+  height: 360rpx;
+  background: radial-gradient(circle, rgba(155, 126, 216, 0.16), transparent 72%);
+}
+
+.page-glow--two {
+  top: 520rpx;
+  left: -120rpx;
+  width: 300rpx;
+  height: 300rpx;
+  background: radial-gradient(circle, rgba(232, 114, 154, 0.12), transparent 72%);
+}
+
+.page-glow--three {
+  bottom: 120rpx;
+  right: -90rpx;
+  width: 280rpx;
+  height: 280rpx;
+  background: radial-gradient(circle, rgba(212, 168, 83, 0.12), transparent 72%);
+}
+
 .state-panel {
+  position: relative;
+  z-index: 1;
   margin: 28rpx;
-  padding: 32rpx 28rpx;
-  border-radius: 24rpx;
+  padding: 34rpx 28rpx;
+  border-radius: 30rpx;
   @include glass;
 }
 
@@ -797,190 +1075,80 @@ onUnload(() => {
 
 .state-panel__text {
   font-size: 28rpx;
+  line-height: 1.7;
   color: $xc-muted;
 }
 
 .report {
+  position: relative;
+  z-index: 1;
   padding: 24rpx 24rpx calc(56rpx + env(safe-area-inset-bottom, 0rpx));
   display: flex;
   flex-direction: column;
   gap: 24rpx;
 }
 
-.d1 {
-  animation: fadeInUp 0.5s $xc-ease both;
-  animation-delay: 0.06s;
-}
-
-.d2 {
-  animation: fadeInUp 0.5s $xc-ease both;
-  animation-delay: 0.12s;
-}
-
 .d3 {
-  animation: fadeInUp 0.5s $xc-ease both;
+  animation: fadeInUp 0.55s $xc-ease both;
   animation-delay: 0.18s;
 }
 
 .d4 {
-  animation: fadeInUp 0.5s $xc-ease both;
+  animation: fadeInUp 0.55s $xc-ease both;
   animation-delay: 0.24s;
 }
 
 .d5 {
-  animation: fadeInUp 0.5s $xc-ease both;
+  animation: fadeInUp 0.55s $xc-ease both;
   animation-delay: 0.3s;
 }
 
-.hero {
-  border-radius: $xc-r-xl;
-  padding: 34rpx 28rpx;
-  color: #fff;
-  box-shadow: $xc-sh-lg;
+.panel {
   position: relative;
   overflow: hidden;
-
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background:
-      radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.12), transparent 50%),
-      radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.08), transparent 40%);
-  }
-}
-
-.hero__eyebrow {
-  display: block;
-  font-size: 22rpx;
-  opacity: 0.88;
-}
-
-.hero__main {
-  margin-top: 18rpx;
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 20rpx;
-  align-items: center;
-}
-
-.hero__emoji {
-  font-size: 74rpx;
-  line-height: 1;
-}
-
-.hero__title-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: 8rpx;
-}
-
-.hero__title {
-  font-size: 50rpx;
-  font-family: $xc-font-serif;
-  font-weight: 900;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.hero__tier {
-  align-self: flex-start;
-  padding: 8rpx 16rpx;
-  border-radius: $xc-r-pill;
-  background: rgba(255, 255, 255, 0.2);
-  font-size: 22rpx;
-  // #ifdef H5
-  backdrop-filter: blur(8px);
-  // #endif
-}
-
-.score-ring__circle {
-  width: 148rpx;
-  height: 148rpx;
-  border-radius: 50%;
-  padding: 8rpx;
-}
-
-.score-ring__inner {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: rgba(31, 22, 41, 0.42);
-}
-
-.score-ring__value {
-  font-size: 34rpx;
-  font-weight: 700;
-}
-
-.score-ring__label {
-  margin-top: 2rpx;
-  font-size: 20rpx;
-  opacity: 0.86;
-}
-
-.hero-top-dims {
-  margin-top: 22rpx;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12rpx;
-}
-
-.hero-dim-card {
-  padding: 16rpx;
-  border-radius: 18rpx;
-  background: rgba(255, 255, 255, 0.18);
-  // #ifdef H5
-  backdrop-filter: blur(8px);
-  // #endif
-  transition: transform 0.2s $xc-ease;
-
-  &:active {
-    transform: scale(0.96);
-  }
-}
-
-.hero-dim-card__name {
-  display: block;
-  font-size: 22rpx;
-}
-
-.hero-dim-card__score {
-  display: block;
-  margin-top: 8rpx;
-  font-size: 28rpx;
-  font-weight: 700;
-}
-
-.panel {
   @include card-base;
-  padding: 26rpx;
-  border-radius: 26rpx;
-  transition: transform 0.2s $xc-ease;
-
-  &:active {
-    transform: scale(0.99);
-  }
+  padding: 28rpx;
+  border-radius: 30rpx;
+  box-shadow: 0 16rpx 42rpx rgba(113, 87, 152, 0.08);
 }
 
-.panel-head {
+.section-head {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 16rpx;
 }
 
-.panel-title {
+.section-head--light {
+  color: #fff;
+}
+
+.section-eyebrow {
   display: block;
-  font-size: 30rpx;
-  font-weight: 800;
+  font-size: 20rpx;
+  letter-spacing: 1.4rpx;
+  text-transform: uppercase;
+  color: $xc-muted;
+}
+
+.section-eyebrow--light {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.section-title {
+  display: block;
+  margin-top: 6rpx;
+  font-size: 31rpx;
+  line-height: 1.2;
+  font-weight: 900;
   color: $xc-ink;
 }
 
-.panel-body {
+.section-title--light {
+  color: #fff;
+}
+
+.section-subtitle {
   display: block;
   margin-top: 14rpx;
   font-size: 24rpx;
@@ -988,111 +1156,161 @@ onUnload(() => {
   color: $xc-muted;
 }
 
-.persona-share {
-  margin-top: 18rpx;
-  border-radius: 22rpx;
-  padding: 24rpx;
-  background: linear-gradient(135deg, rgba(155, 126, 216, 0.9), rgba(232, 114, 154, 0.8));
-  color: #fff;
-}
-
-.persona-share__name {
-  display: block;
-  font-size: 36rpx;
+.section-badge {
+  padding: 10rpx 16rpx;
+  border-radius: 999rpx;
+  font-size: 20rpx;
   font-weight: 700;
+  background: rgba(155, 126, 216, 0.1);
+  color: $xc-purple-d;
 }
 
-.persona-share__emoji {
-  display: block;
-  margin-top: 12rpx;
-  font-size: 56rpx;
-}
-
-.persona-share__signature,
-.persona-share__top {
-  display: block;
-  margin-top: 12rpx;
-  font-size: 23rpx;
-  line-height: 1.65;
-}
-
-.mascot-comment {
-  display: flex;
-  align-items: flex-start;
+.report-callout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 16rpx;
+  align-items: flex-start;
 }
 
-.mascot-comment__bubble {
-  flex: 1;
+.report-callout__bubble {
+  min-width: 0;
+}
+
+.report-callout__aside {
+  width: 144rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.report-callout__mascot {
+  align-self: center;
+}
+
+.report-callout__chips {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.report-callout__chip {
+  padding: 10rpx 14rpx;
+  border-radius: 999rpx;
+  text-align: center;
+  font-size: 20rpx;
+  color: $xc-purple-d;
+  background: rgba(155, 126, 216, 0.1);
+}
+
+.panel--metaphor {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 249, 253, 0.96));
 }
 
 .metaphors {
   margin-top: 18rpx;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 12rpx;
 }
 
 .metaphor-card {
-  padding: 18rpx 14rpx;
-  border-radius: 20rpx;
-  background: rgba(255, 255, 255, 0.88);
-  border: 2rpx solid rgba(155, 126, 216, 0.12);
-  transition: transform 0.24s $xc-ease;
+  position: relative;
+  overflow: hidden;
+  border-radius: 28rpx;
+  padding: 24rpx 22rpx 20rpx;
+  background:
+    linear-gradient(145deg, rgba(124, 93, 191, 0.94), rgba(232, 114, 154, 0.86), rgba(242, 166, 139, 0.82));
+  color: #fff;
+  box-shadow: 0 18rpx 48rpx rgba(124, 93, 191, 0.16);
+  transition: transform 0.24s $xc-spring, box-shadow 0.24s $xc-ease;
 }
 
 .metaphor-card--open {
-  transform: translateY(-4rpx) scale(1.02);
+  transform: translateY(-4rpx) scale(1.01);
+  box-shadow: 0 22rpx 54rpx rgba(124, 93, 191, 0.22);
+}
+
+.metaphor-card__watermark {
+  position: absolute;
+  right: 18rpx;
+  top: 16rpx;
+  font-size: 18rpx;
+  letter-spacing: 1rpx;
+  opacity: 0.28;
+}
+
+.metaphor-card__emoji,
+.metaphor-card__category,
+.metaphor-card__title,
+.metaphor-card__body,
+.metaphor-card__toggle {
+  position: relative;
+  z-index: 1;
 }
 
 .metaphor-card__emoji {
   display: block;
-  font-size: 34rpx;
+  font-size: 44rpx;
 }
 
 .metaphor-card__category {
   display: block;
-  margin-top: 8rpx;
+  margin-top: 14rpx;
   font-size: 20rpx;
-  color: $xc-muted;
+  opacity: 0.78;
 }
 
 .metaphor-card__title {
   display: block;
-  margin-top: 6rpx;
-  font-size: 24rpx;
-  font-weight: 600;
+  margin-top: 10rpx;
+  font-size: 32rpx;
+  font-family: $xc-font-serif;
+  font-weight: 800;
 }
 
 .metaphor-card__body {
   display: block;
-  margin-top: 8rpx;
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  line-height: 1.72;
+}
+
+.metaphor-card__toggle {
+  display: block;
+  margin-top: 14rpx;
   font-size: 20rpx;
-  line-height: 1.5;
-  color: $xc-muted;
+  opacity: 0.84;
+}
+
+.panel--percentile {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 243, 255, 0.96));
 }
 
 .percentile-grid {
-  margin-top: 18rpx;
+  margin-top: 20rpx;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14rpx;
 }
 
 .percentile-card {
-  @include glass;
-  border-radius: 18rpx;
-  padding: 16rpx 12rpx;
+  border-radius: 22rpx;
+  padding: 18rpx 14rpx;
+  background: rgba(255, 255, 255, 0.82);
+  border: 2rpx solid rgba(155, 126, 216, 0.1);
   display: flex;
   flex-direction: column;
   align-items: center;
+  text-align: center;
 }
 
 .percentile-ring {
-  width: 104rpx;
-  height: 104rpx;
+  width: 118rpx;
+  height: 118rpx;
+  padding: 8rpx;
   border-radius: 50%;
-  padding: 7rpx;
 }
 
 .percentile-ring__inner {
@@ -1102,26 +1320,32 @@ onUnload(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.94);
 }
 
 .percentile-ring__value {
-  font-size: 22rpx;
-  font-weight: 700;
+  font-size: 24rpx;
+  font-weight: 800;
   color: $xc-purple-d;
 }
 
 .percentile-card__title {
-  margin-top: 12rpx;
+  margin-top: 14rpx;
   font-size: 22rpx;
-  font-weight: 600;
+  font-weight: 700;
+  color: $xc-ink;
 }
 
 .percentile-card__desc {
-  margin-top: 6rpx;
+  margin-top: 8rpx;
   font-size: 20rpx;
+  line-height: 1.5;
   color: $xc-muted;
-  text-align: center;
+}
+
+.panel--dimension {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 251, 247, 0.96));
 }
 
 .dimension-analysis {
@@ -1131,21 +1355,69 @@ onUnload(() => {
   gap: 18rpx;
 }
 
+.dimension-analysis__radar {
+  border-radius: 26rpx;
+  padding: 12rpx;
+  background: rgba(255, 255, 255, 0.78);
+  border: 2rpx solid rgba(155, 126, 216, 0.08);
+}
+
 .dimension-analysis__bars {
   display: flex;
   flex-direction: column;
   gap: 14rpx;
 }
 
+.dimension-bar {
+  padding: 16rpx 18rpx;
+  border-radius: 22rpx;
+  background: rgba(255, 255, 255, 0.76);
+  border: 2rpx solid rgba(155, 126, 216, 0.08);
+}
+
 .dimension-bar__head {
   display: flex;
+  align-items: center;
   justify-content: space-between;
+  gap: 14rpx;
+}
+
+.dimension-bar__name-wrap {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.dimension-bar__index {
+  width: 34rpx;
+  height: 34rpx;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18rpx;
+  font-weight: 800;
+  background: rgba(155, 126, 216, 0.1);
+  color: $xc-purple-d;
+}
+
+.dimension-bar__name {
+  font-size: 23rpx;
+  font-weight: 700;
+  color: $xc-ink;
+}
+
+.dimension-bar__score {
   font-size: 22rpx;
+  font-weight: 700;
+  color: $xc-purple-d;
 }
 
 .dimension-bar__track {
+  margin-top: 12rpx;
   height: 16rpx;
-  margin-top: 8rpx;
   border-radius: 999rpx;
   background: rgba(155, 126, 216, 0.1);
   overflow: hidden;
@@ -1159,51 +1431,72 @@ onUnload(() => {
 
 .weather {
   background:
-    linear-gradient(135deg, rgba(58, 46, 66, 0.95), rgba(80, 62, 100, 0.85)),
-    #3a2e42;
-}
-
-.weather .panel-title,
-.weather__title,
-.weather__temp,
-.weather__desc,
-.weather__tag {
+    radial-gradient(circle at top right, rgba(255, 255, 255, 0.2), transparent 34%),
+    linear-gradient(160deg, #3a2552, #5b3d7a, #7c5dbf);
   color: #fff;
 }
 
+.weather__mood {
+  padding: 10rpx 16rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.14);
+  font-size: 20rpx;
+  font-weight: 600;
+}
+
 .weather__head {
-  margin-top: 14rpx;
+  margin-top: 18rpx;
   display: flex;
   align-items: center;
-  gap: 16rpx;
+  gap: 18rpx;
+}
+
+.weather__symbol {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 32rpx;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.14);
 }
 
 .weather__emoji {
   font-size: 58rpx;
 }
 
+.weather__info {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
 .weather__title {
-  display: block;
-  font-size: 30rpx;
-  font-weight: 700;
+  font-size: 34rpx;
+  font-weight: 800;
 }
 
 .weather__temp {
-  display: block;
-  margin-top: 4rpx;
+  font-size: 44rpx;
+  font-weight: 900;
+}
+
+.weather__status {
   font-size: 22rpx;
-  opacity: 0.85;
+  opacity: 0.82;
 }
 
 .weather__desc {
   display: block;
-  margin-top: 14rpx;
+  margin-top: 18rpx;
   font-size: 24rpx;
-  line-height: 1.65;
+  line-height: 1.76;
+  color: rgba(255, 255, 255, 0.92);
 }
 
 .weather__tags {
-  margin-top: 14rpx;
+  margin-top: 16rpx;
   display: flex;
   flex-wrap: wrap;
   gap: 10rpx;
@@ -1213,30 +1506,74 @@ onUnload(() => {
   padding: 8rpx 14rpx;
   border-radius: 999rpx;
   font-size: 20rpx;
-  background: rgba(255, 255, 255, 0.14);
+  font-weight: 600;
+}
+
+.weather__tag--good {
+  background: rgba(124, 197, 178, 0.22);
+  color: #ebfffa;
+}
+
+.weather__tag--caution {
+  background: rgba(255, 238, 209, 0.18);
+  color: #fff2d1;
+}
+
+.panel--dna {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(253, 248, 240, 0.96));
 }
 
 .dna-list {
-  margin-top: 16rpx;
+  margin-top: 18rpx;
   display: flex;
   flex-direction: column;
-  gap: 14rpx;
+  gap: 16rpx;
 }
 
 .dna-item {
-  display: grid;
-  grid-template-columns: 112rpx 1fr auto;
+  padding: 16rpx 18rpx;
+  border-radius: 22rpx;
+  background: rgba(255, 255, 255, 0.78);
+  border: 2rpx solid rgba(155, 126, 216, 0.08);
+}
+
+.dna-item__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14rpx;
+}
+
+.dna-item__label-wrap {
+  min-width: 0;
+  display: flex;
   align-items: center;
   gap: 12rpx;
 }
 
-.dna-item__label,
+.dna-item__dot {
+  width: 20rpx;
+  height: 20rpx;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dna-item__label {
+  font-size: 22rpx;
+  font-weight: 700;
+  color: $xc-ink;
+}
+
 .dna-item__value {
   font-size: 22rpx;
+  font-weight: 800;
+  color: $xc-purple-d;
 }
 
 .dna-item__track {
-  height: 16rpx;
+  margin-top: 12rpx;
+  height: 18rpx;
   border-radius: 999rpx;
   background: rgba(155, 126, 216, 0.1);
   overflow: hidden;
@@ -1250,19 +1587,15 @@ onUnload(() => {
 
 .hidden-persona {
   background:
-    radial-gradient(circle at top, rgba(201, 181, 240, 0.14), transparent 60%),
-    linear-gradient(180deg, rgba(58, 46, 66, 0.95), rgba(47, 36, 57, 0.98));
-}
-
-.hidden-persona .panel-title {
-  color: #fff;
+    radial-gradient(circle at top, rgba(201, 181, 240, 0.14), transparent 58%),
+    linear-gradient(180deg, rgba(34, 21, 48, 0.98), rgba(47, 31, 66, 0.98));
 }
 
 .hidden-lock,
 .hidden-unlocked {
-  margin-top: 14rpx;
-  border-radius: 20rpx;
-  min-height: 160rpx;
+  margin-top: 18rpx;
+  border-radius: 26rpx;
+  min-height: 190rpx;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1271,13 +1604,21 @@ onUnload(() => {
 }
 
 .hidden-lock__icon {
-  font-size: 56rpx;
+  font-size: 60rpx;
 }
 
 .hidden-lock__hint {
-  margin-top: 10rpx;
+  margin-top: 12rpx;
   font-size: 22rpx;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.hidden-lock__line {
+  width: 160rpx;
+  height: 6rpx;
+  margin-top: 16rpx;
+  border-radius: 999rpx;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.44), rgba(255, 255, 255, 0.14));
 }
 
 .hidden-lock--shake {
@@ -1285,207 +1626,222 @@ onUnload(() => {
 }
 
 .hidden-unlocked {
-  animation: flipIn 0.56s $xc-spring both;
   align-items: flex-start;
-  padding: 20rpx;
+  padding: 24rpx;
+  animation: fadeInUp 0.55s $xc-spring both;
+}
+
+.hidden-unlocked__emoji {
+  font-size: 42rpx;
 }
 
 .hidden-unlocked__title {
-  font-size: 28rpx;
-  font-weight: 700;
+  margin-top: 12rpx;
+  font-size: 30rpx;
+  font-weight: 800;
   color: #fff;
 }
 
 .hidden-unlocked__body {
-  margin-top: 10rpx;
+  margin-top: 12rpx;
   font-size: 24rpx;
-  line-height: 1.72;
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.ai-skeleton {
-  margin-top: 14rpx;
-}
-
-.ai-skeleton__line {
-  height: 22rpx;
-  border-radius: 8rpx;
-  margin-bottom: 12rpx;
-  background: linear-gradient(
-    100deg,
-    rgba(237, 229, 249, 0.25),
-    rgba(237, 229, 249, 0.55),
-    rgba(237, 229, 249, 0.2)
-  );
-  background-size: 220% 100%;
-  animation: shimmer 1.5s linear infinite;
-}
-
-.ai-skeleton__line--short {
-  width: 68%;
-}
-
-.ai-skeleton__hint {
-  margin-top: 6rpx;
-  font-size: 22rpx;
-  color: $xc-muted;
-}
-
-.deep-list {
-  margin-top: 14rpx;
-  display: flex;
-  flex-direction: column;
-  gap: 12rpx;
-}
-
-.deep-card {
-  border-radius: 16rpx;
-  border: 2rpx solid rgba(155, 126, 216, 0.1);
-  overflow: hidden;
-}
-
-.deep-card__head {
-  padding: 18rpx 16rpx;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.deep-card__title {
-  font-size: 24rpx;
-  font-weight: 600;
-}
-
-.deep-card__icon {
-  font-size: 30rpx;
-  color: $xc-purple;
-}
-
-.deep-card__body {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.32s $xc-ease;
-}
-
-.deep-card__body text {
-  display: block;
-  padding: 0 16rpx 18rpx;
-  font-size: 23rpx;
-  line-height: 1.7;
-  color: $xc-muted;
-}
-
-.deep-card--open .deep-card__body {
-  max-height: 280rpx;
+  line-height: 1.76;
+  color: rgba(255, 255, 255, 0.92);
 }
 
 .quote-card {
+  position: relative;
+  overflow: hidden;
+  padding: 34rpx 28rpx;
+  border-radius: 30rpx;
   background:
-    linear-gradient(140deg, rgba(58, 46, 66, 0.95), rgba(80, 62, 100, 0.88)),
-    #3a2e42;
+    linear-gradient(160deg, #3a2552, #5b3d7a, #7c5dbf);
+  color: #fff;
+  box-shadow: 0 18rpx 52rpx rgba(91, 61, 122, 0.22);
 }
 
 .quote-card__mark {
-  font-size: 82rpx;
+  position: absolute;
+  top: 6rpx;
+  left: 18rpx;
+  font-size: 120rpx;
   line-height: 1;
-  color: rgba(255, 255, 255, 0.55);
+  opacity: 0.08;
 }
 
 .quote-card__text {
+  position: relative;
+  z-index: 1;
   display: block;
-  margin-top: 6rpx;
-  font-size: 32rpx;
-  line-height: 1.6;
+  font-size: 30rpx;
+  line-height: 1.88;
   font-family: $xc-font-serif;
-  color: #fff;
+  font-style: italic;
+}
+
+.quote-card__attr {
+  position: relative;
+  z-index: 1;
+  display: block;
+  margin-top: 18rpx;
+  font-size: 20rpx;
+  letter-spacing: 1rpx;
+  opacity: 0.74;
 }
 
 .capsule-letter {
+  position: relative;
+  overflow: hidden;
+  padding: 34rpx 28rpx;
+  border-radius: 30rpx;
   background:
-    repeating-linear-gradient(
-      0deg,
-      rgba(212, 168, 83, 0.06) 0,
-      rgba(212, 168, 83, 0.06) 2rpx,
-      transparent 2rpx,
-      transparent 20rpx
-    ),
-    linear-gradient(145deg, rgba(255, 240, 232, 0.95), rgba(253, 244, 222, 0.92));
+    linear-gradient(160deg, #faf6ee, #f7efe2, #f5ede2);
+  border: 2rpx solid rgba(212, 168, 83, 0.16);
+  box-shadow: 0 16rpx 42rpx rgba(212, 168, 83, 0.1);
+}
+
+.capsule-letter::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 30rpx,
+    rgba(155, 126, 216, 0.03) 30rpx,
+    rgba(155, 126, 216, 0.03) 31rpx
+  );
+  pointer-events: none;
+}
+
+.capsule-letter__stamp,
+.capsule-letter__dear,
+.capsule-letter__text,
+.capsule-letter__sign {
+  position: relative;
+  z-index: 1;
+}
+
+.capsule-letter__stamp {
+  position: absolute;
+  top: 20rpx;
+  right: 22rpx;
+  font-size: 30rpx;
+  opacity: 0.56;
+  transform: rotate(12deg);
+}
+
+.capsule-letter__dear {
+  display: block;
+  font-size: 30rpx;
+  font-family: $xc-font-serif;
+  font-weight: 800;
+  color: $xc-ink;
 }
 
 .capsule-letter__text {
   display: block;
-  margin-top: 14rpx;
-  white-space: pre-wrap;
+  margin-top: 18rpx;
   font-size: 24rpx;
-  line-height: 1.8;
-  color: #6a4f3c;
-}
-
-.capsule-input {
-  width: 100%;
-  min-height: 220rpx;
-  margin-top: 16rpx;
-  padding: 18rpx;
-  border-radius: 20rpx;
-  border: 2rpx solid rgba(155, 126, 216, 0.15);
-  background: rgba(255, 255, 255, 0.92);
-  font-size: 24rpx;
-  line-height: 1.7;
-}
-
-.capsule-durations {
-  margin-top: 16rpx;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10rpx;
-}
-
-.capsule-duration {
-  border-radius: 16rpx;
-  background: rgba(255, 255, 255, 0.88);
+  line-height: 2;
   color: $xc-muted;
-  font-size: 23rpx;
+  white-space: pre-line;
+  font-family: $xc-font-serif;
+  font-style: italic;
 }
 
-.capsule-duration--active {
-  background: linear-gradient(135deg, #d4a853, #e5c97e);
-  color: #fff;
+.capsule-letter__sign {
+  display: block;
+  margin-top: 18rpx;
+  font-size: 21rpx;
+  color: $xc-muted;
+  text-align: right;
+}
+
+.panel--capsule-input {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(250, 245, 237, 0.94));
 }
 
 .capsule-success {
-  margin-top: 16rpx;
-  border-radius: 18rpx;
-  padding: 18rpx;
+  margin-top: 18rpx;
+  border-radius: 24rpx;
+  padding: 26rpx 24rpx;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10rpx;
-  background: rgba(124, 197, 178, 0.15);
+  gap: 12rpx;
+  background: linear-gradient(145deg, rgba(124, 197, 178, 0.16), rgba(255, 255, 255, 0.86));
 }
 
 .capsule-success__icon {
-  font-size: 34rpx;
+  font-size: 42rpx;
 }
 
 .capsule-success__text {
   font-size: 24rpx;
+  line-height: 1.72;
   color: $xc-muted;
+  text-align: center;
+}
+
+.capsule-input {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 260rpx;
+  margin-top: 18rpx;
+  padding: 24rpx;
+  border-radius: 24rpx;
+  background: rgba(255, 255, 255, 0.86);
+  border: 2rpx solid rgba(212, 168, 83, 0.16);
+  font-size: 24rpx;
+  line-height: 1.78;
+  color: $xc-ink;
+}
+
+.capsule-durations {
+  margin-top: 16rpx;
+  display: flex;
+  gap: 12rpx;
+}
+
+.capsule-duration {
+  flex: 1;
+  border: none;
+  border-radius: 999rpx;
+  padding: 14rpx 0;
+  font-size: 22rpx;
+  color: $xc-muted;
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.capsule-duration--active {
+  background: linear-gradient(135deg, rgba(155, 126, 216, 0.16), rgba(232, 114, 154, 0.14));
+  color: $xc-purple-d;
+  font-weight: 800;
+}
+
+.capsule-duration::after {
+  border: none;
 }
 
 .limited-banner {
   position: relative;
   overflow: hidden;
-  border: 2rpx solid rgba(212, 168, 83, 0.45);
-  background:
-    linear-gradient(140deg, rgba(201, 181, 240, 0.24), rgba(232, 114, 154, 0.18)),
-    rgba(255, 255, 255, 0.92);
+  padding: 22rpx 22rpx 24rpx;
+  border-radius: 28rpx;
+  background: linear-gradient(145deg, #fff0e8, #fde6ef);
+  border: 2rpx solid rgba(232, 114, 154, 0.12);
 }
 
 .limited-banner__shine {
   position: absolute;
-  inset: 0;
-  background: linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, 0.6) 50%, transparent 80%);
-  transform: translateX(-120%);
-  animation: bannerShimmer 1.8s linear infinite;
+  top: -26rpx;
+  right: -10rpx;
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.6), transparent 70%);
 }
 
 .limited-banner__title,
@@ -1497,134 +1853,140 @@ onUnload(() => {
 
 .limited-banner__title {
   font-size: 28rpx;
-  font-weight: 700;
+  font-weight: 900;
+  color: $xc-ink;
 }
 
 .limited-banner__desc {
   margin-top: 10rpx;
-  font-size: 23rpx;
+  font-size: 22rpx;
+  line-height: 1.7;
   color: $xc-muted;
 }
 
-.actions {
+.actions,
+.bottom-actions {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10rpx;
+  gap: 12rpx;
+}
+
+.bottom-actions {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .button {
-  border-radius: $xc-r-btn;
-  font-size: 24rpx;
-  font-weight: 600;
-  transition: transform 0.2s $xc-spring;
+  border: none;
+  border-radius: 999rpx;
+  padding: 18rpx 18rpx;
+  font-size: 23rpx;
+  font-weight: 800;
+  line-height: 1.2;
+}
 
-  &:active {
-    transform: scale(0.95);
-  }
+.button::after {
+  border: none;
 }
 
 .button--primary {
+  color: #fff;
   @include btn-primary;
-  position: relative;
-  overflow: hidden;
-
-  &::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    background-size: 200% 100%;
-    animation: shimmer 2.5s infinite;
-  }
 }
 
 .button--glass {
-  @include glass;
-  color: $xc-purple;
-  font-weight: 700;
+  color: $xc-purple-d;
+  background: rgba(255, 255, 255, 0.78);
+  border: 2rpx solid rgba(155, 126, 216, 0.12);
+  box-shadow: 0 12rpx 28rpx rgba(155, 126, 216, 0.08);
+}
+
+.button--soft {
+  color: $xc-ink;
+  background: rgba(255, 255, 255, 0.82);
+  border: 2rpx solid rgba(155, 126, 216, 0.08);
 }
 
 .next-test__card {
-  margin-top: 14rpx;
-  border-radius: 18rpx;
+  margin-top: 18rpx;
+  border-radius: 26rpx;
   padding: 20rpx;
-  border: 2rpx solid rgba(155, 126, 216, 0.12);
-  background:
-    linear-gradient(120deg, rgba(255, 255, 255, 0.95), rgba(237, 229, 249, 0.42)),
-    #fff;
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.84), rgba(249, 243, 255, 0.96));
+  border: 2rpx solid rgba(155, 126, 216, 0.08);
+}
+
+.next-test__icon {
+  width: 84rpx;
+  height: 84rpx;
+  border-radius: 26rpx;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36rpx;
+  background: linear-gradient(135deg, rgba(155, 126, 216, 0.16), rgba(232, 114, 154, 0.12));
+}
+
+.next-test__body {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
 }
 
 .next-test__name {
-  display: block;
-  font-size: 28rpx;
-  font-weight: 700;
+  font-size: 26rpx;
+  font-weight: 800;
+  color: $xc-ink;
 }
 
 .next-test__meta {
-  display: block;
-  margin-top: 8rpx;
-  font-size: 22rpx;
+  font-size: 21rpx;
+  line-height: 1.6;
   color: $xc-muted;
 }
 
 .next-test__cta {
-  display: block;
-  margin-top: 12rpx;
-  font-size: 24rpx;
-  color: $xc-purple;
-}
-
-.bottom-actions {
-  display: flex;
-  gap: 10rpx;
-}
-
-.mini-button {
-  margin-top: 14rpx;
-  border-radius: $xc-r-btn;
-  background: linear-gradient(135deg, #9b7ed8, #e8729a);
-  color: #fff;
-  font-size: 23rpx;
-}
-
-.mini-button--light {
-  margin-top: 0;
-  flex: 1;
-  background: rgba(255, 255, 255, 0.92);
-  color: $xc-purple;
-  border: 2rpx solid rgba(155, 126, 216, 0.18);
-}
-
-@keyframes bannerShimmer {
-  0% {
-    transform: translateX(-120%);
-  }
-  100% {
-    transform: translateX(120%);
-  }
+  font-size: 22rpx;
+  font-weight: 800;
+  color: $xc-purple-d;
 }
 
 @keyframes shake {
   0%,
   100% {
-    transform: translateX(0);
+    transform: rotate(0deg);
   }
+
   25% {
-    transform: translateX(-6rpx);
+    transform: rotate(-4deg);
   }
+
   75% {
-    transform: translateX(6rpx);
+    transform: rotate(4deg);
   }
 }
 
-@keyframes flipIn {
-  from {
-    opacity: 0;
-    transform: rotateY(90deg);
+@media (max-width: 420px) {
+  .report-callout {
+    grid-template-columns: 1fr;
   }
-  to {
-    opacity: 1;
-    transform: rotateY(0);
+
+  .report-callout__aside {
+    width: auto;
+  }
+
+  .report-callout__chips {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .percentile-grid,
+  .actions {
+    grid-template-columns: 1fr;
   }
 }
 </style>

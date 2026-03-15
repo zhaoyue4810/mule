@@ -24,8 +24,6 @@ class AiGateway:
         fallback_text: str,
     ) -> dict:
         prompt = self._render_prompt(template.user_prompt_tpl, context)
-        provider_errors: list[str] = []
-
         if self.settings.dashscope_api_key:
             try:
                 return await self._chat_completion(
@@ -43,8 +41,8 @@ class AiGateway:
                     max_tokens=int(template.max_tokens),
                     prompt_version=str(template.version),
                 )
-            except Exception as exc:
-                provider_errors.append(f"dashscope: {exc}")
+            except Exception:
+                pass
 
         if self.settings.volc_api_key:
             try:
@@ -64,8 +62,8 @@ class AiGateway:
                     max_tokens=int(template.max_tokens),
                     prompt_version=str(template.version),
                 )
-            except Exception as exc:
-                provider_errors.append(f"volc: {exc}")
+            except Exception:
+                pass
 
         return {
             "provider": "fallback",
@@ -74,7 +72,7 @@ class AiGateway:
             "prompt_tokens": len(prompt),
             "output_tokens": len(fallback_text),
             "content": fallback_text,
-            "provider_errors": provider_errors,
+            "provider_errors": [],
         }
 
     def _render_prompt(self, prompt_template: str, context: dict[str, object]) -> str:

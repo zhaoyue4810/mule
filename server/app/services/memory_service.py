@@ -57,7 +57,7 @@ class MemoryService:
         memory.avg_score = avg_score
         memory.fav_categories = favorite_categories
         memory.know_level = self._resolve_level(len(rows))
-        memory.last_test_at = last_record.created_at
+        memory.last_test_at = self._as_naive_utc(last_record.created_at)
         await self.db.flush()
 
     async def get_greeting(self, *, user: User) -> dict:
@@ -239,6 +239,14 @@ class MemoryService:
         if value.tzinfo is None:
             return value.replace(tzinfo=UTC)
         return value.astimezone(UTC)
+
+    @staticmethod
+    def _as_naive_utc(value: datetime | None) -> datetime | None:
+        if value is None:
+            return None
+        if value.tzinfo is None:
+            return value
+        return value.astimezone(UTC).replace(tzinfo=None)
 
     def _as_local_hour(self, value: datetime | None) -> int:
         if value is None:

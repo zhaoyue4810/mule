@@ -194,3 +194,53 @@ async def test_imported_draft_can_be_saved_as_structured_content() -> None:
         assert len(draft["personas"]) == 1
 
     await engine.dispose()
+
+
+@pytest.mark.anyio
+async def test_apply_structured_mock_bundle_creates_full_test_content() -> None:
+    engine, session_factory = await _build_session()
+
+    async with session_factory() as session:
+        service = ImportTaskService(session)
+        task = await service.create_task(
+            ImportTaskCreateRequest(
+                file_type="html",
+                file_path=str(
+                    REPO_ROOT / "mock" / "imports" / "xince-full-mock-import.html"
+                ),
+            )
+        )
+        await service.parse_task(task.id)
+        await service.apply_task(task.id, note="apply mock bundle")
+
+        test = await session.scalar(
+            select(test_models.Test).where(test_models.Test.test_code == "mbti")
+        )
+        assert test is not None
+        assert test.participant_count > 0
+
+        version = await session.scalar(
+            select(test_models.TestVersion)
+            .where(test_models.TestVersion.test_id == test.id)
+            .order_by(test_models.TestVersion.version.desc())
+        )
+        assert version is not None
+        assert version.status == "IMPORTED_DRAFT"
+        assert version.cover_gradient
+        assert version.report_template_code == "mbti_mock_v1"
+
+        question_count = await session.scalar(
+            select(func.count(test_models.Question.id)).where(
+                test_models.Question.version_id == version.id
+            )
+        )
+        persona_count = await session.scalar(
+            select(func.count(test_models.TestPersona.id)).where(
+                test_models.TestPersona.version_id == version.id
+            )
+        )
+
+        assert question_count and question_count > 0
+        assert persona_count and persona_count > 0
+
+    await engine.dispose()

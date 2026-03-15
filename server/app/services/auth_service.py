@@ -108,7 +108,7 @@ class AuthService:
         avatar_value: str | None = None,
         current_user: User | None = None,
     ) -> dict:
-        if not self.settings.wx_appid or not self.settings.wx_secret:
+        if not self._has_wechat_credentials():
             raise RuntimeError(
                 "WeChat mini program credentials are not configured yet"
             )
@@ -162,24 +162,32 @@ class AuthService:
         return await self.db.scalar(select(User).where(User.openid == openid))
 
     async def _exchange_wechat_code(self, code: str) -> dict:
-        async with httpx.AsyncClient(timeout=15.0) as client:
-            response = await client.get(
-                "https://api.weixin.qq.com/sns/jscode2session",
-                params={
-                    "appid": self.settings.wx_appid,
-                    "secret": self.settings.wx_secret,
-                    "js_code": code,
-                    "grant_type": "authorization_code",
-                },
-            )
-            response.raise_for_status()
-            payload = response.json()
+        try:
+            async with httpx.AsyncClient(timeout=15.0) as client:
+                response = await client.get(
+                    "https://api.weixin.qq.com/sns/jscode2session",
+                    params={
+                        "appid": self.settings.wx_appid,
+                        "secret": self.settings.wx_secret,
+                        "js_code": code,
+                        "grant_type": "authorization_code",
+                    },
+                )
+                response.raise_for_status()
+                payload = response.json()
+        except httpx.HTTPError as exc:
+            raise RuntimeError("WeChat login is temporarily unavailable") from exc
 
         if payload.get("errcode"):
             raise RuntimeError(
                 f"WeChat login failed: {payload.get('errmsg') or payload['errcode']}"
             )
         return payload
+
+    def _has_wechat_credentials(self) -> bool:
+        appid = (self.settings.wx_appid or "").strip()
+        secret = (self.settings.wx_secret or "").strip()
+        return bool(appid and secret)
 
     def _normalize_phone(self, phone: str) -> str:
         normalized = "".join(ch for ch in phone if ch.isdigit())

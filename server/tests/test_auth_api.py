@@ -211,6 +211,12 @@ def test_wechat_mini_program_login_returns_placeholder_when_not_configured() -> 
 
     app.dependency_overrides[get_db] = override_get_db
 
+    settings = get_settings()
+    original_appid = settings.wx_appid
+    original_secret = settings.wx_secret
+    settings.wx_appid = ""
+    settings.wx_secret = ""
+
     try:
         import asyncio
 
@@ -223,6 +229,8 @@ def test_wechat_mini_program_login_returns_placeholder_when_not_configured() -> 
         assert response.status_code == 503
         assert "credentials are not configured" in response.json()["detail"]
     finally:
+        settings.wx_appid = original_appid
+        settings.wx_secret = original_secret
         app.dependency_overrides.clear()
         import asyncio
 

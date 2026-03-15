@@ -56,7 +56,7 @@ function writeHistory(value: string) {
 async function loadTests() {
   loading.value = true;
   try {
-    await catalog.loadTests();
+    await catalog.loadTests(true);
   } catch (error) {
     uni.showToast({
       title: error instanceof Error ? error.message : "搜索数据加载失败",

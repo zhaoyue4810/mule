@@ -1,120 +1,716 @@
 INFO:     Will watch for changes in these directories: ['/Users/zhaoyue/pythonProject/mule/server']
 INFO:     Uvicorn running on http://127.0.0.1:8080 (Press CTRL+C to quit)
-INFO:     Started reloader process [40549] using WatchFiles
-INFO:     Started server process [40551]
+INFO:     Started reloader process [13282] using WatchFiles
+INFO:     Started server process [13284]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
-INFO:     127.0.0.1:49540 - "GET /api/app/auth/me HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49542 - "GET /api/app/auth/me HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49542 - "GET /api/app/tests HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49545 - "GET /api/app/capsule/check HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49540 - "GET /api/app/memory/greeting HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49544 - "GET /api/app/memory/suggest HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49546 - "GET /api/app/profile/me/daily-question HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49548 - "GET /api/app/profile/me/overview HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49579 - "OPTIONS /api/app/auth/guest HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49579 - "POST /api/app/auth/guest HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49579 - "OPTIONS /api/app/auth/me HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49579 - "GET /api/app/auth/me HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49579 - "OPTIONS /api/app/tests HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49590 - "OPTIONS /api/app/memory/greeting HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49591 - "OPTIONS /api/app/memory/suggest HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49592 - "OPTIONS /api/app/capsule/check HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49593 - "OPTIONS /api/app/profile/me/daily-question HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49594 - "OPTIONS /api/app/profile/me/overview HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49591 - "GET /api/app/capsule/check HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49591 - "OPTIONS /api/app/profile/me/onboarding HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49591 - "GET /api/app/profile/me/onboarding HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49579 - "GET /api/app/tests HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49590 - "GET /api/app/profile/me/daily-question HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49593 - "GET /api/app/memory/suggest HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49592 - "GET /api/app/memory/greeting HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49594 - "GET /api/app/profile/me/overview HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49671 - "OPTIONS /api/app/profile/me/onboarding HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49671 - "PUT /api/app/profile/me/onboarding HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49671 - "GET /api/app/auth/me HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49671 - "GET /api/app/auth/me HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49671 - "GET /api/app/tests HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49674 - "GET /api/app/capsule/check HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49673 - "GET /api/app/memory/suggest HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49672 - "GET /api/app/memory/greeting HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49675 - "GET /api/app/profile/me/daily-question HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49676 - "GET /api/app/profile/me/overview HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49920 - "OPTIONS /api/admin/auth/login HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49920 - "POST /api/admin/auth/login HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49920 - "OPTIONS /api/admin/ai/task/overview HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49923 - "OPTIONS /api/admin/ai/task/metrics?bucket=day HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49924 - "OPTIONS /api/admin/content/tests HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49923 - "GET /api/admin/content/tests HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49920 - "GET /api/admin/ai/task/overview HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49924 - "GET /api/admin/ai/task/metrics?bucket=day HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49924 - "GET /api/admin/content/tests HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49924 - "OPTIONS /api/admin/import/tasks?page=1&size=10 HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49924 - "GET /api/admin/import/tasks?page=1&size=10 HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49924 - "OPTIONS /api/admin/users?page=1&size=20&keyword= HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49924 - "GET /api/admin/users?page=1&size=20&keyword= HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49924 - "GET /api/admin/ai/task/overview HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49924 - "GET /api/admin/ai/task/metrics?bucket=day HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49924 - "OPTIONS /api/admin/ai/task/page HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49924 - "GET /api/admin/ai/task/page HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49924 - "OPTIONS /api/admin/ai/prompt/list HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49924 - "GET /api/admin/ai/prompt/list HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49924 - "OPTIONS /api/admin/badges HTTP/1.1" 200 OK
-INFO:     127.0.0.1:50001 - "OPTIONS /api/admin/config/yaml-status HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49924 - "GET /api/admin/config/yaml-status HTTP/1.1" 200 OK
-INFO:     127.0.0.1:50001 - "GET /api/admin/badges HTTP/1.1" 200 OK
-INFO:     127.0.0.1:50001 - "GET /api/admin/config/yaml-status HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49924 - "OPTIONS /api/app/health/ready HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49924 - "GET /api/app/health/ready HTTP/1.1" 404 Not Found
-INFO:     127.0.0.1:49924 - "GET /api/admin/ai/task/overview HTTP/1.1" 200 OK
-INFO:     127.0.0.1:50001 - "GET /api/admin/ai/task/metrics?bucket=day HTTP/1.1" 200 OK
-INFO:     127.0.0.1:50010 - "GET /api/admin/content/tests HTTP/1.1" 200 OK
-INFO:     127.0.0.1:50931 - "GET /api/app/auth/me HTTP/1.1" 200 OK
-INFO:     127.0.0.1:50932 - "GET /api/app/auth/me HTTP/1.1" 200 OK
-INFO:     127.0.0.1:50934 - "GET /api/app/capsule/check HTTP/1.1" 200 OK
-INFO:     127.0.0.1:50932 - "GET /api/app/tests HTTP/1.1" 200 OK
-INFO:     127.0.0.1:50931 - "GET /api/app/memory/greeting HTTP/1.1" 200 OK
-INFO:     127.0.0.1:50935 - "GET /api/app/profile/me/daily-question HTTP/1.1" 200 OK
-INFO:     127.0.0.1:50933 - "GET /api/app/memory/suggest HTTP/1.1" 200 OK
-INFO:     127.0.0.1:50936 - "GET /api/app/profile/me/overview HTTP/1.1" 200 OK
-INFO:     127.0.0.1:50936 - "GET /api/app/auth/me HTTP/1.1" 200 OK
-INFO:     127.0.0.1:50936 - "GET /api/app/auth/me HTTP/1.1" 200 OK
-INFO:     127.0.0.1:50931 - "GET /api/app/capsule/check HTTP/1.1" 200 OK
-INFO:     127.0.0.1:50936 - "GET /api/app/tests HTTP/1.1" 200 OK
-INFO:     127.0.0.1:50935 - "GET /api/app/memory/suggest HTTP/1.1" 200 OK
-INFO:     127.0.0.1:50932 - "GET /api/app/profile/me/daily-question HTTP/1.1" 200 OK
-INFO:     127.0.0.1:50933 - "GET /api/app/memory/greeting HTTP/1.1" 200 OK
-INFO:     127.0.0.1:50934 - "GET /api/app/profile/me/overview HTTP/1.1" 200 OK
-INFO:     127.0.0.1:50984 - "GET /api/app/auth/me HTTP/1.1" 200 OK
-INFO:     127.0.0.1:50985 - "GET /api/app/profile/me/reports HTTP/1.1" 200 OK
-INFO:     127.0.0.1:50984 - "GET /api/app/profile/me/overview HTTP/1.1" 200 OK
-INFO:     127.0.0.1:50984 - "GET /api/app/memory/greeting HTTP/1.1" 200 OK
-INFO:     127.0.0.1:50985 - "GET /api/app/memory/suggest HTTP/1.1" 200 OK
-INFO:     127.0.0.1:50986 - "GET /api/app/calendar/stats?year=2026 HTTP/1.1" 200 OK
-INFO:     127.0.0.1:50984 - "GET /api/app/calendar/year?year=2026 HTTP/1.1" 200 OK
-INFO:     127.0.0.1:50985 - "GET /api/app/calendar/month?year=2026&month=3 HTTP/1.1" 200 OK
-INFO:     127.0.0.1:50985 - "GET /api/app/profile/me/daily-question HTTP/1.1" 200 OK
-INFO:     127.0.0.1:50985 - "GET /api/app/capsule/list HTTP/1.1" 200 OK
-INFO:     127.0.0.1:50985 - "GET /api/app/profile/me/settings HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51011 - "POST /api/app/auth/wechat/mini-program HTTP/1.1" 503 Service Unavailable
-INFO:     127.0.0.1:51011 - "POST /api/app/auth/wechat/mini-program HTTP/1.1" 503 Service Unavailable
-INFO:     127.0.0.1:51057 - "PUT /api/app/profile/me/settings HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51057 - "PUT /api/app/profile/me/settings HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51106 - "GET /api/app/auth/me HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51107 - "GET /api/app/profile/me/reports HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51106 - "GET /api/app/profile/me/overview HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51106 - "GET /api/app/memory/greeting HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51107 - "GET /api/app/memory/suggest HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51107 - "GET /api/app/calendar/month?year=2026&month=3 HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51108 - "GET /api/app/calendar/stats?year=2026 HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51106 - "GET /api/app/calendar/year?year=2026 HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51106 - "GET /api/app/profile/me/daily-question HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51106 - "GET /api/app/capsule/list HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51106 - "GET /api/app/profile/me/settings HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51106 - "GET /api/app/auth/me HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51106 - "GET /api/app/tests HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51121 - "GET /api/app/capsule/check HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51107 - "GET /api/app/memory/suggest HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51122 - "GET /api/app/profile/me/daily-question HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51108 - "GET /api/app/memory/greeting HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51123 - "GET /api/app/profile/me/overview HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56995 - "OPTIONS /api/app/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56995 - "GET /api/app/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56995 - "GET /api/app/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56995 - "OPTIONS /api/app/tests HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57003 - "OPTIONS /api/app/memory/greeting HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57004 - "OPTIONS /api/app/memory/suggest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57005 - "OPTIONS /api/app/capsule/check HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57006 - "OPTIONS /api/app/profile/me/daily-question HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57007 - "OPTIONS /api/app/profile/me/overview HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56995 - "GET /api/app/tests HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57005 - "GET /api/app/capsule/check HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57007 - "GET /api/app/memory/greeting HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57004 - "GET /api/app/profile/me/daily-question HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57006 - "GET /api/app/memory/suggest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57003 - "GET /api/app/profile/me/overview HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57003 - "OPTIONS /api/app/tests/bff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57003 - "GET /api/app/tests/bff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57003 - "GET /api/app/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57003 - "OPTIONS /api/app/tests/bff/questionnaire HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57003 - "GET /api/app/tests/bff/questionnaire HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57037 - "GET /api/app/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57037 - "OPTIONS /api/app/tests/bff/submit HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57037 - "POST /api/app/tests/bff/submit HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57052 - "OPTIONS /api/app/reports/15 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57052 - "GET /api/app/reports/15 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57053 - "GET /api/app/memory/suggest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57053 - "OPTIONS /api/app/reports/15/ai-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57053 - "GET /api/app/reports/15/ai-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57053 - "GET /api/app/reports/15/ai-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57053 - "GET /api/app/reports/15/ai-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57053 - "GET /api/app/reports/15/ai-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57053 - "GET /api/app/reports/15/ai-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57053 - "GET /api/app/reports/15/ai-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57053 - "GET /api/app/reports/15/ai-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57053 - "GET /api/app/reports/15/ai-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57053 - "OPTIONS /api/app/capsule/create HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57053 - "POST /api/app/capsule/create HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 550, in _prepare_and_execute
+    self._rows = deque(await prepared_stmt.fetch(*parameters))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/asyncpg/prepared_stmt.py", line 177, in fetch
+    data = await self.__bind_execute(args, 0, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/asyncpg/prepared_stmt.py", line 268, in __bind_execute
+    data, status, _ = await self.__do_execute(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda protocol: protocol.bind_execute(
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            self._state, args, '', limit, True, timeout))
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/asyncpg/prepared_stmt.py", line 257, in __do_execute
+    return await executor(protocol)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "asyncpg/protocol/protocol.pyx", line 205, in bind_execute
+asyncpg.exceptions.NotNullViolationError: null value in column "lock_days" of relation "xc_time_capsule" violates not-null constraint
+DETAIL:  Failing row contains (1, 3, 不, null, null, null, 2026-04-14, f, 2026-03-15 20:38:24.287956+08, 灵动知己, 🪐, 1, 15, 30).
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 585, in execute
+    self._adapt_connection.await_(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self._prepare_and_execute(operation, parameters)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 132, in await_only
+    return current.parent.switch(awaitable)  # type: ignore[no-any-return,attr-defined] # noqa: E501
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 196, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 563, in _prepare_and_execute
+    self._handle_exception(error)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 513, in _handle_exception
+    self._adapt_connection._handle_exception(error)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 797, in _handle_exception
+    raise translated_error from error
+sqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_dbapi.IntegrityError: <class 'asyncpg.exceptions.NotNullViolationError'>: null value in column "lock_days" of relation "xc_time_capsule" violates not-null constraint
+DETAIL:  Failing row contains (1, 3, 不, null, null, null, 2026-04-14, f, 2026-03-15 20:38:24.287956+08, 灵动知己, 🪐, 1, 15, 30).
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/uvicorn/protocols/http/httptools_impl.py", line 416, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/fastapi/applications.py", line 1160, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/starlette/applications.py", line 107, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/starlette/middleware/cors.py", line 95, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/starlette/middleware/cors.py", line 153, in simple_response
+    await self.app(scope, receive, send)
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/starlette/routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 130, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 116, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 670, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 324, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhaoyue/pythonProject/mule/server/app/api/app/capsule.py", line 30, in create_time_capsule
+    item = await service.create_capsule(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "/Users/zhaoyue/pythonProject/mule/server/app/services/time_capsule_service.py", line 76, in create_capsule
+    await self.db.commit()
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/ext/asyncio/session.py", line 1000, in commit
+    await greenlet_spawn(self.sync_session.commit)
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 203, in greenlet_spawn
+    result = context.switch(value)
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/orm/session.py", line 2030, in commit
+    trans.commit(_to_root=True)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "<string>", line 2, in commit
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/orm/state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/orm/session.py", line 1311, in commit
+    self._prepare_impl()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "<string>", line 2, in _prepare_impl
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/orm/state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/orm/session.py", line 1286, in _prepare_impl
+    self.session.flush()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/orm/session.py", line 4331, in flush
+    self._flush(objects)
+    ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/orm/session.py", line 4466, in _flush
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/util/langhelpers.py", line 121, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/orm/session.py", line 4427, in _flush
+    flush_context.execute()
+    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/orm/unitofwork.py", line 466, in execute
+    rec.execute(self)
+    ~~~~~~~~~~~^^^^^^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/orm/unitofwork.py", line 642, in execute
+    util.preloaded.orm_persistence.save_obj(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self.mapper,
+        ^^^^^^^^^^^^
+        uow.states_for_mapper_hierarchy(self.mapper, False, False),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        uow,
+        ^^^^
+    )
+    ^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/orm/persistence.py", line 93, in save_obj
+    _emit_insert_statements(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        base_mapper,
+        ^^^^^^^^^^^^
+    ...<3 lines>...
+        insert,
+        ^^^^^^^
+    )
+    ^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/orm/persistence.py", line 1233, in _emit_insert_statements
+    result = connection.execute(
+        statement,
+        params,
+        execution_options=execution_options,
+    )
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 1419, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/sql/elements.py", line 527, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 2363, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 585, in execute
+    self._adapt_connection.await_(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self._prepare_and_execute(operation, parameters)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 132, in await_only
+    return current.parent.switch(awaitable)  # type: ignore[no-any-return,attr-defined] # noqa: E501
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 196, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 563, in _prepare_and_execute
+    self._handle_exception(error)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 513, in _handle_exception
+    self._adapt_connection._handle_exception(error)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 797, in _handle_exception
+    raise translated_error from error
+sqlalchemy.exc.IntegrityError: (sqlalchemy.dialects.postgresql.asyncpg.IntegrityError) <class 'asyncpg.exceptions.NotNullViolationError'>: null value in column "lock_days" of relation "xc_time_capsule" violates not-null constraint
+DETAIL:  Failing row contains (1, 3, 不, null, null, null, 2026-04-14, f, 2026-03-15 20:38:24.287956+08, 灵动知己, 🪐, 1, 15, 30).
+[SQL: INSERT INTO xc_time_capsule (user_id, message, persona_title, persona_icon, test_id, report_id, duration_days, unlock_date, is_read) VALUES ($1::BIGINT, $2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::BIGINT, $6::BIGINT, $7::INTEGER, $8::DATE, $9::BOOLEAN) RETURNING xc_time_capsule.id, xc_time_capsule.created_at]
+[parameters: (3, '不', '灵动知己', '🪐', 1, 15, 30, datetime.date(2026, 4, 14), False)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+INFO:     127.0.0.1:57064 - "POST /api/app/capsule/create HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 550, in _prepare_and_execute
+    self._rows = deque(await prepared_stmt.fetch(*parameters))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/asyncpg/prepared_stmt.py", line 177, in fetch
+    data = await self.__bind_execute(args, 0, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/asyncpg/prepared_stmt.py", line 268, in __bind_execute
+    data, status, _ = await self.__do_execute(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda protocol: protocol.bind_execute(
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            self._state, args, '', limit, True, timeout))
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/asyncpg/prepared_stmt.py", line 257, in __do_execute
+    return await executor(protocol)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "asyncpg/protocol/protocol.pyx", line 205, in bind_execute
+asyncpg.exceptions.NotNullViolationError: null value in column "lock_days" of relation "xc_time_capsule" violates not-null constraint
+DETAIL:  Failing row contains (2, 3, 不, null, null, null, 2026-04-14, f, 2026-03-15 20:38:24.331241+08, 灵动知己, 🪐, 1, 15, 30).
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 585, in execute
+    self._adapt_connection.await_(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self._prepare_and_execute(operation, parameters)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 132, in await_only
+    return current.parent.switch(awaitable)  # type: ignore[no-any-return,attr-defined] # noqa: E501
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 196, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 563, in _prepare_and_execute
+    self._handle_exception(error)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 513, in _handle_exception
+    self._adapt_connection._handle_exception(error)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 797, in _handle_exception
+    raise translated_error from error
+sqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_dbapi.IntegrityError: <class 'asyncpg.exceptions.NotNullViolationError'>: null value in column "lock_days" of relation "xc_time_capsule" violates not-null constraint
+DETAIL:  Failing row contains (2, 3, 不, null, null, null, 2026-04-14, f, 2026-03-15 20:38:24.331241+08, 灵动知己, 🪐, 1, 15, 30).
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/uvicorn/protocols/http/httptools_impl.py", line 416, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/fastapi/applications.py", line 1160, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/starlette/applications.py", line 107, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/starlette/middleware/cors.py", line 95, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/starlette/middleware/cors.py", line 153, in simple_response
+    await self.app(scope, receive, send)
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/starlette/routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 130, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 116, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 670, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 324, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhaoyue/pythonProject/mule/server/app/api/app/capsule.py", line 30, in create_time_capsule
+    item = await service.create_capsule(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "/Users/zhaoyue/pythonProject/mule/server/app/services/time_capsule_service.py", line 76, in create_capsule
+    await self.db.commit()
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/ext/asyncio/session.py", line 1000, in commit
+    await greenlet_spawn(self.sync_session.commit)
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 203, in greenlet_spawn
+    result = context.switch(value)
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/orm/session.py", line 2030, in commit
+    trans.commit(_to_root=True)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "<string>", line 2, in commit
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/orm/state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/orm/session.py", line 1311, in commit
+    self._prepare_impl()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "<string>", line 2, in _prepare_impl
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/orm/state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/orm/session.py", line 1286, in _prepare_impl
+    self.session.flush()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/orm/session.py", line 4331, in flush
+    self._flush(objects)
+    ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/orm/session.py", line 4466, in _flush
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/util/langhelpers.py", line 121, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/orm/session.py", line 4427, in _flush
+    flush_context.execute()
+    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/orm/unitofwork.py", line 466, in execute
+    rec.execute(self)
+    ~~~~~~~~~~~^^^^^^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/orm/unitofwork.py", line 642, in execute
+    util.preloaded.orm_persistence.save_obj(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self.mapper,
+        ^^^^^^^^^^^^
+        uow.states_for_mapper_hierarchy(self.mapper, False, False),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        uow,
+        ^^^^
+    )
+    ^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/orm/persistence.py", line 93, in save_obj
+    _emit_insert_statements(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        base_mapper,
+        ^^^^^^^^^^^^
+    ...<3 lines>...
+        insert,
+        ^^^^^^^
+    )
+    ^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/orm/persistence.py", line 1233, in _emit_insert_statements
+    result = connection.execute(
+        statement,
+        params,
+        execution_options=execution_options,
+    )
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 1419, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/sql/elements.py", line 527, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 2363, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 585, in execute
+    self._adapt_connection.await_(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self._prepare_and_execute(operation, parameters)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 132, in await_only
+    return current.parent.switch(awaitable)  # type: ignore[no-any-return,attr-defined] # noqa: E501
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 196, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 563, in _prepare_and_execute
+    self._handle_exception(error)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 513, in _handle_exception
+    self._adapt_connection._handle_exception(error)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/zhaoyue/pythonProject/mule/server/.venv/lib/python3.14/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 797, in _handle_exception
+    raise translated_error from error
+sqlalchemy.exc.IntegrityError: (sqlalchemy.dialects.postgresql.asyncpg.IntegrityError) <class 'asyncpg.exceptions.NotNullViolationError'>: null value in column "lock_days" of relation "xc_time_capsule" violates not-null constraint
+DETAIL:  Failing row contains (2, 3, 不, null, null, null, 2026-04-14, f, 2026-03-15 20:38:24.331241+08, 灵动知己, 🪐, 1, 15, 30).
+[SQL: INSERT INTO xc_time_capsule (user_id, message, persona_title, persona_icon, test_id, report_id, duration_days, unlock_date, is_read) VALUES ($1::BIGINT, $2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::BIGINT, $6::BIGINT, $7::INTEGER, $8::DATE, $9::BOOLEAN) RETURNING xc_time_capsule.id, xc_time_capsule.created_at]
+[parameters: (3, '不', '灵动知己', '🪐', 1, 15, 30, datetime.date(2026, 4, 14), False)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+INFO:     127.0.0.1:57065 - "GET /api/app/reports/15/ai-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57065 - "GET /api/app/reports/15/ai-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57065 - "GET /api/app/reports/15 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57065 - "OPTIONS /api/app/match/create HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57065 - "POST /api/app/match/create HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57065 - "GET /api/app/reports/15/ai-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57065 - "GET /api/app/reports/15/ai-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58162 - "OPTIONS /api/app/auth/guest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58162 - "POST /api/app/auth/guest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58162 - "POST /api/app/auth/guest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58162 - "OPTIONS /api/app/tests HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58163 - "OPTIONS /api/app/memory/greeting HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58166 - "OPTIONS /api/app/memory/suggest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58167 - "OPTIONS /api/app/capsule/check HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58168 - "OPTIONS /api/app/profile/me/daily-question HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58169 - "OPTIONS /api/app/profile/me/overview HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58167 - "GET /api/app/capsule/check HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58162 - "GET /api/app/tests HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58163 - "GET /api/app/memory/greeting HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58168 - "GET /api/app/profile/me/daily-question HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58166 - "GET /api/app/memory/suggest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58169 - "GET /api/app/profile/me/overview HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58193 - "OPTIONS /api/app/auth/guest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58193 - "POST /api/app/auth/guest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58193 - "OPTIONS /api/app/tests/mbti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58194 - "GET /api/app/tests/mbti HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58231 - "OPTIONS /api/app/auth/guest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58232 - "POST /api/app/auth/guest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58232 - "OPTIONS /api/app/tests/bff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58231 - "GET /api/app/tests/bff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58320 - "OPTIONS /api/app/auth/guest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58320 - "POST /api/app/auth/guest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58320 - "OPTIONS /api/app/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58321 - "GET /api/app/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58321 - "OPTIONS /api/app/tests/bff/questionnaire HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58320 - "GET /api/app/tests/bff/questionnaire HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59528 - "OPTIONS /api/app/auth/guest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59528 - "POST /api/app/auth/guest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59528 - "OPTIONS /api/app/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59529 - "GET /api/app/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59529 - "OPTIONS /api/app/tests HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59528 - "OPTIONS /api/app/memory/greeting HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59530 - "OPTIONS /api/app/memory/suggest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59531 - "OPTIONS /api/app/capsule/check HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59532 - "OPTIONS /api/app/profile/me/daily-question HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59533 - "OPTIONS /api/app/profile/me/overview HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59529 - "GET /api/app/tests HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59531 - "GET /api/app/capsule/check HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59528 - "GET /api/app/memory/greeting HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59530 - "GET /api/app/memory/suggest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59533 - "GET /api/app/profile/me/overview HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59532 - "GET /api/app/profile/me/daily-question HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59546 - "OPTIONS /api/app/auth/guest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59546 - "POST /api/app/auth/guest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59546 - "OPTIONS /api/app/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59547 - "GET /api/app/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59547 - "OPTIONS /api/app/tests HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59546 - "OPTIONS /api/app/memory/greeting HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59548 - "OPTIONS /api/app/memory/suggest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59549 - "OPTIONS /api/app/capsule/check HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59550 - "OPTIONS /api/app/profile/me/daily-question HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59551 - "OPTIONS /api/app/profile/me/overview HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59547 - "GET /api/app/tests HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59549 - "GET /api/app/capsule/check HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59546 - "GET /api/app/memory/greeting HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59548 - "GET /api/app/memory/suggest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59550 - "GET /api/app/profile/me/daily-question HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59551 - "GET /api/app/profile/me/overview HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59573 - "OPTIONS /api/app/auth/guest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59574 - "POST /api/app/auth/guest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59574 - "OPTIONS /api/app/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59573 - "GET /api/app/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59573 - "OPTIONS /api/app/tests HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59574 - "OPTIONS /api/app/memory/greeting HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59577 - "OPTIONS /api/app/memory/suggest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59578 - "OPTIONS /api/app/capsule/check HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59579 - "OPTIONS /api/app/profile/me/daily-question HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59580 - "OPTIONS /api/app/profile/me/overview HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59573 - "GET /api/app/tests HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59578 - "GET /api/app/capsule/check HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59577 - "GET /api/app/memory/suggest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59579 - "GET /api/app/profile/me/daily-question HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59574 - "GET /api/app/memory/greeting HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59580 - "GET /api/app/profile/me/overview HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59598 - "OPTIONS /api/app/auth/guest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59598 - "POST /api/app/auth/guest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59598 - "OPTIONS /api/app/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59599 - "GET /api/app/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59599 - "OPTIONS /api/app/tests HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59598 - "OPTIONS /api/app/memory/greeting HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59600 - "OPTIONS /api/app/memory/suggest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59601 - "OPTIONS /api/app/capsule/check HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59602 - "OPTIONS /api/app/profile/me/daily-question HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59603 - "OPTIONS /api/app/profile/me/overview HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59599 - "GET /api/app/tests HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59601 - "GET /api/app/capsule/check HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59598 - "GET /api/app/memory/greeting HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59600 - "GET /api/app/memory/suggest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59602 - "GET /api/app/profile/me/daily-question HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59603 - "GET /api/app/profile/me/overview HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59603 - "OPTIONS /api/app/tests/bff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59602 - "GET /api/app/tests/bff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59620 - "OPTIONS /api/app/auth/guest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59620 - "POST /api/app/auth/guest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59620 - "OPTIONS /api/app/tests/bff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59621 - "GET /api/app/tests/bff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59633 - "OPTIONS /api/app/auth/guest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59633 - "POST /api/app/auth/guest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59633 - "OPTIONS /api/app/tests/bff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59634 - "GET /api/app/tests/bff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59634 - "OPTIONS /api/app/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59633 - "GET /api/app/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59633 - "OPTIONS /api/app/tests/bff/questionnaire HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59634 - "GET /api/app/tests/bff/questionnaire HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59707 - "OPTIONS /api/app/auth/guest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59707 - "POST /api/app/auth/guest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59707 - "OPTIONS /api/app/tests/bff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59708 - "GET /api/app/tests/bff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59708 - "OPTIONS /api/app/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59707 - "GET /api/app/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59707 - "OPTIONS /api/app/tests/bff/questionnaire HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59708 - "GET /api/app/tests/bff/questionnaire HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59734 - "OPTIONS /api/app/auth/guest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59734 - "POST /api/app/auth/guest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59734 - "OPTIONS /api/app/tests/bff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59735 - "GET /api/app/tests/bff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59735 - "OPTIONS /api/app/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59734 - "GET /api/app/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59734 - "OPTIONS /api/app/tests/bff/questionnaire HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59735 - "GET /api/app/tests/bff/questionnaire HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59766 - "OPTIONS /api/app/auth/guest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59766 - "POST /api/app/auth/guest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59766 - "OPTIONS /api/app/tests/bff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59767 - "GET /api/app/tests/bff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59767 - "OPTIONS /api/app/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59766 - "GET /api/app/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59766 - "OPTIONS /api/app/tests/bff/questionnaire HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59767 - "GET /api/app/tests/bff/questionnaire HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59774 - "GET /api/app/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59774 - "OPTIONS /api/app/tests/bff/submit HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59774 - "POST /api/app/tests/bff/submit HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59860 - "OPTIONS /api/app/auth/guest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59860 - "POST /api/app/auth/guest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59860 - "OPTIONS /api/app/tests/bff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59861 - "GET /api/app/tests/bff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59861 - "OPTIONS /api/app/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59860 - "GET /api/app/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59860 - "OPTIONS /api/app/tests/bff/questionnaire HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59861 - "GET /api/app/tests/bff/questionnaire HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59870 - "GET /api/app/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59870 - "OPTIONS /api/app/tests/bff/submit HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59870 - "POST /api/app/tests/bff/submit HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59871 - "OPTIONS /api/app/reports/17 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59889 - "OPTIONS /api/app/memory/suggest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59871 - "GET /api/app/reports/17 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59890 - "GET /api/app/memory/suggest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59995 - "OPTIONS /api/app/auth/guest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59996 - "POST /api/app/auth/guest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59996 - "OPTIONS /api/app/reports/17 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59995 - "OPTIONS /api/app/memory/suggest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59996 - "GET /api/app/reports/17 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59997 - "GET /api/app/memory/suggest HTTP/1.1" 200 OK

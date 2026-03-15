@@ -121,7 +121,7 @@ onBeforeUnmount(() => {
   <view class="fortune q-enter">
     <view v-if="flash" class="edge-flash" />
     <view class="fortune__wheel-wrap">
-      <view class="fortune__pointer" />
+      <view class="fortune__pointer">📍</view>
       <view class="fortune__wheel" :style="wheelStyle">
         <view class="fortune__surface" :style="{ background: wheelBackground }" />
         <view
@@ -134,10 +134,10 @@ onBeforeUnmount(() => {
           {{ point.label }}
         </view>
       </view>
+      <view class="fortune__center" @tap="spinWheel">转动</view>
     </view>
     <button class="fortune__btn" :disabled="spinning" @tap="spinWheel">
-      <text class="fortune__btn-center">转</text>
-      {{ spinning ? "命运轮盘转动中..." : "转动命运轮盘" }}
+      {{ spinning ? "命运轮盘转动中..." : "点击中间或按钮开始" }}
     </button>
     <text v-if="selectedLabel" class="fortune__result">当前抽中：{{ selectedLabel }}</text>
   </view>
@@ -153,40 +153,36 @@ onBeforeUnmount(() => {
 
 .fortune__wheel-wrap {
   position: relative;
-  width: 460rpx;
-  height: 460rpx;
+  width: 520rpx;
+  height: 520rpx;
 }
 
 .fortune__pointer {
   position: absolute;
   left: 50%;
-  top: -8rpx;
+  top: -16rpx;
   z-index: 4;
-  width: 0;
-  height: 0;
-  margin-left: -16rpx;
-  border-left: 16rpx solid transparent;
-  border-right: 16rpx solid transparent;
-  border-top: 36rpx solid #7C5DBF;
+  transform: translateX(-50%);
+  font-size: 34rpx;
+  filter: drop-shadow(0 4rpx 10rpx rgba(0, 0, 0, 0.14));
 }
 
 .fortune__label {
   position: absolute;
-  width: 140rpx;
-  margin-left: -70rpx;
-  margin-top: -20rpx;
+  width: 132rpx;
+  margin-left: -66rpx;
+  margin-top: -24rpx;
   text-align: center;
-  font-size: 22rpx;
+  font-size: 20rpx;
   line-height: 1.4;
-  color: #3A2E42;
-  font-weight: 600;
-  text-shadow: 0 1rpx 0 rgba(255, 255, 255, 0.35);
+  color: #fff;
+  font-weight: 700;
+  text-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.16);
   z-index: 3;
 }
 
 .fortune__label--active {
-  color: #8d2e00;
-  font-weight: 700;
+  color: #fff9e8;
 }
 
 .fortune__wheel {
@@ -202,27 +198,37 @@ onBeforeUnmount(() => {
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  border: 8rpx solid rgba(255, 255, 255, 0.72);
-  box-shadow: $xc-shadow;
+  border: 8rpx solid rgba(255, 255, 255, 0.32);
+  box-shadow:
+    0 4rpx 24rpx rgba(155, 126, 216, 0.2),
+    inset 0 0 0 4rpx rgba(255, 255, 255, 0.3);
+}
+
+.fortune__center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 5;
+  width: 92rpx;
+  height: 92rpx;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(135deg, $xc-purple, $xc-pink);
+  color: $xc-white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22rpx;
+  font-weight: 800;
+  box-shadow: 0 8rpx 22rpx rgba(155, 126, 216, 0.32);
 }
 
 .fortune__btn {
   width: 420rpx;
   border-radius: 999rpx;
-  background: linear-gradient(135deg, #9B7ED8, #7C5DBF);
+  background: linear-gradient(135deg, $xc-purple, #7c5dbf);
   color: #fff8f1;
-  font-size: 26rpx;
-}
-
-.fortune__btn-center {
-  display: inline-block;
-  width: 34rpx;
-  height: 34rpx;
-  margin-right: 8rpx;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.24);
-  text-align: center;
-  line-height: 34rpx;
+  font-size: 24rpx;
 }
 
 .fortune__result {
