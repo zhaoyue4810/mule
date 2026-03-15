@@ -3,6 +3,7 @@ import { computed, ref } from "vue";
 import { onLoad } from "@dcloudio/uni-app";
 
 import type { PublishedTestDetail } from "@/shared/models/tests";
+import { SoundManager } from "@/shared/utils/sound-manager";
 import { useTestCatalogStore } from "@/stores/test-catalog";
 
 const store = useTestCatalogStore();
@@ -30,6 +31,9 @@ async function loadDetail(testCode: string) {
 function startTest() {
   if (!detail.value) {
     return;
+  }
+  if (SoundManager.isSoundEnabled()) {
+    SoundManager.play("whoosh");
   }
   uni.navigateTo({
     url: `/pages/test/answer?testCode=${detail.value.test_code}`,
@@ -117,6 +121,7 @@ onLoad((query) => {
 <style lang="scss" scoped>
 .page {
   padding: 28rpx;
+  animation: fadeInUp 0.45s $xc-ease both;
 }
 
 .state-card {

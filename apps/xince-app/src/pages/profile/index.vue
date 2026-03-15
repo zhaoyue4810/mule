@@ -3,6 +3,7 @@ import { computed, getCurrentInstance, ref } from "vue";
 import { onReady, onShow, onUnload } from "@dcloudio/uni-app";
 
 import CelebrationOverlay from "@/components/feedback/CelebrationOverlay.vue";
+import BottomSheet from "@/components/common/BottomSheet.vue";
 import TabBuddy from "@/components/mascot/TabBuddy.vue";
 import XiaoCe from "@/components/mascot/XiaoCe.vue";
 import PersonaRadarCanvas from "@/components/profile/PersonaRadarCanvas.vue";
@@ -46,6 +47,7 @@ import {
   fetchCalendarYear,
   recordCalendarMood,
 } from "@/shared/services/calendar";
+import { SoundManager } from "@/shared/utils/sound-manager";
 
 type CelebrationBadgeSummary = DailyQuestionStatePayload["unlocked_badges"][number];
 type CalendarGridCell = { key: string; empty: boolean; item?: CalendarDayDetail };
@@ -91,8 +93,22 @@ const statDisplay = ref({
   pendingCount: 0,
 });
 const selectedBadge = ref<ProfileBadgeItem | null>(null);
+const badgeSheetVisible = computed({
+  get: () => Boolean(selectedBadge.value),
+  set: (value: boolean) => {
+    if (!value) {
+      selectedBadge.value = null;
+    }
+  },
+});
 let statsObserver: UniApp.IntersectionObserver | null = null;
 const instance = getCurrentInstance();
+
+function playIfEnabled(type: "chime" | "ding" | "whoosh" | "ambient") {
+  if (SoundManager.isSoundEnabled()) {
+    SoundManager.play(type);
+  }
+}
 
 // #ifdef MP-WEIXIN
 isWechatMiniProgram.value = true;
@@ -322,6 +338,7 @@ async function updateCalendarMood(moodLevel: number) {
     calendarSelectedDay.value = calendarMonthItems.value.find(
       (item) => item.date === calendarSelectedDay.value?.date,
     ) || calendarYearItems.value.find((item) => item.date === calendarSelectedDay.value?.date) || null;
+    playIfEnabled("ding");
     uni.showToast({
       title: "心情已记录",
       icon: "success",
@@ -608,7 +625,13 @@ async function linkWechatIdentity() {
     });
   } catch (err) {
     uni.showToast({
-      title: err instanceof Error ? err.message : "微信升级失败",
+      title:
+        err instanceof Error &&
+        err.message.includes("credentials are not configured")
+          ? "后端还没配置微信小程序凭证"
+          : err instanceof Error
+            ? err.message
+            : "微信升级失败",
       icon: "none",
     });
   } finally {
@@ -654,8 +677,26 @@ function initStatsObserver() {
 }
 
 function openSettingItem(type: "edit" | "sound" | "notify" | "privacy" | "about") {
-  if (type === "edit" || type === "sound") {
+  if (type === "edit") {
+    uni.navigateTo({
+      url: "/pages/profile/edit-profile",
+    });
+    return;
+  }
+  if (type === "sound") {
     goSettings();
+    return;
+  }
+  if (type === "notify") {
+    uni.navigateTo({
+      url: "/pages/profile/notifications",
+    });
+    return;
+  }
+  if (type === "about") {
+    uni.navigateTo({
+      url: "/pages/profile/about",
+    });
     return;
   }
   uni.showToast({
@@ -1204,9 +1245,8 @@ onUnload(() => {
     :badges="celebrationBadges"
     @close="closeCelebration"
   />
-  <view v-if="selectedBadge" class="sheet" @tap="closeBadgeDetail">
-    <view class="sheet__mask sheet__mask--dreamy" />
-    <view class="sheet__panel sheet__panel--dreamy" @tap.stop>
+  <BottomSheet v-model="badgeSheetVisible" max-height="50vh">
+    <view v-if="selectedBadge" class="badge-sheet">
       <text class="fragment-reveal__emoji">{{ selectedBadge.emoji }}</text>
       <text class="sheet__title">{{ selectedBadge.name }}</text>
       <text class="sheet__subtitle">
@@ -1216,7 +1256,7 @@ onUnload(() => {
         解锁于 {{ formatTime(selectedBadge.unlocked_at) }}。继续保持你的探索节奏，还会点亮更高阶形态。
       </text>
     </view>
-  </view>
+  </BottomSheet>
   <view v-if="calendarSelectedDay" class="sheet" @tap="closeCalendarDay">
     <view class="sheet__mask" />
     <view class="sheet__panel" @tap.stop>
@@ -1268,6 +1308,11 @@ onUnload(() => {
 <style lang="scss" scoped>
 .page {
   padding: 28rpx 28rpx 40rpx;
+}
+
+.badge-sheet {
+  padding: 8rpx 6rpx 12rpx;
+  text-align: center;
 }
 
 .profile {

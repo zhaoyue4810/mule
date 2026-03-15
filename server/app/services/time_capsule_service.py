@@ -11,6 +11,7 @@ from app.models.report import ReportSnapshot
 from app.models.soul import TimeCapsule
 from app.models.test import Test, TestPersona
 from app.models.user import User
+from app.services.content_filter import ContentFilterError, check_text
 
 
 ALLOWED_CAPSULE_DURATIONS = {30, 90, 365}
@@ -48,6 +49,8 @@ class TimeCapsuleService:
         normalized_message = message.strip()
         if not normalized_message:
             raise ValueError("Capsule message is required")
+        if not check_text(normalized_message).passed:
+            raise ContentFilterError("内容包含不当信息，请修改后重试")
         if len(normalized_message) > 1000:
             raise ValueError("Capsule message must be 1000 characters or fewer")
         if duration_days not in ALLOWED_CAPSULE_DURATIONS:

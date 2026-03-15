@@ -18,6 +18,7 @@ from app.schemas.app_profile import (
     UpdateOnboardingProfileRequest,
 )
 from app.services.app_profile_service import AppProfileService
+from app.services.content_filter import ContentFilterError
 from app.services.daily_question_service import DailyQuestionService
 
 router = APIRouter(tags=["app-profile"])
@@ -42,6 +43,8 @@ async def update_my_onboarding_profile(
     service = AppProfileService(db)
     try:
         result = await service.update_onboarding_profile(user.id, payload)
+    except ContentFilterError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     return OnboardingProfilePayload(**result)
@@ -73,7 +76,11 @@ async def update_my_profile_settings(
     db: AsyncSession = Depends(get_db),
 ) -> ProfileSettingsPayload:
     service = AppProfileService(db)
-    return ProfileSettingsPayload(**(await service.update_settings(user.id, payload)))
+    try:
+        result = await service.update_settings(user.id, payload)
+    except ContentFilterError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return ProfileSettingsPayload(**result)
 
 
 @router.get("/profile/me/reports", response_model=list[ProfileReportHistoryItem])

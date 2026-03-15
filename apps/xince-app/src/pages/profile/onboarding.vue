@@ -187,6 +187,7 @@ onMounted(() => {
 <style lang="scss" scoped>
 .page {
   padding: 32rpx 28rpx 48rpx;
+  animation: fadeInUp 0.45s $xc-ease both;
 }
 
 .hero {

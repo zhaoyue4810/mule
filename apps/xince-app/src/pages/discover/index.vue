@@ -2,6 +2,7 @@
 import { computed, ref } from "vue";
 
 import TabBuddy from "@/components/mascot/TabBuddy.vue";
+import { SoundManager } from "@/shared/utils/sound-manager";
 
 const activeTab = ref<"hot" | "story" | "zodiac">("hot");
 
@@ -130,7 +131,17 @@ const zodiacList = [
 const zodiacScroller = computed(() => zodiacList.slice(0, 12));
 
 function openSearch() {
-  uni.showToast({ title: "搜索页即将上线", icon: "none" });
+  uni.navigateTo({
+    url: "/pages/discover/search",
+  });
+}
+
+function setActiveTab(tab: "hot" | "story" | "zodiac") {
+  if (activeTab.value === tab) {
+    return;
+  }
+  activeTab.value = tab;
+  SoundManager.haptic(10);
 }
 
 function openPostAction() {
@@ -141,8 +152,10 @@ function openStory() {
   uni.showToast({ title: "故事详情即将上线", icon: "none" });
 }
 
-function openZodiac(name: string) {
-  uni.showToast({ title: `${name}详情即将上线`, icon: "none" });
+function openZodiac(item: { key: string; name: string; emoji: string }) {
+  uni.navigateTo({
+    url: `/pages/discover/zodiac-detail?key=${item.key}&name=${item.name}&emoji=${item.emoji}`,
+  });
 }
 </script>
 
@@ -163,7 +176,7 @@ function openZodiac(name: string) {
         :key="item.key"
         class="tabs__item"
         :class="{ 'tabs__item--active': activeTab === item.key }"
-        @tap="activeTab = item.key as 'hot' | 'story' | 'zodiac'"
+        @tap="setActiveTab(item.key as 'hot' | 'story' | 'zodiac')"
       >
         {{ item.label }}
       </text>
@@ -182,7 +195,7 @@ function openZodiac(name: string) {
             v-for="item in zodiacScroller"
             :key="item.key"
             class="zodiac-chip"
-            @tap="openZodiac(item.name)"
+            @tap="openZodiac(item)"
           >
             <text class="zodiac-chip__emoji">{{ item.emoji }}</text>
             <text class="zodiac-chip__name">{{ item.name }}</text>
@@ -239,7 +252,7 @@ function openZodiac(name: string) {
           v-for="item in zodiacList"
           :key="item.key"
           class="zodiac-card"
-          @tap="openZodiac(item.name)"
+          @tap="openZodiac(item)"
         >
           <text class="zodiac-card__emoji">{{ item.emoji }}</text>
           <text class="zodiac-card__name">{{ item.name }}</text>

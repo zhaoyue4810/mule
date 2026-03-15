@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { onLoad } from "@dcloudio/uni-app";
 
 import CelebrationOverlay from "@/components/feedback/CelebrationOverlay.vue";
+import ConfettiCanvas from "@/components/feedback/ConfettiCanvas.vue";
 import MatchRadarCanvas from "@/components/match/MatchRadarCanvas.vue";
 import type { MatchResultPayload } from "@/shared/models/match";
 import { ensureAppSession } from "@/shared/services/auth";
 import { fetchMatchResult } from "@/shared/services/match";
+import { SoundManager } from "@/shared/utils/sound-manager";
 
 const sessionId = ref(0);
 const loading = ref(false);
@@ -14,7 +16,10 @@ const error = ref("");
 const report = ref<MatchResultPayload | null>(null);
 const displayScore = ref(0);
 const celebrationVisible = ref(false);
+const confettiActive = ref(false);
+const pageChimed = ref(false);
 let scoreTimer: ReturnType<typeof setInterval> | null = null;
+let confettiTimer: ReturnType<typeof setTimeout> | null = null;
 
 const scoreTone = computed(() => {
   const score = report.value?.compatibility_score || 0;
@@ -49,6 +54,13 @@ function stopScoreTimer() {
   if (scoreTimer) {
     clearInterval(scoreTimer);
     scoreTimer = null;
+  }
+}
+
+function stopConfettiTimer() {
+  if (confettiTimer) {
+    clearTimeout(confettiTimer);
+    confettiTimer = null;
   }
 }
 
@@ -93,20 +105,37 @@ onMounted(load);
 watch(
   () => report.value,
   (value) => {
+    stopConfettiTimer();
+    confettiActive.value = false;
     if (!value) {
       return;
     }
+    if (!pageChimed.value && !value.unlocked_badges?.length && SoundManager.isSoundEnabled()) {
+      SoundManager.play("chime");
+      pageChimed.value = true;
+    }
     animateScore(value.compatibility_score || 0);
+    if ((value.compatibility_score || 0) >= 85) {
+      confettiTimer = setTimeout(() => {
+        confettiActive.value = true;
+      }, 1000);
+    }
     if (value.unlocked_badges?.length) {
       celebrationVisible.value = true;
     }
   },
   { immediate: false },
 );
+
+onBeforeUnmount(() => {
+  stopScoreTimer();
+  stopConfettiTimer();
+});
 </script>
 
 <template>
   <view class="page">
+    <ConfettiCanvas :active="confettiActive" @done="confettiActive = false" />
     <view v-if="loading" class="panel">
       <text class="panel__text">正在展开你们的双人匹配报告...</text>
     </view>
@@ -198,6 +227,7 @@ watch(
 <style lang="scss" scoped>
 .page {
   padding: 28rpx 24rpx 40rpx;
+  animation: fadeInUp 0.45s $xc-ease both;
 }
 
 .stack {

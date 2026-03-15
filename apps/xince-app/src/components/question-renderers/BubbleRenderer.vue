@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 
 import type { PublishedQuestionPayload } from "@/shared/models/tests";
 import { haptic, playSound } from "@/shared/utils/sound-manager";
 
-defineProps<{
+const props = defineProps<{
   modelValue: string;
   question: PublishedQuestionPayload;
 }>();
@@ -14,6 +14,7 @@ const emit = defineEmits<{
 }>();
 
 const flash = ref(false);
+const hasSelection = computed(() => Boolean(props.modelValue));
 
 function pick(value: string) {
   playSound("chime");
@@ -33,7 +34,11 @@ function pick(value: string) {
       v-for="option in question.options"
       :key="option.option_code || option.seq"
       class="choice"
-      :class="{ 'choice--active': modelValue === (option.option_code || String(option.seq)) }"
+      :class="{
+        'choice--active': modelValue === (option.option_code || String(option.seq)),
+        'choice--dimmed':
+          hasSelection && modelValue !== (option.option_code || String(option.seq)),
+      }"
       @tap="pick(option.option_code || String(option.seq))"
     >
       <text class="choice__emoji">{{ option.emoji || "🫧" }}</text>
@@ -61,9 +66,9 @@ function pick(value: string) {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  transform: scale(0.92);
-  opacity: 0.5;
-  transition: all 0.24s $xc-ease;
+  transform: scale(1);
+  opacity: 1;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .choice--active {
@@ -71,8 +76,15 @@ function pick(value: string) {
   opacity: 1;
   color: $xc-white;
   background: linear-gradient(135deg, $xc-purple, $xc-pink);
-  box-shadow: 0 0 24rpx rgba(155, 126, 216, 0.35);
+  box-shadow:
+    0 0 20rpx rgba(155, 126, 216, 0.4),
+    0 0 40rpx rgba(155, 126, 216, 0.15);
   animation: bubblePop 0.3s $xc-spring both;
+}
+
+.choice--dimmed {
+  transform: scale(0.88);
+  opacity: 0.5;
 }
 
 .choice__emoji {

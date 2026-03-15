@@ -13,6 +13,7 @@ from app.schemas.app_capsule import (
     TimeCapsuleListResponse,
     TimeCapsuleRevealResponse,
 )
+from app.services.content_filter import ContentFilterError
 from app.services.time_capsule_service import TimeCapsuleService
 
 router = APIRouter(tags=["app-capsule"])
@@ -32,6 +33,8 @@ async def create_time_capsule(
             duration_days=payload.duration_days,
             report_id=payload.report_id,
         )
+    except ContentFilterError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     except LookupError as exc:

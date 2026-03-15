@@ -5,6 +5,7 @@ import { onLoad, onShareAppMessage, onShareTimeline } from "@dcloudio/uni-app";
 import type { MatchInviteDetail } from "@/shared/models/match";
 import { ensureAppSession } from "@/shared/services/auth";
 import { fetchMatchInviteDetail } from "@/shared/services/match";
+import { SoundManager } from "@/shared/utils/sound-manager";
 
 const sessionId = ref(0);
 const code = ref("");
@@ -12,6 +13,7 @@ const loading = ref(false);
 const invite = ref<MatchInviteDetail | null>(null);
 const error = ref("");
 const successBurst = ref(false);
+const successPlayed = ref(false);
 let pollTimer: ReturnType<typeof setInterval> | null = null;
 
 async function loadInvite() {
@@ -26,6 +28,10 @@ async function loadInvite() {
     invite.value = payload;
     if (payload.status === "COMPLETED") {
       stopPolling();
+      if (!successPlayed.value && SoundManager.isSoundEnabled()) {
+        SoundManager.play("chime");
+        successPlayed.value = true;
+      }
       successBurst.value = true;
       setTimeout(() => {
         uni.redirectTo({
@@ -75,6 +81,7 @@ function stopPolling() {
 onLoad((query) => {
   sessionId.value = Number(query?.sessionId || 0);
   code.value = typeof query?.code === "string" ? query.code : "";
+  successPlayed.value = false;
 });
 
 onMounted(() => {
@@ -148,6 +155,7 @@ onShareTimeline(() => ({
 <style lang="scss" scoped>
 .page {
   padding: 28rpx 24rpx 40rpx;
+  animation: fadeInUp 0.45s $xc-ease both;
 }
 
 .stack {

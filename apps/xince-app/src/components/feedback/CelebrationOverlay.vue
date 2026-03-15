@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, watch } from "vue";
 
+import ConfettiCanvas from "@/components/feedback/ConfettiCanvas.vue";
 import { SoundManager } from "@/shared/utils/sound-manager";
 
 interface CelebrationBadgeItem {
@@ -84,6 +85,7 @@ onBeforeUnmount(() => {
 
 <template>
   <view v-if="visible" class="celebration" @tap="closeOverlay">
+    <ConfettiCanvas :active="visible" />
     <view class="celebration__mask" />
     <view class="celebration__panel" @tap.stop>
       <view

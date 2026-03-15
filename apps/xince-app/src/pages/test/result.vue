@@ -781,6 +781,7 @@ onUnload(() => {
 <style lang="scss" scoped>
 .page {
   height: 100vh;
+  animation: fadeInUp 0.45s $xc-ease both;
 }
 
 .state-panel {

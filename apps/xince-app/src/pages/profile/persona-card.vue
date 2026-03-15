@@ -137,7 +137,7 @@ onLoad(() => {
 </template>
 
 <style scoped lang="scss">
-.page { padding: 28rpx; }
+.page { padding: 28rpx; animation: fadeInUp 0.45s $xc-ease both; }
 .stack { display: flex; flex-direction: column; gap: 18rpx; }
 .panel, .card {
   padding: 28rpx;

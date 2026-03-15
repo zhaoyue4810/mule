@@ -135,6 +135,8 @@ def test_guest_auth_and_profile_me_flow() -> None:
         updated_onboarding = update_onboarding_response.json()
         assert updated_onboarding["nickname"] == "正式昵称"
         assert updated_onboarding["avatar_value"] == "🌟"
+        assert updated_onboarding["birth_year"] == 1996
+        assert updated_onboarding["birth_month"] == 5
         assert updated_onboarding["onboarding_completed"] is True
 
         refreshed_me_response = client.get("/api/app/auth/me", headers=headers)
@@ -482,6 +484,81 @@ def test_phone_login_can_create_session_from_verification_code() -> None:
         login_payload = login_response.json()
         assert login_payload["user"]["has_phone"] is True
         assert login_payload["user"]["is_guest"] is False
+    finally:
+        app.dependency_overrides.clear()
+        import asyncio
+
+        asyncio.run(engine.dispose())
+
+
+def test_phone_send_code_is_rate_limited_within_60_seconds() -> None:
+    engine = create_async_engine("sqlite+aiosqlite:///:memory:", future=True)
+    session_factory = async_sessionmaker(engine, expire_on_commit=False)
+
+    async def override_get_db():
+        async with session_factory() as session:
+            yield session
+
+    app.dependency_overrides[get_db] = override_get_db
+
+    try:
+        import asyncio
+
+        asyncio.run(_prepare_db(engine))
+        client = TestClient(app)
+
+        first_response = client.post(
+            "/api/app/auth/phone/send-code",
+            json={"phone": "13800138001"},
+        )
+        assert first_response.status_code == 200
+
+        second_response = client.post(
+            "/api/app/auth/phone/send-code",
+            json={"phone": "13800138001"},
+        )
+        assert second_response.status_code == 422
+        assert "60 seconds" in second_response.json()["detail"]
+    finally:
+        app.dependency_overrides.clear()
+        import asyncio
+
+        asyncio.run(engine.dispose())
+
+
+def test_onboarding_rejects_blocked_content() -> None:
+    engine = create_async_engine("sqlite+aiosqlite:///:memory:", future=True)
+    session_factory = async_sessionmaker(engine, expire_on_commit=False)
+
+    async def override_get_db():
+        async with session_factory() as session:
+            yield session
+
+    app.dependency_overrides[get_db] = override_get_db
+
+    try:
+        import asyncio
+
+        asyncio.run(_prepare_db(engine))
+        client = TestClient(app)
+
+        auth_response = client.post("/api/app/auth/guest", json={"nickname": "过滤测试"})
+        headers = {"Authorization": f"Bearer {auth_response.json()['access_token']}"}
+
+        blocked_response = client.put(
+            "/api/app/profile/me/onboarding",
+            headers=headers,
+            json={
+                "nickname": "加微信聊聊",
+                "avatar_value": "🌟",
+                "bio": "正常简介",
+                "gender": 1,
+                "birth_year": 1996,
+                "birth_month": 5,
+            },
+        )
+        assert blocked_response.status_code == 400
+        assert blocked_response.json()["detail"] == "内容包含不当信息，请修改后重试"
     finally:
         app.dependency_overrides.clear()
         import asyncio

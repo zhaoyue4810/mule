@@ -31,28 +31,36 @@ function choose(value: string) {
 <template>
   <view class="versus q-enter">
     <view v-if="flash" class="edge-flash" />
-    <view
-      v-if="first"
-      class="versus__half versus__half--top"
-      :class="{
-        'versus__half--active': modelValue === (first.option_code || String(first.seq)),
-        'versus__half--dim': modelValue && modelValue !== (first.option_code || String(first.seq)),
-      }"
-      @tap="choose(first.option_code || String(first.seq))"
-    >
-      <text>{{ first.label }}</text>
-    </view>
-    <view class="versus__badge">VS</view>
-    <view
-      v-if="second"
-      class="versus__half versus__half--bottom"
-      :class="{
-        'versus__half--active': modelValue === (second.option_code || String(second.seq)),
-        'versus__half--dim': modelValue && modelValue !== (second.option_code || String(second.seq)),
-      }"
-      @tap="choose(second.option_code || String(second.seq))"
-    >
-      <text>{{ second.label }}</text>
+    <view class="versus__zone">
+      <view
+        v-if="first"
+        class="versus__option versus__option--top"
+        :class="{
+          'versus__option--selected': modelValue === (first.option_code || String(first.seq)),
+          'versus__option--dimmed': modelValue && modelValue !== (first.option_code || String(first.seq)),
+        }"
+        @tap="choose(first.option_code || String(first.seq))"
+      >
+        <view class="versus__content">
+          <text class="versus__emoji">{{ first.emoji || "🌤️" }}</text>
+          <text class="versus__label">{{ first.label }}</text>
+        </view>
+      </view>
+      <view class="versus__badge">VS</view>
+      <view
+        v-if="second"
+        class="versus__option versus__option--bottom"
+        :class="{
+          'versus__option--selected': modelValue === (second.option_code || String(second.seq)),
+          'versus__option--dimmed': modelValue && modelValue !== (second.option_code || String(second.seq)),
+        }"
+        @tap="choose(second.option_code || String(second.seq))"
+      >
+        <view class="versus__content">
+          <text class="versus__emoji">{{ second.emoji || "🌊" }}</text>
+          <text class="versus__label">{{ second.label }}</text>
+        </view>
+      </view>
     </view>
   </view>
 </template>
@@ -62,37 +70,66 @@ function choose(value: string) {
   position: relative;
   border-radius: 28rpx;
   overflow: hidden;
-  min-height: 480rpx;
 }
 
-.versus__half {
-  height: 40vh;
-  min-height: 220rpx;
-  max-height: 300rpx;
+.versus__zone {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-height: 60vh;
+}
+
+.versus__option {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  transition: all 0.3s ease;
+  min-height: 250rpx;
+}
+
+.versus__option--top {
+  border-radius: 0 0 24rpx 24rpx;
+  background: linear-gradient(135deg, #EDE5F9, #FDE6EF);
+}
+
+.versus__option--bottom {
+  border-radius: 24rpx 24rpx 0 0;
+  background: linear-gradient(135deg, #E2F5EF, #EDE5F9);
+}
+
+.versus__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14rpx;
+  text-align: center;
+  padding: 28rpx 36rpx;
+}
+
+.versus__emoji {
+  font-size: 56rpx;
+  line-height: 1;
+}
+
+.versus__label {
   font-size: 32rpx;
   font-weight: 700;
-  color: $xc-white;
-  transition: transform 0.24s $xc-ease, opacity 0.24s $xc-ease;
+  color: $xc-purple-d;
+  line-height: 1.45;
 }
 
-.versus__half--top {
-  background: linear-gradient(160deg, $xc-purple, $xc-pink);
+.versus__option--selected {
+  transform: scale(1.03);
+  filter: brightness(1.05);
 }
 
-.versus__half--bottom {
-  background: linear-gradient(160deg, $xc-mint, #6ea5d3);
-}
-
-.versus__half--active {
-  transform: scale(1.05);
-}
-
-.versus__half--dim {
-  opacity: 0.45;
-  transform: scale(0.96);
+.versus__option--dimmed {
+  transform: scale(0.97);
+  opacity: 0.6;
+  filter: brightness(0.9);
 }
 
 .versus__badge {
@@ -100,16 +137,18 @@ function choose(value: string) {
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: 92rpx;
-  height: 92rpx;
+  z-index: 2;
+  width: 64rpx;
+  height: 64rpx;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.92);
+  background: linear-gradient(135deg, #9B7ED8, #E8729A);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: $xc-purple-d;
-  font-weight: 800;
-  animation: pulse 1.8s infinite;
+  color: #fff;
+  font-weight: 900;
+  box-shadow: 0 0 16rpx rgba(155, 126, 216, 0.3);
+  animation: pulse 2s infinite;
 }
 
 .edge-flash {

@@ -61,6 +61,36 @@
       }
     },
     {
+      "path": "pages/profile/edit-profile",
+      "style": {
+        "navigationBarTitleText": "编辑资料"
+      }
+    },
+    {
+      "path": "pages/profile/about",
+      "style": {
+        "navigationBarTitleText": "关于心测"
+      }
+    },
+    {
+      "path": "pages/profile/notifications",
+      "style": {
+        "navigationBarTitleText": "消息通知"
+      }
+    },
+    {
+      "path": "pages/discover/search",
+      "style": {
+        "navigationBarTitleText": "搜索"
+      }
+    },
+    {
+      "path": "pages/discover/zodiac-detail",
+      "style": {
+        "navigationBarTitleText": "星座详情"
+      }
+    },
+    {
       "path": "pages/test/detail",
       "style": {
         "navigationBarTitleText": "测试详情"

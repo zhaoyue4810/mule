@@ -19,10 +19,22 @@ class Settings(BaseSettings):
     wx_secret: str = ""
 
     sms_provider: str = "mock"
-    sms_sign_name: str = ""
-    sms_template_code: str = ""
-    sms_access_key_id: str = ""
-    sms_access_key_secret: str = ""
+    aliyun_sms_access_key: str = Field(
+        default="",
+        validation_alias=AliasChoices("ALIYUN_SMS_ACCESS_KEY", "SMS_ACCESS_KEY_ID"),
+    )
+    aliyun_sms_secret: str = Field(
+        default="",
+        validation_alias=AliasChoices("ALIYUN_SMS_SECRET", "SMS_ACCESS_KEY_SECRET"),
+    )
+    aliyun_sms_sign_name: str = Field(
+        default="",
+        validation_alias=AliasChoices("ALIYUN_SMS_SIGN_NAME", "SMS_SIGN_NAME"),
+    )
+    aliyun_sms_template_code: str = Field(
+        default="",
+        validation_alias=AliasChoices("ALIYUN_SMS_TEMPLATE_CODE", "SMS_TEMPLATE_CODE"),
+    )
     sms_code_expire_seconds: int = 300
     sms_debug_fixed_code: str = "246810"
 

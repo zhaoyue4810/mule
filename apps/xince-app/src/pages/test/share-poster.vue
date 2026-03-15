@@ -606,6 +606,7 @@ onShareTimeline(() => ({
 <style scoped lang="scss">
 .page {
   padding: 24rpx 24rpx 40rpx;
+  animation: fadeInUp 0.45s $xc-ease both;
 }
 
 .stack {

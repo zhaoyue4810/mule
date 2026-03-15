@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { onShow } from "@dcloudio/uni-app";
 
 import XiaoCe from "./XiaoCe.vue";
@@ -10,9 +10,9 @@ const TAB_COUNT = 4;
 const tabIndex = ref(0);
 const startIndex = ref(0);
 const ready = ref(false);
-const hopping = ref(false);
+const buddyAnimClass = ref("");
 let hopInterval: ReturnType<typeof setInterval> | null = null;
-let hopTimeout: ReturnType<typeof setTimeout> | null = null;
+let bounceTimeout: ReturnType<typeof setTimeout> | null = null;
 
 const expression = computed(() => {
   if (tabIndex.value === 0) {
@@ -56,20 +56,31 @@ function syncActiveTab() {
   uni.setStorageSync(TAB_BUDDY_LAST_INDEX_KEY, active);
 }
 
+function triggerBounce() {
+  buddyAnimClass.value = "buddy-bouncing";
+  if (bounceTimeout) {
+    clearTimeout(bounceTimeout);
+  }
+  bounceTimeout = setTimeout(() => {
+    buddyAnimClass.value = "";
+  }, 600);
+}
+
 function scheduleHop() {
   if (hopInterval) {
     clearInterval(hopInterval);
   }
   hopInterval = setInterval(() => {
-    hopping.value = true;
-    if (hopTimeout) {
-      clearTimeout(hopTimeout);
-    }
-    hopTimeout = setTimeout(() => {
-      hopping.value = false;
-    }, 700);
+    triggerBounce();
   }, 15000);
 }
+
+watch(tabIndex, (value, previous) => {
+  if (!ready.value || value === previous) {
+    return;
+  }
+  triggerBounce();
+});
 
 onMounted(() => {
   syncActiveTab();
@@ -90,14 +101,14 @@ onBeforeUnmount(() => {
   if (hopInterval) {
     clearInterval(hopInterval);
   }
-  if (hopTimeout) {
-    clearTimeout(hopTimeout);
+  if (bounceTimeout) {
+    clearTimeout(bounceTimeout);
   }
 });
 </script>
 
 <template>
-  <view class="tab-buddy" :class="{ 'tab-buddy--hop': hopping }" :style="{ left }">
+  <view class="tab-buddy" :class="buddyAnimClass" :style="{ left }">
     <XiaoCe :expression="expression" size="sm" :animated="true" />
   </view>
 </template>
@@ -111,17 +122,31 @@ onBeforeUnmount(() => {
   pointer-events: none;
 }
 
-.tab-buddy--hop {
-  animation: tabBuddyHop 0.65s $xc-spring both;
+.buddy-bouncing {
+  animation: buddyBounce 0.6s ease;
 }
 
-@keyframes tabBuddyHop {
-  0%,
-  100% {
+@keyframes buddyBounce {
+  0% {
     transform: translateY(0);
   }
-  40% {
-    transform: translateY(-9px);
+  25% {
+    transform: translateY(-12rpx);
+  }
+  45% {
+    transform: translateY(0);
+  }
+  60% {
+    transform: translateY(-6rpx);
+  }
+  75% {
+    transform: translateY(0);
+  }
+  85% {
+    transform: translateY(-2rpx);
+  }
+  100% {
+    transform: translateY(0);
   }
 }
 </style>

@@ -27,8 +27,12 @@ const rightLabel = computed(() => {
 });
 const emojiMap = ["😢", "😕", "😐", "🙂", "😄"];
 const percent = computed(() => ((current.value - minVal.value) / Math.max(1, maxVal.value - minVal.value)) * 100);
-const emoji = computed(() => emojiMap[Math.min(emojiMap.length - 1, Math.max(0, Math.round(percent.value / 25)))]);
-const tooltipLabel = computed(() => props.labels?.[Math.round(current.value - minVal.value)] || `等级 ${current.value}`);
+const currentEmoji = computed(() =>
+  emojiMap[Math.min(emojiMap.length - 1, Math.max(0, Math.round(percent.value / 25)))],
+);
+const currentLabel = computed(
+  () => props.labels?.[Math.round(current.value - minVal.value)] || `等级 ${current.value}`,
+);
 
 function onInput(event: { detail: { value: number } }) {
   const value = Number(event.detail.value);
@@ -53,20 +57,28 @@ function onChange(event: { detail: { value: number } }) {
       <text>{{ labels?.[0] || "低" }}</text>
       <text>{{ rightLabel }}</text>
     </view>
-    <view class="slider__emoji" :style="{ left: `calc(${percent}% - 16rpx)` }">{{ emoji }}</view>
-    <view class="slider__tooltip" :style="{ left: `calc(${percent}% - 44rpx)` }">{{ tooltipLabel }}</view>
-    <slider
-      :value="current"
-      :min="minVal"
-      :max="maxVal"
-      :step="step ?? 1"
-      activeColor="#9B7ED8"
-      backgroundColor="#EDE5F9"
-      block-color="#ffffff"
-      block-size="20"
-      @changing="onInput"
-      @change="onChange"
-    />
+    <view class="slider__control">
+      <view class="slider__tooltip" :style="{ left: `${percent}%` }">
+        <text class="slider__tooltip-emoji">{{ currentEmoji }}</text>
+        <text class="slider__tooltip-label">{{ currentLabel }}</text>
+      </view>
+      <view class="slider__track">
+        <view class="slider__fill" :style="{ width: `${percent}%` }" />
+      </view>
+      <slider
+        class="slider__native"
+        :value="current"
+        :min="minVal"
+        :max="maxVal"
+        :step="step ?? 1"
+        activeColor="transparent"
+        backgroundColor="transparent"
+        block-color="#ffffff"
+        block-size="20"
+        @changing="onInput"
+        @change="onChange"
+      />
+    </view>
   </view>
 </template>
 
@@ -83,23 +95,60 @@ function onChange(event: { detail: { value: number } }) {
   color: $xc-muted;
 }
 
-.slider__emoji {
-  position: absolute;
-  top: 34rpx;
-  font-size: 28rpx;
-  transition: left 0.12s ease;
+.slider__control {
+  position: relative;
+  margin-top: 12rpx;
+  padding-top: 76rpx;
 }
 
 .slider__tooltip {
   position: absolute;
-  top: 4rpx;
-  padding: 4rpx 12rpx;
-  border-radius: 999rpx;
+  top: 0;
+  transform: translateX(-50%);
+  min-width: 124rpx;
+  padding: 8rpx 18rpx;
+  border-radius: 24rpx;
   background: rgba(255, 255, 255, 0.92);
   border: 1px solid rgba(155, 126, 216, 0.2);
   color: $xc-purple-d;
-  font-size: 20rpx;
+  box-shadow: 0 10rpx 24rpx rgba(155, 126, 216, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
   transition: left 0.12s ease;
+  z-index: 2;
+}
+
+.slider__tooltip-emoji {
+  font-size: 24rpx;
+}
+
+.slider__tooltip-label {
+  font-size: 20rpx;
+}
+
+.slider__track {
+  position: absolute;
+  left: 18rpx;
+  right: 18rpx;
+  top: 104rpx;
+  height: 8rpx;
+  border-radius: 999rpx;
+  background: linear-gradient(90deg, rgba(155, 126, 216, 0.28), rgba(232, 114, 154, 0.28));
+  overflow: hidden;
+}
+
+.slider__fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #B59FDD, #F4A5BF);
+  box-shadow: 0 0 12rpx rgba(180, 138, 214, 0.28);
+}
+
+.slider__native {
+  position: relative;
+  z-index: 1;
 }
 
 .edge-flash {

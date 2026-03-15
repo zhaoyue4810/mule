@@ -165,6 +165,18 @@ def test_capsule_memory_and_persona_card_flow() -> None:
         assert capsule_payload["duration_days"] == 30
         assert capsule_payload["persona_title"] == "脑洞探索家"
 
+        blocked_capsule_response = client.post(
+            "/api/app/capsule/create",
+            headers=headers,
+            json={
+                "message": "点击链接免费领礼物",
+                "duration_days": 30,
+                "report_id": report_payload["report_id"],
+            },
+        )
+        assert blocked_capsule_response.status_code == 400
+        assert blocked_capsule_response.json()["detail"] == "内容包含不当信息，请修改后重试"
+
         list_response = client.get("/api/app/capsule/list", headers=headers)
         assert list_response.status_code == 200
         list_payload = list_response.json()

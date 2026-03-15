@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, onBeforeUnmount, ref } from "vue";
 
 import type { PublishedQuestionPayload } from "@/shared/models/tests";
 import { haptic, playSound } from "@/shared/utils/sound-manager";
@@ -15,22 +15,41 @@ const emit = defineEmits<{
 
 const revealed = ref<string[]>([]);
 const flash = ref(false);
+const flippingValue = ref("");
 const cardCount = computed(() => Number((props.question.config as Record<string, unknown> | null)?.cardCount || 3));
+let flipTimer: ReturnType<typeof setTimeout> | null = null;
 
 function choose(value: string) {
+  if (flippingValue.value) {
+    return;
+  }
   if (!revealed.value.includes(value)) {
     revealed.value.push(value);
     playSound("ambient");
   }
   haptic(15);
+  flippingValue.value = value;
   flash.value = true;
   setTimeout(() => {
     flash.value = false;
   }, 300);
+  if (flipTimer) {
+    clearTimeout(flipTimer);
+  }
+  flipTimer = setTimeout(() => {
+    flippingValue.value = "";
+    flipTimer = null;
+  }, 800);
   setTimeout(() => {
     emit("update:modelValue", value);
   }, 300);
 }
+
+onBeforeUnmount(() => {
+  if (flipTimer) {
+    clearTimeout(flipTimer);
+  }
+});
 </script>
 
 <template>
@@ -42,10 +61,12 @@ function choose(value: string) {
       class="tarot__card"
       :class="{
         'tarot__card--flipped': revealed.includes(option.option_code || String(option.seq)),
+        'tarot__card--flipping': flippingValue === (option.option_code || String(option.seq)),
         'tarot__card--dim': modelValue && modelValue !== (option.option_code || String(option.seq)),
       }"
       @tap="choose(option.option_code || String(option.seq))"
     >
+      <view class="tarot__flash" />
       <view class="tarot__face tarot__face--back">✶</view>
       <view class="tarot__face tarot__face--front">
         <text class="tarot__glyph">{{ option.emoji || "🔮" }}</text>
@@ -89,6 +110,20 @@ function choose(value: string) {
   align-items: center;
   justify-content: center;
   flex-direction: column;
+}
+
+.tarot__flash {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border-radius: 20rpx;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0) 60%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.tarot__card--flipping .tarot__flash {
+  animation: tarotFlash 0.8s ease;
 }
 
 .tarot__face--back {
@@ -142,6 +177,17 @@ function choose(value: string) {
   }
   to {
     box-shadow: inset 0 0 0 14rpx rgba(124, 93, 191, 0);
+  }
+}
+
+@keyframes tarotFlash {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  45%,
+  55% {
+    opacity: 0.9;
   }
 }
 </style>

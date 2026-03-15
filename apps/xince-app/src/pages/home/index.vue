@@ -15,6 +15,7 @@ import { checkRevealableCapsules, revealTimeCapsule } from "@/shared/services/ca
 import { ensureAppSession, getSessionUser } from "@/shared/services/auth";
 import { fetchMemoryGreeting, fetchMemorySuggest } from "@/shared/services/memory";
 import { fetchMyDailyQuestion, fetchMyProfileOverview, submitMyDailyQuestion } from "@/shared/services/profile";
+import { SoundManager } from "@/shared/utils/sound-manager";
 import { useTestCatalogStore } from "@/stores/test-catalog";
 
 const store = useTestCatalogStore();
@@ -32,6 +33,12 @@ const overviewDimensions = ref<PersonaCardDimensionItem[]>([]);
 const loading = computed(() => store.loading);
 const error = computed(() => store.error);
 let bannerTimer: ReturnType<typeof setInterval> | null = null;
+
+function playIfEnabled(type: "chime" | "ding" | "whoosh" | "ambient") {
+  if (SoundManager.isSoundEnabled()) {
+    SoundManager.play(type);
+  }
+}
 
 const categoryTabs = [
   "全部",
@@ -174,11 +181,15 @@ function openSoulCard() {
 }
 
 function openNotifications() {
-  uni.showToast({ title: "通知中心即将上线", icon: "none" });
+  uni.navigateTo({
+    url: "/pages/profile/notifications",
+  });
 }
 
 function openSearch() {
-  uni.showToast({ title: "搜索页即将上线", icon: "none" });
+  uni.navigateTo({
+    url: "/pages/discover/search",
+  });
 }
 
 function openDailyPanel() {
@@ -199,6 +210,7 @@ async function answerDaily(index: number) {
   dailySubmitting.value = true;
   try {
     dailyQuestion.value = await submitMyDailyQuestion(dailyQuestion.value.question_id, index);
+    playIfEnabled("ding");
     uni.showToast({ title: "今日回答已记录", icon: "success" });
   } catch (err) {
     uni.showToast({
@@ -236,6 +248,7 @@ async function load() {
     if (capsulePayload.has_revealable && capsulePayload.items.length) {
       revealItem.value = capsulePayload.items[0];
       revealVisible.value = true;
+      playIfEnabled("chime");
     }
   } catch (err) {
     uni.showToast({

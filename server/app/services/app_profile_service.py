@@ -12,6 +12,7 @@ from app.models.report import ReportSnapshot
 from app.models.test import Test
 from app.models.user import User
 from app.services.calendar_activity_service import CalendarActivityService
+from app.services.content_filter import ContentFilterError, check_text
 from app.services.soul_fragment_service import SoulFragmentService
 
 
@@ -36,6 +37,9 @@ class AppProfileService:
         nickname = payload.nickname.strip()
         avatar_value = payload.avatar_value.strip()
         bio = payload.bio.strip()
+
+        self._ensure_text_allowed(nickname)
+        self._ensure_text_allowed(bio)
 
         if not nickname:
             raise ValueError("Nickname is required")
@@ -74,6 +78,9 @@ class AppProfileService:
 
     async def update_settings(self, user_id: int, payload) -> dict:
         user = await self._get_user(user_id)
+        for value in payload.model_dump().values():
+            if isinstance(value, str):
+                self._ensure_text_allowed(value)
         user.sound_enabled = bool(payload.sound_enabled)
         await self.db.commit()
         await self.db.refresh(user)
@@ -241,3 +248,8 @@ class AppProfileService:
             }
             for user_badge, badge in rows
         ]
+
+    def _ensure_text_allowed(self, text: str) -> None:
+        result = check_text(text)
+        if not result.passed:
+            raise ContentFilterError("内容包含不当信息，请修改后重试")

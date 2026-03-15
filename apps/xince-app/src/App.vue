@@ -24,12 +24,19 @@ function ensureH5GlobalLayers() {
     document.body.appendChild(particleLayer);
   }
 
-  if (!document.getElementById(TEXTURE_LAYER_ID)) {
-    const textureLayer = document.createElement("div");
+  let textureLayer = document.getElementById(TEXTURE_LAYER_ID) as HTMLDivElement | null;
+  if (!textureLayer) {
+    textureLayer = document.createElement("div");
     textureLayer.id = TEXTURE_LAYER_ID;
     textureLayer.className = "xc-texture-layer";
     document.body.appendChild(textureLayer);
   }
+  textureLayer.innerHTML = `
+    <svg width="100%" height="100%" style="position:absolute;inset:0;opacity:0.018;pointer-events:none">
+      <filter id="xcNoise"><feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/></filter>
+      <rect width="100%" height="100%" filter="url(#xcNoise)"/>
+    </svg>
+  `;
 }
 // #endif
 
@@ -68,7 +75,6 @@ page {
     linear-gradient(180deg, #fbf7f4 0%, #f5ede6 100%);
   color: $xc-ink;
   font-family: $xc-font-sans;
-  animation: fadeInUp 0.5s $xc-ease both;
   position: relative;
 }
 
@@ -78,7 +84,7 @@ page::after {
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.02;
+  opacity: 0.015;
   background-image:
     repeating-linear-gradient(
       45deg,
@@ -117,7 +123,7 @@ button {
 
 .xc-texture-layer {
   z-index: 0;
-  opacity: 0.02;
+  opacity: 0.015;
   background-image:
     repeating-linear-gradient(
       0deg,

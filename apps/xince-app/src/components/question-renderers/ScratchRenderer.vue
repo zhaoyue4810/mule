@@ -91,16 +91,24 @@ function drawMask() {
   const width = 640;
   const height = 360;
   ctx.clearRect(0, 0, width, height);
-  ctx.setFillStyle("rgba(190, 190, 190, 0.96)");
+  const gradient = ctx.createLinearGradient(0, 0, width, height);
+  gradient.addColorStop(0, "#C0C0C0");
+  gradient.addColorStop(0.3, "#D8D8D8");
+  gradient.addColorStop(0.5, "#A8A8A8");
+  gradient.addColorStop(0.7, "#D0D0D0");
+  gradient.addColorStop(1, "#B0B0B0");
+  ctx.setFillStyle(gradient);
   ctx.fillRect(0, 0, width, height);
-  for (let i = -height; i < width + height; i += 22) {
-    ctx.setStrokeStyle("rgba(240,240,240,0.28)");
-    ctx.setLineWidth(6);
+  (ctx as unknown as { setGlobalAlpha?: (value: number) => void }).setGlobalAlpha?.(0.08);
+  for (let i = 0; i < width + height; i += 4) {
+    ctx.setStrokeStyle("#FFFFFF");
+    ctx.setLineWidth(1);
     ctx.beginPath();
     ctx.moveTo(i, 0);
-    ctx.lineTo(i - height, height);
+    ctx.lineTo(0, i);
     ctx.stroke();
   }
+  (ctx as unknown as { setGlobalAlpha?: (value: number) => void }).setGlobalAlpha?.(1);
   ctx.draw();
 }
 

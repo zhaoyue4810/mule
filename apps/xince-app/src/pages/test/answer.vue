@@ -8,6 +8,7 @@ import ReportReveal from "@/components/feedback/ReportReveal.vue";
 import QuestionRenderer from "@/components/question-renderers/QuestionRenderer.vue";
 import type { AnswerValue } from "@/shared/models/answers";
 import type { PublishedTestQuestionnaire } from "@/shared/models/tests";
+import { SoundManager } from "@/shared/utils/sound-manager";
 import {
   clearAuthSession,
   ensureAppSession,
@@ -30,9 +31,13 @@ const microFeedbackText = ref("");
 const microFeedbackVisible = ref(false);
 const revealVisible = ref(false);
 const revealPersona = ref<{
+  name?: string | null;
   persona_name?: string | null;
   persona_key?: string | null;
+  emoji?: string | null;
   result_tier?: string | null;
+  rarity_percent?: number | null;
+  dimensions?: Array<{ name: string }>;
 } | null>(null);
 const revealScore = ref(0);
 const revealRecordId = ref(0);
@@ -84,6 +89,11 @@ function updateAnswer(value: AnswerValue) {
     ...answers.value,
     [question.seq]: value,
   };
+
+  if (SoundManager.isSoundEnabled()) {
+    SoundManager.play("whoosh");
+  }
+  SoundManager.haptic(15);
 }
 
 function previousQuestion() {
@@ -206,11 +216,22 @@ async function goNext() {
     revealRecordId.value = response.record_id;
     revealScore.value = response.total_score || 0;
     revealPersona.value = {
+      name: response.persona_name,
       persona_name: response.persona_name,
       persona_key: response.persona_key,
       result_tier:
         (response.unlocked_badges && response.unlocked_badges[0]?.name) ||
         "稀有人格",
+      dimensions:
+        Array.from(
+          new Set(
+            questionnaire.value.questions.flatMap((item) =>
+              Object.keys(item.dim_weights || {}).map((dimCode) => dimCode.toUpperCase()),
+            ),
+          ),
+        )
+          .slice(0, 5)
+          .map((name) => ({ name })),
     };
     revealVisible.value = true;
   } catch (err) {
@@ -309,6 +330,7 @@ onBeforeUnmount(() => {
 <style lang="scss" scoped>
 .page {
   padding: 28rpx;
+  animation: fadeInUp 0.45s $xc-ease both;
 }
 
 .state-card {

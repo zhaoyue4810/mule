@@ -66,7 +66,7 @@ onLoad(() => {
 </template>
 
 <style scoped lang="scss">
-.page { padding: 28rpx; }
+.page { padding: 28rpx; animation: fadeInUp 0.45s $xc-ease both; }
 .panel { padding: 28rpx; border-radius: 24rpx; background: rgba(255,255,255,0.9); border: 2rpx solid rgba(155, 126, 216,0.08); }
 .panel__title { display:block; font-size:30rpx; font-weight:700; }
 .panel__body { display:block; margin-top:14rpx; font-size:24rpx; line-height:1.7; color:$xc-muted; }

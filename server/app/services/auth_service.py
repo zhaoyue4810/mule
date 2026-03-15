@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import random
 import re
 from datetime import datetime, timedelta, timezone
 
@@ -17,10 +16,12 @@ from app.models.record import TestRecord
 from app.models.soul import TimeCapsule, UserSoulFragment
 from app.models.user import User
 from app.models.user import UserMemory, UserSetting
+from app.services.sms_service import create_sms_sender, generate_code
 
 
 PHONE_PATTERN = re.compile(r"^1\d{10}$")
 _MEMORY_CODE_STORE: dict[str, tuple[str, datetime]] = {}
+_MEMORY_SMS_LIMIT_STORE: dict[str, datetime] = {}
 
 
 class AuthService:
@@ -44,12 +45,14 @@ class AuthService:
 
     async def send_phone_code(self, phone: str) -> dict:
         normalized_phone = self._normalize_phone(phone)
+        await self._enforce_phone_send_rate_limit(normalized_phone)
         code = self._generate_phone_code()
         expires_at = datetime.now(timezone.utc) + timedelta(
             seconds=self.settings.sms_code_expire_seconds
         )
-        await self._store_phone_code(normalized_phone, code, expires_at)
         delivery = await self._deliver_phone_code(normalized_phone, code)
+        await self._store_phone_code(normalized_phone, code, expires_at)
+        await self._store_phone_send_limit(normalized_phone)
         return {
             "phone": normalized_phone,
             "expires_in_seconds": self.settings.sms_code_expire_seconds,
@@ -188,13 +191,21 @@ class AuthService:
         fixed_code = (self.settings.sms_debug_fixed_code or "").strip()
         if self.settings.app_env != "production" and fixed_code:
             return fixed_code
-        return f"{random.randint(0, 999999):06d}"
+        return generate_code()
 
     async def _deliver_phone_code(self, phone: str, code: str) -> dict:
         provider = (self.settings.sms_provider or "mock").strip().lower()
-        if provider != "mock":
-            raise RuntimeError(f"Unsupported SMS provider: {provider}")
-        return {"provider": "mock", "phone": phone, "accepted": True, "code": code}
+        sender = create_sms_sender(
+            provider=provider,
+            access_key=self.settings.aliyun_sms_access_key,
+            secret=self.settings.aliyun_sms_secret,
+            sign_name=self.settings.aliyun_sms_sign_name,
+            template_code=self.settings.aliyun_sms_template_code,
+        )
+        accepted = await sender.send_code(phone, code)
+        if not accepted:
+            raise RuntimeError("Failed to send SMS verification code")
+        return {"provider": provider, "phone": phone, "accepted": accepted}
 
     async def _store_phone_code(
         self,
@@ -216,6 +227,38 @@ class AuthService:
                 pass
 
         _MEMORY_CODE_STORE[cache_key] = (code, expires_at)
+
+    async def _store_phone_send_limit(self, phone: str) -> None:
+        cache_key = self._phone_limit_cache_key(phone)
+        expires_at = datetime.now(timezone.utc) + timedelta(seconds=60)
+        redis_client = self._get_redis_client()
+        if redis_client is not None:
+            try:
+                await redis_client.set(cache_key, "1", ex=60)
+                return
+            except Exception:
+                pass
+
+        _MEMORY_SMS_LIMIT_STORE[cache_key] = expires_at
+
+    async def _enforce_phone_send_rate_limit(self, phone: str) -> None:
+        cache_key = self._phone_limit_cache_key(phone)
+        redis_client = self._get_redis_client()
+        if redis_client is not None:
+            try:
+                if await redis_client.exists(cache_key):
+                    raise ValueError("Please wait 60 seconds before requesting another code")
+                return
+            except ValueError:
+                raise
+            except Exception:
+                pass
+
+        expires_at = _MEMORY_SMS_LIMIT_STORE.get(cache_key)
+        if expires_at and expires_at >= datetime.now(timezone.utc):
+            raise ValueError("Please wait 60 seconds before requesting another code")
+        if expires_at:
+            _MEMORY_SMS_LIMIT_STORE.pop(cache_key, None)
 
     async def _verify_phone_code(self, phone: str, code: str) -> None:
         cache_key = self._phone_code_cache_key(phone)
@@ -266,7 +309,10 @@ class AuthService:
         await self.db.commit()
 
     def _phone_code_cache_key(self, phone: str) -> str:
-        return f"auth:phone_code:{phone}"
+        return f"sms:{phone}"
+
+    def _phone_limit_cache_key(self, phone: str) -> str:
+        return f"sms_limit:{phone}"
 
     def _get_redis_client(self):
         try:

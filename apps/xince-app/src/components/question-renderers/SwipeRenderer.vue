@@ -21,8 +21,9 @@ const flying = ref<"" | "left" | "right">("");
 const startX = ref(0);
 
 const rotation = computed(() => offsetX.value * 0.1);
-const leftOpacity = computed(() => Math.min(1, Math.max(0.25, -offsetX.value / 120)));
-const rightOpacity = computed(() => Math.min(1, Math.max(0.25, offsetX.value / 120)));
+const swipeRatio = computed(() => Math.min(1, Math.abs(offsetX.value) / threshold));
+const leftOpacity = computed(() => (offsetX.value < 0 ? swipeRatio.value : 0));
+const rightOpacity = computed(() => (offsetX.value > 0 ? swipeRatio.value : 0));
 const bgTint = computed(() => {
   if (offsetX.value > 0) {
     return "rgba(124, 197, 178, 0.12)";
@@ -31,6 +32,25 @@ const bgTint = computed(() => {
     return "rgba(232, 114, 154, 0.12)";
   }
   return "rgba(255,255,255,0.88)";
+});
+const cardStyle = computed(() => {
+  const transform =
+    flying.value === "left"
+      ? "translateX(-150%) rotate(-15deg)"
+      : flying.value === "right"
+        ? "translateX(150%) rotate(15deg)"
+        : `translateX(${offsetX.value}px) rotate(${rotation.value}deg)`;
+  const transition = dragging.value
+    ? "none"
+    : flying.value
+      ? "transform 0.3s ease-out, opacity 0.3s ease-out, background 0.18s ease"
+      : "transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.18s ease";
+  return {
+    transform,
+    transition,
+    background: bgTint.value,
+    opacity: flying.value ? 0 : 1,
+  };
 });
 
 function triggerFlash() {
@@ -49,7 +69,7 @@ function commit(value: number, direction: "left" | "right") {
     emit("update:modelValue", value);
     flying.value = "";
     offsetX.value = 0;
-  }, 220);
+  }, 300);
 }
 
 function onTouchStart(event: { touches: Array<{ clientX: number }> }) {
@@ -77,6 +97,25 @@ function onTouchEnd() {
   }
   offsetX.value = 0;
 }
+
+function onMouseDown(event: { clientX: number }) {
+  dragging.value = true;
+  startX.value = event.clientX;
+}
+
+function onMouseMove(event: { clientX: number }) {
+  if (!dragging.value) {
+    return;
+  }
+  offsetX.value = Math.max(-180, Math.min(180, event.clientX - startX.value));
+}
+
+function onMouseUp() {
+  if (!dragging.value) {
+    return;
+  }
+  onTouchEnd();
+}
 </script>
 
 <template>
@@ -87,12 +126,15 @@ function onTouchEnd() {
     </text>
     <view
       class="swipe__card"
-      :class="{ 'swipe__card--left': flying === 'left', 'swipe__card--right': flying === 'right' }"
-      :style="{ transform: `translateX(${offsetX}px) rotate(${rotation}deg)`, background: bgTint }"
+      :style="cardStyle"
       @touchstart.stop.prevent="onTouchStart"
       @touchmove.stop.prevent="onTouchMove"
       @touchend.stop.prevent="onTouchEnd"
       @touchcancel.stop.prevent="onTouchEnd"
+      @mousedown.stop.prevent="onMouseDown"
+      @mousemove.stop.prevent="onMouseMove"
+      @mouseup.stop.prevent="onMouseUp"
+      @mouseleave="onMouseUp"
     >
       <text class="swipe__emoji">🫧</text>
       <text class="swipe__title">拖动选择你的倾向</text>
@@ -120,7 +162,7 @@ function onTouchEnd() {
   box-shadow: $xc-sh-md;
   padding: 38rpx 20rpx;
   text-align: center;
-  transition: transform 0.18s ease, background 0.18s ease;
+  will-change: transform, opacity;
 }
 
 .swipe__emoji {
@@ -140,6 +182,7 @@ function onTouchEnd() {
   transform: translateY(-50%);
   color: $xc-muted;
   font-size: 22rpx;
+  transition: opacity 0.12s ease;
 }
 
 .swipe__hint--left {
@@ -148,14 +191,6 @@ function onTouchEnd() {
 
 .swipe__hint--right {
   right: 8rpx;
-}
-
-.swipe__card--left {
-  animation: swipeLeft 0.2s ease forwards;
-}
-
-.swipe__card--right {
-  animation: swipeRight 0.2s ease forwards;
 }
 
 .edge-flash {
@@ -168,20 +203,6 @@ function onTouchEnd() {
 
 .q-enter {
   animation: qEnter 0.4s $xc-ease both;
-}
-
-@keyframes swipeLeft {
-  to {
-    opacity: 0;
-    transform: translateX(-300px) rotate(-16deg);
-  }
-}
-
-@keyframes swipeRight {
-  to {
-    opacity: 0;
-    transform: translateX(300px) rotate(16deg);
-  }
 }
 
 @keyframes qEnter {
