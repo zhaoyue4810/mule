@@ -15,12 +15,40 @@ const loading = ref(true);
 const error = ref("");
 
 const theme = computed(() => resolveTestTheme(detail.value?.category));
+const liveTickerItems = computed(() => {
+  if (!detail.value) {
+    return [
+      "刚刚又有 3 个人开始探索这套测试",
+      "完成后会解锁专属人格画像",
+      "报告会展示维度、画像和建议",
+    ];
+  }
+  return [
+    `${detail.value.participant_count || 0} 人正在查看这套测试`,
+    `共 ${detail.value.question_count} 题，建议凭第一直觉作答`,
+    detail.value.is_match_enabled ? "做完后还能发起好友匹配挑战" : "完成后会直接生成完整个人报告",
+  ];
+});
 const previewItems = computed(() => {
   if (!detail.value) {
-    return ["人格画像", "灵魂天气", "维度雷达"];
+    return [
+      { emoji: "🔮", label: "人格画像" },
+      { emoji: "☁️", label: "灵魂天气" },
+      { emoji: "🧭", label: "维度雷达" },
+    ];
   }
   const personaNames = detail.value.personas.slice(0, 3).map((item) => item.persona_name);
-  return personaNames.length ? personaNames : ["人格画像", "灵魂天气", "维度雷达"];
+  if (personaNames.length) {
+    return personaNames.map((item, index) => ({
+      emoji: ["🔮", "✨", "🪞"][index] || "🔮",
+      label: item,
+    }));
+  }
+  return [
+    { emoji: "🔮", label: "人格画像" },
+    { emoji: "☁️", label: "灵魂天气" },
+    { emoji: "🧭", label: "维度雷达" },
+  ];
 });
 const reviewItems = computed(() => {
   const category = detail.value?.category || "";
@@ -57,6 +85,9 @@ const detailHook = computed(() => {
   }
   return "小测悄悄说：你越诚实地作答，后面的画像就越像真正的你。";
 });
+const startButtonText = computed(() =>
+  detail.value?.is_match_enabled ? "开始挑战，看看你们有多配" : "揭开你的隐藏人格",
+);
 
 async function loadDetail(testCode: string) {
   loading.value = true;
@@ -110,8 +141,24 @@ onLoad((query) => {
       <text class="state-card__text">{{ error }}</text>
     </view>
 
-    <view v-else-if="detail" class="detail">
-      <view class="detail__hero" :class="theme.heroClass" :style="{ background: theme.gradient }">
+    <view v-else-if="detail" class="detail xc-enter">
+      <view class="detail__ticker anim-fu xc-enter xc-enter--1">
+        <text class="detail__ticker-dot" />
+        <swiper
+          class="detail__ticker-swiper"
+          autoplay
+          circular
+          interval="2800"
+          duration="500"
+          vertical
+        >
+          <swiper-item v-for="item in liveTickerItems" :key="item" class="detail__ticker-item">
+            <text>{{ item }}</text>
+          </swiper-item>
+        </swiper>
+      </view>
+
+      <view class="detail__hero xc-card-lift xc-enter xc-enter--1" :class="theme.heroClass" :style="{ background: theme.gradient }">
         <view class="detail__back" @tap="goBack">
           <text>‹</text>
         </view>
@@ -120,7 +167,7 @@ onLoad((query) => {
         <text class="detail__sub">{{ detail.category }}</text>
       </view>
 
-      <view class="detail__stats anim-si">
+      <view class="detail__stats anim-si xc-enter xc-enter--2">
         <view class="detail__stat">
           <text class="detail__stat-value">{{ detail.question_count }}</text>
           <text class="detail__stat-label">题目数</text>
@@ -135,10 +182,11 @@ onLoad((query) => {
         </view>
       </view>
 
-      <view class="detail__preview anim-fu d1">
+      <view class="detail__preview anim-fu d1 xc-card-lift xc-enter xc-enter--2">
         <view class="detail__preview-items">
-          <view v-for="item in previewItems" :key="item">
-            <text>{{ item }}</text>
+          <view v-for="item in previewItems" :key="item.label">
+            <text class="detail__preview-emoji">{{ item.emoji }}</text>
+            <text>{{ item.label }}</text>
           </view>
         </view>
         <view class="detail__preview-mask">
@@ -147,7 +195,7 @@ onLoad((query) => {
         </view>
       </view>
 
-      <view class="detail__reviews anim-fu d2">
+      <view class="detail__reviews anim-fu d2 xc-card-lift xc-enter xc-enter--3">
         <text class="detail__section-kicker">大家都说</text>
         <view v-for="item in reviewItems" :key="item.text" class="detail__review">
           <view class="detail__review-avatar" :style="{ background: item.bg }">
@@ -157,7 +205,7 @@ onLoad((query) => {
         </view>
       </view>
 
-      <view class="detail__friends anim-fu d3">
+      <view class="detail__friends anim-fu d3 xc-enter xc-enter--3">
         <view class="detail__friends-avatars">
           <text>🐱</text>
           <text>🦊</text>
@@ -166,15 +214,15 @@ onLoad((query) => {
         <text class="detail__friends-text">已有好友参与过这套测试，做完后还能一起聊结果。</text>
       </view>
 
-      <view class="detail__section anim-fu d3">
-        <text class="detail__section-title">测试说明</text>
+      <view class="detail__section anim-fu d3 xc-card-lift xc-enter xc-enter--4">
+        <text class="detail__section-title">📋 关于测试</text>
         <text class="detail__section-body">
           {{ detail.description || "这是一套兼顾趣味感和洞察力的测试，适合用几分钟看见自己更细微的一面。" }}
         </text>
       </view>
 
-      <view class="detail__section anim-fu d4">
-        <text class="detail__section-title">核心维度</text>
+      <view class="detail__section anim-fu d4 xc-card-lift xc-enter xc-enter--4">
+        <text class="detail__section-title">🎯 评估维度</text>
         <view class="detail__chips">
           <text
             v-for="item in detail.dimensions"
@@ -187,8 +235,8 @@ onLoad((query) => {
         </view>
       </view>
 
-      <view v-if="detail.personas.length" class="detail__section anim-fu d4">
-        <text class="detail__section-title">人格预览</text>
+      <view v-if="detail.personas.length" class="detail__section anim-fu d4 xc-card-lift xc-enter xc-enter--5">
+        <text class="detail__section-title">✨ 人格预览</text>
         <view class="detail__persona-list">
           <view v-for="persona in detail.personas.slice(0, 3)" :key="persona.persona_key" class="detail__persona">
             <text class="detail__persona-name">{{ persona.persona_name }}</text>
@@ -199,19 +247,19 @@ onLoad((query) => {
         </view>
       </view>
 
-      <view v-if="detail.is_match_enabled" class="detail__section anim-fu d5">
-        <text class="detail__section-title">匹配玩法</text>
+      <view v-if="detail.is_match_enabled" class="detail__section anim-fu d5 xc-card-lift xc-enter xc-enter--5">
+        <text class="detail__section-title">💕 匹配玩法</text>
         <text class="detail__section-body">
           完成答题后可以邀请另一位用户参与同一测试，系统会生成你们的专属匹配报告，看见彼此的契合与差异。
         </text>
       </view>
 
-      <view class="detail__bubble-wrap anim-fu d5">
+      <view class="detail__bubble-wrap anim-fu d5 xc-enter xc-enter--5">
         <XcBubble :text="detailHook" :persistent="true" />
       </view>
 
-      <button class="detail__button anim-fu d5" :class="`detail__button--${theme.buttonClass}`" @tap="startTest">
-        <text>开始测试</text>
+      <button class="detail__button anim-fu d5 xc-card-lift xc-enter xc-enter--5" :class="`detail__button--${theme.buttonClass}`" @tap="startTest">
+        <text>{{ startButtonText }}</text>
         <text class="detail__button-arrow">→</text>
       </button>
     </view>
@@ -283,6 +331,43 @@ onLoad((query) => {
   display: flex;
   flex-direction: column;
   gap: 20rpx;
+}
+
+.detail__ticker {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  margin: 18rpx 24rpx -4rpx;
+  padding: 10rpx 18rpx;
+  border-radius: 999rpx;
+  background: linear-gradient(90deg, rgba(237, 229, 249, 0.96), rgba(253, 230, 239, 0.92));
+  color: $xc-purple-d;
+}
+
+.detail__ticker-dot {
+  width: 12rpx;
+  height: 12rpx;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: $xc-pink;
+  box-shadow: 0 0 16rpx rgba(232, 114, 154, 0.5);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+.detail__ticker-swiper {
+  flex: 1;
+  height: 36rpx;
+}
+
+.detail__ticker-item {
+  display: flex;
+  align-items: center;
+  height: 36rpx;
+}
+
+.detail__ticker-item text {
+  font-size: 21rpx;
+  white-space: nowrap;
 }
 
 .detail__hero {
@@ -429,12 +514,18 @@ onLoad((query) => {
   justify-content: center;
   padding: 0 16rpx;
   text-align: center;
+  flex-direction: column;
+  gap: 8rpx;
 }
 
 .detail__preview-items text {
   font-size: 24rpx;
   color: $xc-purple-d;
   font-weight: 700;
+}
+
+.detail__preview-emoji {
+  font-size: 34rpx;
 }
 
 .detail__preview-mask {

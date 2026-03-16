@@ -312,8 +312,8 @@ onUnload(() => {
 </script>
 
 <template>
-  <view class="page">
-    <view class="topbar glass-strong d1">
+  <view class="page xc-enter">
+    <view class="topbar glass-strong d1 xc-card-lift">
       <view class="brand">
         <view class="brand__logo">
           <text class="brand__logo-text">心</text>
@@ -333,7 +333,7 @@ onUnload(() => {
       </view>
     </view>
 
-    <view class="search glass d1" @tap="openSearch">
+    <view class="search glass d1 xc-card-lift" @tap="openSearch">
       <text class="search__icon">🔍</text>
       <text class="search__placeholder">搜索测试、话题...</text>
     </view>
@@ -347,7 +347,7 @@ onUnload(() => {
       </view>
     </view>
 
-    <view class="hero d2">
+    <view class="hero d2 xc-card-lift">
       <view class="hero__bg">
         <view class="hero__bg-overlay" />
       </view>
@@ -372,32 +372,32 @@ onUnload(() => {
           <text class="hero__count">{{ heroParticipants }}人参与中</text>
         </view>
       </view>
-      <view class="hero__mascot">
+      <view class="hero__mascot xc-float-soft">
         <XiaoCe expression="happy" size="lg" :animated="true" />
       </view>
     </view>
 
     <view class="quick-grid d3">
-      <view class="quick-item" @tap="openSoulCard">
+      <view class="quick-item xc-card-lift" @tap="openSoulCard">
         <view class="quick-item__icon" style="background: linear-gradient(135deg, #9B7ED8, #C9B5F0)">🧬</view>
         <text class="quick-item__label">灵魂画像</text>
       </view>
-      <view class="quick-item" @tap="openMatchCenter">
+      <view class="quick-item xc-card-lift" @tap="openMatchCenter">
         <view class="quick-item__icon" style="background: linear-gradient(135deg, #E8729A, #F4A5BF)">💞</view>
         <text class="quick-item__label">灵魂匹配</text>
       </view>
-      <view class="quick-item" @tap="openDailyPanel">
+      <view class="quick-item xc-card-lift" @tap="openDailyPanel">
         <view class="quick-item__icon" style="background: linear-gradient(135deg, #7CC5B2, #A8DDD0)">📅</view>
         <text class="quick-item__label">运势日历</text>
       </view>
-      <view class="quick-item" @tap="openSoulCard">
+      <view class="quick-item xc-card-lift" @tap="openSoulCard">
         <view class="quick-item__icon" style="background: linear-gradient(135deg, #D4A853, #E5C97E)">🏅</view>
         <text class="quick-item__label">成就勋章</text>
       </view>
     </view>
 
     <view class="section d3" @tap="openSoulCard">
-      <view class="soul-card xc-card">
+      <view class="soul-card xc-card xc-card-lift">
         <view class="section__head">
           <text class="section__title">灵魂画像</text>
           <text class="section__more">查看详情 ›</text>

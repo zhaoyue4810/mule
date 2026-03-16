@@ -57,6 +57,69 @@ const posterShareText = computed(() => {
   }
   return report.value.share_card.share_text;
 });
+const posterHeroStyle = computed(() => ({
+  background:
+    report.value?.share_card.background ||
+    "linear-gradient(145deg, rgba(155,126,216,0.92), rgba(232,114,154,0.86), rgba(242,166,139,0.88))",
+}));
+const posterPersona = computed(() => report.value?.persona.persona_name || "灵魂旅人");
+const posterMeta = computed(() => {
+  if (!report.value) {
+    return [];
+  }
+  const durationMinutes = report.value.duration_seconds
+    ? `${Math.max(1, Math.round(report.value.duration_seconds / 60))} 分钟`
+    : "沉浸体验";
+  return [
+    `测试 ${report.value.test_name}`,
+    `版本 v${report.value.version}`,
+    `答题 ${report.value.answered_count} 题`,
+    durationMinutes,
+  ];
+});
+const posterPreviewLines = computed(() => {
+  if (!report.value) {
+    return [];
+  }
+  if (posterMode.value === "challenge") {
+    return [
+      challengeInvite.value?.share_message || "生成邀请后，这里会展示挑战文案和邀请码。",
+      `挑战入口 ${challengeInvite.value?.invite_code || (challengeLoading.value ? "生成中" : "待生成")}`,
+    ];
+  }
+  return report.value.share_card.highlight_lines.filter(Boolean).slice(0, 3);
+});
+const posterQuickStats = computed(() => {
+  if (!report.value) {
+    return [];
+  }
+  const chips = report.value.share_card.stat_chips.filter(Boolean).slice(0, 3);
+  if (chips.length) {
+    return chips;
+  }
+  return [
+    report.value.result_tier || "个性画像",
+    posterPersona.value,
+    `${report.value.answered_count} 题完成`,
+  ];
+});
+const posterStatusTitle = computed(() =>
+  posterMode.value === "challenge" ? "好友挑战海报" : "结果分享海报",
+);
+const posterStatusBody = computed(() => {
+  if (!report.value) {
+    return "";
+  }
+  if (posterMode.value === "challenge") {
+    return challengeInvite.value
+      ? "邀请码和分享文案已经就绪，生成图片后可以直接转发。"
+      : "先生成挑战邀请，再导出可转发的挑战海报。";
+  }
+  return "当前预览会同步你的报告主题、标签和分享文案，生成后的图片可直接保存。";
+});
+const posterActionLabel = computed(() =>
+  posterMode.value === "challenge" ? "生成挑战海报图片" : "生成分享海报图片",
+);
 
 function backResult() {
   uni.navigateBack();
@@ -503,44 +566,103 @@ onShareTimeline(() => ({
     </view>
 
     <view v-else-if="report" class="stack">
-      <view class="toolbar">
-        <button class="toolbar__back" @tap="backResult">返回报告</button>
-        <text class="toolbar__title">分享海报</text>
+      <view class="hero" :style="posterHeroStyle">
+        <view class="hero__orb hero__orb--violet" />
+        <view class="hero__orb hero__orb--pink" />
+
+        <view class="toolbar toolbar--hero">
+          <button class="toolbar__back toolbar__back--hero" @tap="backResult">返回报告</button>
+          <text class="toolbar__title toolbar__title--hero">分享创作台</text>
+        </view>
+
+        <view class="hero__topline">
+          <view>
+            <text class="hero__eyebrow">POSTER STUDIO</text>
+            <text class="hero__title">{{ posterStatusTitle }}</text>
+          </view>
+          <text class="hero__badge">{{ activeTemplate.name }}</text>
+        </view>
+
+        <view class="hero__summary">
+          <view class="hero__persona">
+            <text class="hero__persona-label">人格卡</text>
+            <text class="hero__persona-name">{{ posterPersona }}</text>
+            <text class="hero__persona-copy">{{ posterStatusBody }}</text>
+          </view>
+
+          <view class="hero__statbox">
+            <text class="hero__statbox-value">{{ posterQuickStats[0] || "已准备" }}</text>
+            <text class="hero__statbox-label">{{ posterMode === "challenge" ? "当前模式" : "当前主标签" }}</text>
+          </view>
+        </view>
+
+        <view class="hero__meta">
+          <text v-for="item in posterMeta" :key="item" class="hero-meta-chip">{{ item }}</text>
+        </view>
       </view>
 
-      <view class="selector">
-        <button
-          class="selector__button"
-          :class="{ 'selector__button--active': posterMode === 'report' }"
-          @tap="setPosterMode('report')"
-        >
-          报告分享
-        </button>
-        <button
-          class="selector__button"
-          :class="{ 'selector__button--active': posterMode === 'challenge' }"
-          @tap="setPosterMode('challenge')"
-        >
-          好友挑战
-        </button>
-      </view>
+      <view class="surface-card control-card">
+        <view class="section-head">
+          <view>
+            <text class="section-head__eyebrow">Mode Select</text>
+            <text class="section-head__title">分享模式</text>
+          </view>
+          <text class="section-head__meta">{{ posterMode === "challenge" ? "带邀请码与挑战入口" : "展示报告内容与人格卡" }}</text>
+        </view>
 
-      <scroll-view scroll-x class="template-tabs">
-        <view class="template-tabs__list">
+        <view class="selector">
           <button
-            v-for="template in sharePosterTemplates"
-            :key="template.id"
-            class="template-tabs__item"
-            :class="{ 'template-tabs__item--active': activeTemplate.id === template.id }"
-            @tap="setTemplate(template.id)"
+            class="selector__button"
+            :class="{ 'selector__button--active': posterMode === 'report' }"
+            @tap="setPosterMode('report')"
           >
-            {{ template.name }}
+            报告分享
+          </button>
+          <button
+            class="selector__button"
+            :class="{ 'selector__button--active': posterMode === 'challenge' }"
+            @tap="setPosterMode('challenge')"
+          >
+            好友挑战
           </button>
         </view>
-      </scroll-view>
+      </view>
 
-      <view class="poster-wrap">
+      <view class="surface-card template-card">
+        <view class="section-head">
+          <view>
+            <text class="section-head__eyebrow">Theme Library</text>
+            <text class="section-head__title">海报主题</text>
+          </view>
+          <text class="section-head__meta">切换后会实时更新预览与导出图</text>
+        </view>
+
+        <scroll-view scroll-x class="template-tabs">
+          <view class="template-tabs__list">
+            <button
+              v-for="template in sharePosterTemplates"
+              :key="template.id"
+              class="template-tabs__item"
+              :class="{ 'template-tabs__item--active': activeTemplate.id === template.id }"
+              @tap="setTemplate(template.id)"
+            >
+              {{ template.name }}
+            </button>
+          </view>
+        </scroll-view>
+      </view>
+
+      <view class="surface-card poster-wrap">
+        <view class="section-head">
+          <view>
+            <text class="section-head__eyebrow">Live Preview</text>
+            <text class="section-head__title">海报预览</text>
+          </view>
+          <text class="section-head__meta">{{ posterImageUrl ? "已生成图片，可直接预览或保存" : "当前是实时预览，生成后得到高清图" }}</text>
+        </view>
+
         <view class="poster-preview" :class="shareThemeClass">
+          <view class="poster-preview__shine" />
           <text class="poster-preview__eyebrow">{{ posterSubtitle }}</text>
           <text class="poster-preview__title">{{ posterTitle }}</text>
           <text class="poster-preview__accent">
@@ -548,7 +670,7 @@ onShareTimeline(() => ({
           </text>
           <view class="poster-preview__chips">
             <text
-              v-for="chip in report.share_card.stat_chips"
+              v-for="chip in posterQuickStats"
               :key="chip"
               class="poster-preview__chip"
             >
@@ -556,9 +678,14 @@ onShareTimeline(() => ({
             </text>
           </view>
           <view class="poster-preview__panel">
+            <view class="poster-preview__identity">
+              <text class="poster-preview__identity-label">{{ posterMode === "challenge" ? "邀请发起人" : "结果人格卡" }}</text>
+              <text class="poster-preview__identity-name">{{ posterPersona }}</text>
+            </view>
+
             <template v-if="posterMode === 'challenge'">
-              <text class="poster-preview__line">
-                {{ challengeInvite?.share_message || "生成挑战邀请后，这里会显示邀请码与扫码入口。" }}
+              <text v-for="line in posterPreviewLines" :key="line" class="poster-preview__line">
+                {{ line }}
               </text>
               <view class="poster-preview__qr">
                 <text class="poster-preview__qr-text">
@@ -568,7 +695,7 @@ onShareTimeline(() => ({
             </template>
             <template v-else>
               <text
-                v-for="line in report.share_card.highlight_lines"
+                v-for="line in posterPreviewLines"
                 :key="line"
                 class="poster-preview__line"
               >
@@ -582,16 +709,27 @@ onShareTimeline(() => ({
         </view>
       </view>
 
-      <view class="actions">
+      <view class="surface-card actions">
+        <view class="section-head">
+          <view>
+            <text class="section-head__eyebrow">Export</text>
+            <text class="section-head__title">导出与转发</text>
+          </view>
+          <text class="section-head__meta">{{ posterImageUrl ? "图片已生成" : "先生成，再预览或保存" }}</text>
+        </view>
+
         <button class="actions__primary" :loading="generating" @tap="generatePosterImage">
-          {{ generating ? "生成中..." : "生成海报图片" }}
+          {{ generating ? "生成中..." : posterActionLabel }}
         </button>
-        <button class="actions__secondary" @tap="copyShareText">复制文案</button>
-        <button class="actions__secondary" @tap="previewPosterImage">预览图片</button>
-        <button class="actions__secondary" @tap="savePosterImage">保存图片</button>
-        <!-- #ifdef MP-WEIXIN -->
-        <button class="actions__secondary" open-type="share">分享到微信</button>
-        <!-- #endif -->
+
+        <view class="actions__grid">
+          <button class="actions__secondary" @tap="copyShareText">复制文案</button>
+          <button class="actions__secondary" @tap="previewPosterImage">预览图片</button>
+          <button class="actions__secondary" @tap="savePosterImage">保存图片</button>
+          <!-- #ifdef MP-WEIXIN -->
+          <button class="actions__secondary" open-type="share">分享到微信</button>
+          <!-- #endif -->
+        </view>
       </view>
       <canvas
         canvas-id="posterCanvas"
@@ -605,8 +743,14 @@ onShareTimeline(() => ({
 
 <style scoped lang="scss">
 .page {
+  position: relative;
+  min-height: 100vh;
   padding: 24rpx 24rpx 40rpx;
   animation: fadeInUp 0.45s $xc-ease both;
+  background:
+    radial-gradient(circle at top left, rgba(155, 126, 216, 0.22), transparent 28%),
+    radial-gradient(circle at top right, rgba(232, 114, 154, 0.2), transparent 24%),
+    linear-gradient(180deg, #fff9f4 0%, #fffaf7 44%, #fff5f3 100%);
 }
 
 .stack {
@@ -615,16 +759,53 @@ onShareTimeline(() => ({
   gap: 18rpx;
 }
 
+.hero__orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(12px);
+  opacity: 0.75;
+  pointer-events: none;
+}
+
+.hero__orb--violet {
+  top: -40rpx;
+  right: -20rpx;
+  width: 180rpx;
+  height: 180rpx;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0));
+}
+
+.hero__orb--pink {
+  left: -30rpx;
+  bottom: -40rpx;
+  width: 220rpx;
+  height: 220rpx;
+  background: radial-gradient(circle, rgba(255, 220, 235, 0.28), rgba(255, 255, 255, 0));
+}
+
+.hero,
 .panel,
-.toolbar,
-.selector,
+.surface-card,
+.poster-wrap,
+.actions {
+  border-radius: 24rpx;
+  border: 2rpx solid rgba(155, 126, 216, 0.08);
+  box-shadow: $xc-shadow;
+}
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  padding: 28rpx;
+  color: #fff8f4;
+}
+
+.surface-card,
+.panel,
 .poster-wrap,
 .actions {
   padding: 24rpx;
-  border-radius: 24rpx;
   background: rgba(255, 252, 247, 0.96);
-  border: 2rpx solid rgba(155, 126, 216, 0.08);
-  box-shadow: $xc-shadow;
 }
 
 .panel--error {
@@ -652,12 +833,168 @@ onShareTimeline(() => ({
   justify-content: space-between;
 }
 
+.toolbar--hero {
+  position: relative;
+  z-index: 1;
+}
+
 .toolbar__back {
   min-width: 160rpx;
   border-radius: 999rpx;
   background: rgba(155, 126, 216, 0.1);
   color: $xc-accent;
   font-size: 24rpx;
+}
+
+.toolbar__back--hero {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff8f4;
+}
+
+.toolbar__title--hero {
+  color: #fff8f4;
+}
+
+.hero__topline,
+.section-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20rpx;
+}
+
+.hero__topline {
+  position: relative;
+  z-index: 1;
+  margin-top: 22rpx;
+}
+
+.hero__eyebrow,
+.section-head__eyebrow {
+  display: block;
+  font-size: 20rpx;
+  letter-spacing: 4rpx;
+  text-transform: uppercase;
+}
+
+.hero__title,
+.section-head__title {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 36rpx;
+  font-weight: 800;
+}
+
+.hero__badge {
+  flex-shrink: 0;
+  padding: 10rpx 18rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.18);
+  font-size: 22rpx;
+}
+
+.hero__summary {
+  position: relative;
+  z-index: 1;
+  margin-top: 24rpx;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 200rpx;
+  gap: 18rpx;
+}
+
+.hero__persona {
+  padding: 24rpx;
+  border-radius: 28rpx;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.hero__persona-label,
+.hero__persona-name,
+.hero__persona-copy,
+.hero__statbox-value,
+.hero__statbox-label,
+.section-head__meta {
+  display: block;
+}
+
+.hero__persona-label {
+  font-size: 21rpx;
+  color: rgba(255, 248, 244, 0.74);
+}
+
+.hero__persona-name {
+  margin-top: 10rpx;
+  font-size: 32rpx;
+  font-weight: 800;
+}
+
+.hero__persona-copy {
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  line-height: 1.75;
+  color: rgba(255, 248, 244, 0.86);
+}
+
+.hero__statbox {
+  padding: 24rpx 20rpx;
+  border-radius: 28rpx;
+  background: rgba(65, 34, 107, 0.22);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.hero__statbox-value {
+  font-size: 28rpx;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.hero__statbox-label {
+  margin-top: 10rpx;
+  font-size: 21rpx;
+  color: rgba(255, 248, 244, 0.72);
+}
+
+.hero__meta {
+  position: relative;
+  z-index: 1;
+  margin-top: 20rpx;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+}
+
+.hero-meta-chip {
+  padding: 10rpx 18rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.14);
+  font-size: 22rpx;
+}
+
+.section-head__eyebrow {
+  color: rgba(155, 126, 216, 0.82);
+}
+
+.section-head__title {
+  color: $xc-ink;
+}
+
+.section-head__meta {
+  flex-shrink: 0;
+  max-width: 220rpx;
+  font-size: 22rpx;
+  line-height: 1.6;
+  color: $xc-muted;
+  text-align: right;
+}
+
+.control-card,
+.template-card {
+  display: flex;
+  flex-direction: column;
+  gap: 18rpx;
 }
 
 .selector {
@@ -689,11 +1026,30 @@ onShareTimeline(() => ({
   min-width: 140rpx;
 }
 
+.poster-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 18rpx;
+}
+
 .poster-preview {
+  position: relative;
+  overflow: hidden;
   min-height: 860rpx;
   padding: 36rpx 32rpx;
   border-radius: 30rpx;
   color: #3A2E42;
+}
+
+.poster-preview__shine {
+  position: absolute;
+  top: -120rpx;
+  right: -40rpx;
+  width: 260rpx;
+  height: 260rpx;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.46), rgba(255, 255, 255, 0));
+  pointer-events: none;
 }
 
 .poster--sunset {
@@ -751,6 +1107,28 @@ onShareTimeline(() => ({
   min-height: 360rpx;
 }
 
+.poster-preview__identity {
+  margin-bottom: 18rpx;
+}
+
+.poster-preview__identity-label,
+.poster-preview__identity-name {
+  display: block;
+}
+
+.poster-preview__identity-label {
+  font-size: 21rpx;
+  letter-spacing: 2rpx;
+  text-transform: uppercase;
+  color: rgba(58, 46, 66, 0.58);
+}
+
+.poster-preview__identity-name {
+  margin-top: 8rpx;
+  font-size: 32rpx;
+  font-weight: 800;
+}
+
 .poster-preview__line {
   display: block;
   font-size: 26rpx;
@@ -790,7 +1168,14 @@ onShareTimeline(() => ({
 }
 
 .actions {
+  display: flex;
+  flex-direction: column;
+  gap: 18rpx;
+}
+
+.actions__grid {
   display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12rpx;
 }
 

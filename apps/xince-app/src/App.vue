@@ -255,6 +255,90 @@ button {
   }
 }
 
+@keyframes xcCascadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(22px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes xcSoftFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.xc-enter {
+  animation: xcCascadeIn 0.48s $xc-ease both;
+}
+
+.xc-enter--1 {
+  animation-delay: 0.05s;
+}
+
+.xc-enter--2 {
+  animation-delay: 0.1s;
+}
+
+.xc-enter--3 {
+  animation-delay: 0.15s;
+}
+
+.xc-enter--4 {
+  animation-delay: 0.2s;
+}
+
+.xc-enter--5 {
+  animation-delay: 0.25s;
+}
+
+.xc-card-lift {
+  transition:
+    transform 0.22s $xc-spring,
+    box-shadow 0.22s $xc-ease,
+    filter 0.22s $xc-ease;
+  will-change: transform;
+}
+
+.xc-card-lift:active {
+  transform: scale(0.985);
+}
+
+.xc-float-soft {
+  animation: xcSoftFloat 3.2s ease-in-out infinite;
+}
+
+/* #ifdef H5 */
+@media (hover: hover) and (pointer: fine) {
+  .xc-card-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 34px rgba(155, 126, 216, 0.16);
+    filter: saturate(1.03);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+/* #endif */
+
 @keyframes popIn {
   from {
     opacity: 0;

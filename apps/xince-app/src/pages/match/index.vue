@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { onShow } from "@dcloudio/uni-app";
 
 import TabBuddy from "@/components/mascot/TabBuddy.vue";
@@ -14,6 +14,9 @@ const creatingTestCode = ref("");
 const error = ref("");
 const history = ref<MatchHistoryResponse>({ items: [], duo_badges: [] });
 const tests = ref<PublishedTestSummary[]>([]);
+const animatedLeaderboardScores = ref<Record<number, number>>({});
+const animatedHistoryMeters = ref<Record<number, number>>({});
+let animationTimers: ReturnType<typeof setInterval>[] = [];
 
 const matchEnabledTests = computed(() =>
   tests.value.filter((item) => item.is_match_enabled),
@@ -197,6 +200,83 @@ function scoreLabel(score?: number | null) {
   return "互补搭档";
 }
 
+function displayLeaderboardScore(sessionId: number, score?: number | null) {
+  return animatedLeaderboardScores.value[sessionId] ?? Math.max(0, Math.min(100, score || 0));
+}
+
+function displayHistoryMeter(sessionId: number, score?: number | null) {
+  const fallback = Math.max(18, Math.min(100, score || 18));
+  return animatedHistoryMeters.value[sessionId] ?? fallback;
+}
+
+function stopAnimations() {
+  animationTimers.forEach((timer) => clearInterval(timer));
+  animationTimers = [];
+}
+
+function animateNumberMap(
+  items: Array<{ key: number; target: number }>,
+  setter: (key: number, value: number) => void,
+) {
+  stopAnimations();
+  items.forEach((item, index) => {
+    setter(item.key, 0);
+    const timer = setInterval(() => {
+      const currentValue =
+        (setter === setLeaderboardScore
+          ? animatedLeaderboardScores.value[item.key]
+          : animatedHistoryMeters.value[item.key]) || 0;
+      const next = Math.min(
+        item.target,
+        currentValue + Math.max(1, Math.ceil((item.target - currentValue) / 7)),
+      );
+      setter(item.key, next);
+      if (next >= item.target) {
+        clearInterval(timer);
+      }
+    }, 24 + index * 16);
+    animationTimers.push(timer);
+  });
+}
+
+function setLeaderboardScore(key: number, value: number) {
+  animatedLeaderboardScores.value = {
+    ...animatedLeaderboardScores.value,
+    [key]: value,
+  };
+}
+
+function setHistoryMeter(key: number, value: number) {
+  animatedHistoryMeters.value = {
+    ...animatedHistoryMeters.value,
+    [key]: value,
+  };
+}
+
+function startScoreAnimations() {
+  animateNumberMap(
+    rankedCP.value.map((item) => ({
+      key: item.session_id,
+      target: Math.max(0, Math.min(100, item.compatibility_score || 0)),
+    })),
+    setLeaderboardScore,
+  );
+
+  history.value.items.forEach((item, index) => {
+    setHistoryMeter(item.session_id, 0);
+    const target = Math.max(18, Math.min(100, item.compatibility_score || 18));
+    const timer = setInterval(() => {
+      const currentValue = animatedHistoryMeters.value[item.session_id] || 0;
+      const next = Math.min(target, currentValue + Math.max(2, Math.ceil((target - currentValue) / 6)));
+      setHistoryMeter(item.session_id, next);
+      if (next >= target) {
+        clearInterval(timer);
+      }
+    }, 30 + index * 14);
+    animationTimers.push(timer);
+  });
+}
+
 function openSession(item: MatchHistoryResponse["items"][number]) {
   if (item.status === "COMPLETED") {
     uni.navigateTo({ url: `/pages/match/report?sessionId=${item.session_id}` });
@@ -245,6 +325,11 @@ async function load() {
     ]);
     history.value = historyPayload;
     tests.value = testsPayload;
+    animatedLeaderboardScores.value = {};
+    animatedHistoryMeters.value = {};
+    setTimeout(() => {
+      startScoreAnimations();
+    }, 140);
   } catch (err) {
     error.value = err instanceof Error ? err.message : "匹配中心加载失败";
   } finally {
@@ -254,6 +339,9 @@ async function load() {
 
 onMounted(load);
 onShow(load);
+onBeforeUnmount(() => {
+  stopAnimations();
+});
 </script>
 
 <template>
@@ -262,8 +350,8 @@ onShow(load);
     <view class="page__glow page__glow--pink" />
     <view class="page__mesh" />
 
-    <view class="page__content">
-      <view class="hero">
+    <view class="page__content xc-enter">
+      <view class="hero xc-card-lift xc-enter xc-enter--1">
         <view class="hero__spark hero__spark--left" />
         <view class="hero__spark hero__spark--right" />
         <view class="hero__topline">
@@ -311,7 +399,7 @@ onShow(load);
       </view>
 
       <template v-else>
-        <view class="section-head">
+        <view class="section-head xc-enter xc-enter--2">
           <view>
             <text class="section-head__title">匹配模式</text>
             <text class="section-head__desc">
@@ -319,11 +407,11 @@ onShow(load);
             </text>
           </view>
         </view>
-        <view class="mode-grid">
+        <view class="mode-grid xc-enter xc-enter--2">
           <view
             v-for="mode in featuredModes"
             :key="mode.key"
-            class="surface-card mode-card"
+            class="surface-card mode-card xc-card-lift"
             :class="mode.className"
           >
             <view class="mode-card__head">
@@ -344,17 +432,17 @@ onShow(load);
           </view>
         </view>
 
-        <view class="section-head">
+        <view class="section-head xc-enter xc-enter--3">
           <view>
             <text class="section-head__title">最佳 CP 排行</text>
             <text class="section-head__desc">{{ leaderboardIntro }}</text>
           </view>
         </view>
-        <view v-if="rankedCP.length" class="leaderboard">
+        <view v-if="rankedCP.length" class="leaderboard xc-enter xc-enter--3">
           <view
             v-for="(item, index) in rankedCP"
             :key="`cp-${item.session_id}`"
-            class="surface-card leaderboard-card"
+            class="surface-card leaderboard-card xc-card-lift"
             @tap="openSession(item)"
           >
             <view class="leaderboard-card__rank" :class="rankStyle(index)">{{ index + 1 }}</view>
@@ -374,7 +462,7 @@ onShow(load);
               </view>
             </view>
             <view class="leaderboard-card__score">
-              <text class="leaderboard-card__score-value">{{ item.compatibility_score }}%</text>
+              <text class="leaderboard-card__score-value">{{ displayLeaderboardScore(item.session_id, item.compatibility_score) }}%</text>
               <text class="leaderboard-card__score-label">{{ scoreLabel(item.compatibility_score) }}</text>
             </view>
           </view>
@@ -384,18 +472,18 @@ onShow(load);
           <text class="panel__body">发起一场双人测试后，这里就会开始记录你们的默契排名。</text>
         </view>
 
-        <view class="section-head">
+        <view class="section-head xc-enter xc-enter--4">
           <view>
             <text class="section-head__title">我的匹配记录</text>
             <text class="section-head__desc">{{ historyIntro }}</text>
           </view>
           <text class="section-head__meta">{{ history.items.length }} 条</text>
         </view>
-        <view v-if="history.items.length" class="history-list">
+        <view v-if="history.items.length" class="history-list xc-enter xc-enter--4">
           <view
             v-for="item in history.items"
             :key="item.session_id"
-            class="surface-card history-card"
+            class="surface-card history-card xc-card-lift"
             @tap="openSession(item)"
           >
             <view class="history-card__top">
@@ -412,7 +500,7 @@ onShow(load);
             <view class="history-card__meter">
               <view
                 class="history-card__meter-fill"
-                :style="{ width: `${Math.max(18, Math.min(100, item.compatibility_score || 18))}%` }"
+                :style="{ width: `${displayHistoryMeter(item.session_id, item.compatibility_score)}%` }"
               />
             </view>
             <view class="history-card__foot">
@@ -428,18 +516,18 @@ onShow(load);
           <text class="panel__body">先发起一次邀请，等好友加入并完成作答后，就能在这里看到完整进度。</text>
         </view>
 
-        <view class="section-head">
+        <view class="section-head xc-enter xc-enter--5">
           <view>
             <text class="section-head__title">双人成就徽章</text>
             <text class="section-head__desc">{{ badgeIntro }}</text>
           </view>
           <text class="section-head__meta">{{ history.duo_badges.length }} 枚</text>
         </view>
-        <view v-if="history.duo_badges.length" class="badge-grid">
+        <view v-if="history.duo_badges.length" class="badge-grid xc-enter xc-enter--5">
           <view
             v-for="badge in history.duo_badges"
             :key="badge.badge_key"
-            class="surface-card badge-card"
+            class="surface-card badge-card xc-card-lift"
           >
             <view class="badge-card__halo" />
             <text class="badge-card__emoji">{{ badge.emoji }}</text>
@@ -453,7 +541,7 @@ onShow(load);
         </view>
 
         <button
-          class="invite-cta"
+          class="invite-cta xc-card-lift xc-enter xc-enter--5"
           :loading="creatingTestCode === (featuredModes[0]?.testCode || '')"
           @tap="createInvite(featuredModes[0]?.testCode || '')"
         >

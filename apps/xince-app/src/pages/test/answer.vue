@@ -72,6 +72,28 @@ const stageBadgeText = computed(() => {
   const dims = Object.keys(currentQuestion.value.dim_weights || {}).map((item) => item.toUpperCase());
   return dims.length ? dims.slice(0, 2).join(" / ") : "灵魂线索";
 });
+const stageInsightText = computed(() => {
+  if (!currentQuestion.value) {
+    return "";
+  }
+  const type = (currentQuestion.value.interaction_type || "").toLowerCase();
+  if (type.includes("swipe")) {
+    return "左右滑动时，优先相信你最先冒出来的判断。";
+  }
+  if (type.includes("bubble")) {
+    return "看见哪个选项先发光，就先点哪个。";
+  }
+  if (type.includes("slider")) {
+    return "把刻度停在你最舒服的位置，不用想太久。";
+  }
+  if (type.includes("star")) {
+    return "星级没有标准答案，按你真实感受来。";
+  }
+  if (type.includes("tarot")) {
+    return "翻牌前先停半秒，看看直觉想让你选哪张。";
+  }
+  return "没有标准答案，越接近直觉，结果越准。";
+});
 const assistantText = computed(() =>
   microFeedbackVisible.value && microFeedbackText.value
     ? microFeedbackText.value
@@ -340,8 +362,8 @@ onBeforeUnmount(() => {
       <text class="state-card__text">{{ error }}</text>
     </view>
 
-    <view v-else-if="questionnaire && currentQuestion" class="answer">
-      <view class="tt-top">
+    <view v-else-if="questionnaire && currentQuestion" class="answer xc-enter">
+      <view class="tt-top xc-enter xc-enter--1">
         <view class="tt-top-row">
           <button class="tt-back" @tap="goBack">←</button>
           <text class="tt-title">{{ questionnaire.name }}</text>
@@ -350,7 +372,7 @@ onBeforeUnmount(() => {
         <view class="rocket-track">
           <view class="rocket-bar" />
           <view class="rocket-fill" :style="{ width: `${progressPercent}%`, background: theme.gradient }">
-            <text class="rocket-icon">{{ theme.emoji }}</text>
+            <text class="rocket-icon">🚀</text>
           </view>
           <view class="rocket-stars">
             <text
@@ -370,11 +392,12 @@ onBeforeUnmount(() => {
 
       <view class="q-stage" :style="{ background: theme.softGradient }">
         <view :key="currentQuestion.seq" class="q-shell">
-          <view class="q-header">
-            <text class="q-num">QUESTION {{ String(currentQuestion.seq).padStart(2, "0") }}</text>
-            <view class="q-meta-row">
-              <text class="q-pill" :style="{ background: theme.chipGradient }">
-                {{ interactionUi.icon }} {{ interactionUi.label }}
+          <view class="q-header xc-enter xc-enter--1">
+              <text class="q-num">QUESTION {{ String(currentQuestion.seq).padStart(2, "0") }}</text>
+              <text class="q-kicker">{{ questionnaire.name }}</text>
+              <view class="q-meta-row">
+                <text class="q-pill" :style="{ background: theme.chipGradient }">
+                  {{ interactionUi.icon }} {{ interactionUi.label }}
               </text>
               <text class="q-pill q-pill--ghost">{{ stageBadgeText }}</text>
               <text class="q-pill q-pill--ghost">已答 {{ answeredCount }}/{{ questionnaire.question_count }}</text>
@@ -382,7 +405,7 @@ onBeforeUnmount(() => {
             <text class="q-text">{{ currentQuestion.question_text }}</text>
           </view>
 
-          <view class="q-guide">
+          <view class="q-guide xc-enter xc-enter--2">
             <view class="q-guide__mascot">
               <XiaoCe expression="thinking" size="md" :animated="true" />
             </view>
@@ -391,7 +414,15 @@ onBeforeUnmount(() => {
             </view>
           </view>
 
-          <view class="q-body" :class="{ 'q-body--advancing': advancing }">
+          <view class="q-insight xc-enter xc-enter--2">
+            <text class="q-insight__emoji">{{ interactionUi.icon }}</text>
+            <view class="q-insight__body">
+              <text class="q-insight__title">答题提示</text>
+              <text class="q-insight__text">{{ stageInsightText }}</text>
+            </view>
+          </view>
+
+          <view class="q-body xc-card-lift xc-enter xc-enter--3" :class="{ 'q-body--advancing': advancing }">
             <QuestionRenderer
               :model-value="answers[currentQuestion.seq] || {}"
               :question="currentQuestion"
@@ -400,12 +431,12 @@ onBeforeUnmount(() => {
           </view>
         </view>
 
-        <view class="q-actions">
-          <button class="q-button q-button--ghost" :disabled="currentIndex === 0" @tap="previousQuestion">
+        <view class="q-actions xc-enter xc-enter--4">
+          <button class="q-button q-button--ghost xc-card-lift" :disabled="currentIndex === 0" @tap="previousQuestion">
             上一题
           </button>
           <button
-            class="q-button q-button--primary"
+            class="q-button q-button--primary xc-card-lift"
             :disabled="!isCurrentAnswered || submitting || advancing"
             @tap="goNext"
           >
@@ -617,6 +648,13 @@ onBeforeUnmount(() => {
   color: $xc-purple;
 }
 
+.q-kicker {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: $xc-hint;
+}
+
 .q-meta-row {
   margin-top: 14rpx;
   display: flex;
@@ -664,6 +702,52 @@ onBeforeUnmount(() => {
 .q-guide__bubble {
   flex: 1;
   min-width: 0;
+}
+
+.q-insight {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+  padding: 18rpx 20rpx;
+  border-radius: 24rpx;
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid rgba(155, 126, 216, 0.08);
+}
+
+.q-insight__emoji {
+  width: 54rpx;
+  height: 54rpx;
+  flex-shrink: 0;
+  border-radius: 18rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.84);
+  font-size: 26rpx;
+  box-shadow: $xc-sh-sm;
+}
+
+.q-insight__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.q-insight__title,
+.q-insight__text {
+  display: block;
+}
+
+.q-insight__title {
+  font-size: 22rpx;
+  font-weight: 800;
+  color: $xc-ink;
+}
+
+.q-insight__text {
+  margin-top: 6rpx;
+  font-size: 22rpx;
+  line-height: 1.6;
+  color: $xc-muted;
 }
 
 .q-body {

@@ -676,7 +676,7 @@ onUnload(() => {
       <text class="state-panel__text">{{ error }}</text>
     </view>
 
-    <view v-else-if="report" class="report">
+    <view v-else-if="report" class="report xc-enter">
       <ReportHeroPanels
         :hero-style="heroStyle"
         :test-name="report.test_name"
@@ -696,7 +696,7 @@ onUnload(() => {
         @share="openSharePoster('report')"
       />
 
-      <view class="report-callout d3">
+      <view class="report-callout d3 xc-enter xc-enter--1">
         <view class="report-callout__bubble">
           <XcBubble :text="mascotComment" :typing="true" :persistent="true" />
         </view>
@@ -716,7 +716,7 @@ onUnload(() => {
         </view>
       </view>
 
-      <view class="panel panel--metaphor d4">
+      <view class="panel panel--metaphor d4 xc-card-lift xc-enter xc-enter--2">
         <view class="section-head">
           <view>
             <text class="section-eyebrow">Soul Metaphor</text>
@@ -745,7 +745,7 @@ onUnload(() => {
         </view>
       </view>
 
-      <view class="panel panel--percentile js-percentile d5">
+      <view class="panel panel--percentile js-percentile d5 xc-card-lift xc-enter xc-enter--2">
         <view class="section-head">
           <view>
             <text class="section-eyebrow">Percentile</text>
@@ -771,7 +771,7 @@ onUnload(() => {
         </view>
       </view>
 
-      <view class="panel panel--dimension">
+      <view class="panel panel--dimension xc-card-lift xc-enter xc-enter--3">
         <view class="section-head">
           <view>
             <text class="section-eyebrow">Dimension Story</text>
@@ -811,7 +811,7 @@ onUnload(() => {
         </view>
       </view>
 
-      <view class="panel weather">
+      <view class="panel weather xc-card-lift xc-enter xc-enter--3">
         <view class="section-head section-head--light">
           <view>
             <text class="section-eyebrow section-eyebrow--light">Soul Weather</text>
@@ -851,7 +851,7 @@ onUnload(() => {
         </view>
       </view>
 
-      <view class="panel panel--dna js-dna">
+      <view class="panel panel--dna js-dna xc-card-lift xc-enter xc-enter--4">
         <view class="section-head">
           <view>
             <text class="section-eyebrow">DNA Map</text>
@@ -880,7 +880,7 @@ onUnload(() => {
       </view>
 
       <view
-        class="panel hidden-persona js-hidden-persona"
+        class="panel hidden-persona js-hidden-persona xc-card-lift xc-enter xc-enter--4"
         :class="{ 'hidden-persona--unlocked': hiddenUnlocked }"
       >
         <view class="section-head section-head--light">
@@ -916,20 +916,20 @@ onUnload(() => {
         @retry="handleRetryAi"
       />
 
-      <view class="quote-card">
+      <view class="quote-card xc-enter xc-enter--5">
         <text class="quote-card__mark">“</text>
         <text class="quote-card__text">{{ quoteText }}</text>
         <text class="quote-card__attr">{{ quoteAttr }}</text>
       </view>
 
-      <view class="capsule-letter">
+      <view class="capsule-letter xc-enter xc-enter--5">
         <text class="capsule-letter__stamp">💌</text>
         <text class="capsule-letter__dear">来自未来的你</text>
         <text class="capsule-letter__text">{{ futureLetter }}</text>
         <text class="capsule-letter__sign">等下次拆封时，你会看见今天的勇气。</text>
       </view>
 
-      <view class="panel panel--capsule-input">
+      <view class="panel panel--capsule-input xc-card-lift xc-enter xc-enter--5">
         <view class="section-head">
           <view>
             <text class="section-eyebrow">Time Capsule</text>
@@ -969,15 +969,15 @@ onUnload(() => {
         </template>
       </view>
 
-      <view class="limited-banner">
+      <view class="limited-banner xc-card-lift xc-enter xc-enter--5">
         <view class="limited-banner__shine" />
         <text class="limited-banner__title">{{ limitedBannerTitle }}</text>
         <text class="limited-banner__desc">倒计时 {{ countdownText }} 后结束，快邀请好友一起测。</text>
       </view>
 
-      <view class="actions">
-        <button class="button button--primary" @tap="openSharePoster('report')">分享报告</button>
-        <button class="button button--glass" @tap="openSharePoster('challenge')">好友挑战</button>
+      <view class="actions xc-enter xc-enter--5">
+        <button class="button button--primary xc-card-lift" @tap="openSharePoster('report')">分享报告</button>
+        <button class="button button--glass xc-card-lift" @tap="openSharePoster('challenge')">好友挑战</button>
         <button class="button button--glass" @tap="goMatch">灵魂匹配</button>
       </view>
 

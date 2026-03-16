@@ -2,15 +2,17 @@
 import { computed, ref } from "vue";
 import { onLoad } from "@dcloudio/uni-app";
 
+type FortuneMetric = { label: string; score: number };
+type BestMatch = { emoji: string; name: string };
 type FortuneDetail = {
   dateRange: string;
   overall: number;
-  metrics: Array<{ label: string; score: number }>;
+  metrics: FortuneMetric[];
   luckyNumber: string;
   luckyColor: string;
   luckyDirection: string;
   advice: string;
-  bestMatches: Array<{ emoji: string; name: string }>;
+  bestMatches: BestMatch[];
 };
 
 const fortuneMap: Record<string, FortuneDetail> = {
@@ -249,12 +251,63 @@ const zodiacName = ref("白羊");
 const zodiacEmoji = ref("♈");
 
 const fortune = computed(() => fortuneMap[zodiacKey.value] || fortuneMap.aries);
+const strongestMetric = computed(
+  () => fortune.value.metrics.slice().sort((a, b) => b.score - a.score)[0] || fortune.value.metrics[0],
+);
+const growthMetric = computed(
+  () => fortune.value.metrics.slice().sort((a, b) => a.score - b.score)[0] || fortune.value.metrics[0],
+);
+const toneLabel = computed(() => {
+  const score = fortune.value.overall;
+  if (score >= 88) {
+    return "高能顺风日";
+  }
+  if (score >= 82) {
+    return "稳定发光日";
+  }
+  return "适合慢推进";
+});
+const energyMessage = computed(() => {
+  if (strongestMetric.value.label === "事业" || strongestMetric.value.label === "学业") {
+    return "今天适合把注意力放在推进目标和清晰表达上。";
+  }
+  if (strongestMetric.value.label === "爱情") {
+    return "今天的人际和亲密关系更容易出现正反馈。";
+  }
+  return "今天更适合稳住自己的节奏，先把状态养好。";
+});
 const ringStyle = computed(() => ({
-  background: `conic-gradient(#9B7ED8 0 ${fortune.value.overall}%, rgba(255,255,255,0.55) ${fortune.value.overall}% 100%)`,
+  background: `conic-gradient(#fff3bf 0 ${fortune.value.overall * 3.6}deg, rgba(255,255,255,0.12) 0)`,
 }));
+const insightCards = computed(() => [
+  {
+    eyebrow: "Today's Peak",
+    title: `${strongestMetric.value.label}能量最强`,
+    body: `当前分数 ${strongestMetric.value.score}，是今天最值得主动放大的优势区。`,
+  },
+  {
+    eyebrow: "Growth Note",
+    title: `${growthMetric.value.label}适合放慢一点`,
+    body: `分数 ${growthMetric.value.score}，先降低预期、减少内耗，状态反而会更稳。`,
+  },
+  {
+    eyebrow: "Mood Forecast",
+    title: toneLabel.value,
+    body: energyMessage.value,
+  },
+]);
+const luckyCards = computed(() => [
+  { label: "幸运数字", value: fortune.value.luckyNumber, icon: "#" },
+  { label: "幸运颜色", value: fortune.value.luckyColor, icon: "◐" },
+  { label: "幸运方位", value: fortune.value.luckyDirection, icon: "↗" },
+]);
 
 function stars(score: number) {
   return Math.max(1, Math.min(5, Math.round(score / 20)));
+}
+
+function goBack() {
+  uni.navigateBack();
 }
 
 onLoad((options) => {
@@ -266,64 +319,119 @@ onLoad((options) => {
 
 <template>
   <view class="page">
-    <view class="shell">
-      <view class="hero-card">
-        <text class="hero-card__emoji">{{ zodiacEmoji }}</text>
-        <text class="hero-card__name">{{ zodiacName }}</text>
-        <text class="hero-card__date">{{ fortune.dateRange }}</text>
-      </view>
+    <view class="page__glow page__glow--violet" />
+    <view class="page__glow page__glow--gold" />
+    <view class="page__mesh" />
 
-      <view class="card">
-        <text class="card__title">今日运势</text>
-        <view class="fortune-overview">
-          <view class="ring" :style="ringStyle">
-            <view class="ring__inner">
-              <text class="ring__score">{{ fortune.overall }}</text>
-              <text class="ring__label">综合</text>
+    <view class="page__content">
+      <view class="hero">
+        <button class="hero__back" @tap="goBack">返回</button>
+
+        <view class="hero__topline">
+          <text class="hero__eyebrow">DAILY ZODIAC</text>
+          <text class="hero__badge">{{ toneLabel }}</text>
+        </view>
+
+        <view class="hero__body">
+          <view class="hero__identity">
+            <text class="hero__emoji">{{ zodiacEmoji }}</text>
+            <view class="hero__copy">
+              <text class="hero__name">{{ zodiacName }}</text>
+              <text class="hero__date">{{ fortune.dateRange }}</text>
+              <text class="hero__desc">{{ energyMessage }}</text>
             </view>
           </view>
-          <view class="metrics">
-            <view v-for="item in fortune.metrics" :key="item.label" class="metric">
-              <view class="metric__head">
-                <text class="metric__label">{{ item.label }}</text>
-                <text class="metric__value">{{ item.score }}</text>
-              </view>
-              <view class="metric__bar">
-                <view class="metric__fill" :style="{ width: `${item.score}%` }" />
-              </view>
-              <text class="metric__stars">{{ "★".repeat(stars(item.score)) }}{{ "☆".repeat(5 - stars(item.score)) }}</text>
+
+          <view class="score-dial" :style="ringStyle">
+            <view class="score-dial__inner">
+              <text class="score-dial__value">{{ fortune.overall }}</text>
+              <text class="score-dial__label">综合运势</text>
             </view>
+          </view>
+        </view>
+
+        <view class="hero__tags">
+          <text class="hero-tag">主升维度 {{ strongestMetric.label }}</text>
+          <text class="hero-tag">建议慢放 {{ growthMetric.label }}</text>
+          <text class="hero-tag">最佳匹配 {{ fortune.bestMatches.map((item) => item.name).join(" / ") }}</text>
+        </view>
+      </view>
+
+      <view class="surface-card insight-panel">
+        <view class="section-head">
+          <view>
+            <text class="section-head__eyebrow">Energy Snapshot</text>
+            <text class="section-head__title">今天适合怎么过</text>
+          </view>
+        </view>
+
+        <view class="insight-grid">
+          <view v-for="item in insightCards" :key="item.title" class="insight-card">
+            <text class="insight-card__eyebrow">{{ item.eyebrow }}</text>
+            <text class="insight-card__title">{{ item.title }}</text>
+            <text class="insight-card__body">{{ item.body }}</text>
           </view>
         </view>
       </view>
 
-      <view class="card">
-        <text class="card__title">幸运信息</text>
+      <view class="surface-card metrics-panel">
+        <view class="section-head">
+          <view>
+            <text class="section-head__eyebrow">Metric Board</text>
+            <text class="section-head__title">分项运势</text>
+          </view>
+          <text class="section-head__meta">五星与分值同步显示</text>
+        </view>
+
+        <view class="metric-list">
+          <view v-for="item in fortune.metrics" :key="item.label" class="metric-card">
+            <view class="metric-card__row">
+              <text class="metric-card__label">{{ item.label }}</text>
+              <text class="metric-card__value">{{ item.score }}</text>
+            </view>
+            <view class="metric-card__bar">
+              <view class="metric-card__fill" :style="{ width: `${item.score}%` }" />
+            </view>
+            <text class="metric-card__stars">
+              {{ "★".repeat(stars(item.score)) }}{{ "☆".repeat(5 - stars(item.score)) }}
+            </text>
+          </view>
+        </view>
+      </view>
+
+      <view class="surface-card luck-panel">
+        <view class="section-head">
+          <view>
+            <text class="section-head__eyebrow">Lucky Signals</text>
+            <text class="section-head__title">幸运信息</text>
+          </view>
+        </view>
+
         <view class="lucky-grid">
-          <view class="lucky-item">
-            <text class="lucky-item__label">幸运数字</text>
-            <text class="lucky-item__value">{{ fortune.luckyNumber }}</text>
-          </view>
-          <view class="lucky-item">
-            <text class="lucky-item__label">幸运颜色</text>
-            <text class="lucky-item__value">{{ fortune.luckyColor }}</text>
-          </view>
-          <view class="lucky-item">
-            <text class="lucky-item__label">幸运方位</text>
-            <text class="lucky-item__value">{{ fortune.luckyDirection }}</text>
+          <view v-for="item in luckyCards" :key="item.label" class="lucky-card">
+            <text class="lucky-card__icon">{{ item.icon }}</text>
+            <text class="lucky-card__label">{{ item.label }}</text>
+            <text class="lucky-card__value">{{ item.value }}</text>
           </view>
         </view>
       </view>
 
-      <view class="card">
-        <text class="card__title">今日建议</text>
-        <text class="advice">{{ fortune.advice }}</text>
-        <view class="match-row">
-          <text class="match-row__label">最佳匹配</text>
-          <view class="match-row__chips">
+      <view class="surface-card advice-panel">
+        <view class="section-head">
+          <view>
+            <text class="section-head__eyebrow">Advice</text>
+            <text class="section-head__title">今日建议</text>
+          </view>
+        </view>
+
+        <text class="advice-panel__text">{{ fortune.advice }}</text>
+
+        <view class="match-strip">
+          <text class="match-strip__label">最佳共振星座</text>
+          <view class="match-strip__chips">
             <view v-for="item in fortune.bestMatches" :key="item.name" class="match-chip">
-              <text>{{ item.emoji }}</text>
-              <text>{{ item.name }}</text>
+              <text class="match-chip__emoji">{{ item.emoji }}</text>
+              <text class="match-chip__name">{{ item.name }}</text>
             </view>
           </view>
         </view>
@@ -334,204 +442,389 @@ onLoad((options) => {
 
 <style scoped lang="scss">
 .page {
+  position: relative;
   min-height: 100vh;
-  padding: 28rpx 24rpx 56rpx;
-  animation: fadeInUp 0.45s $xc-ease both;
+  overflow: hidden;
   background:
-    radial-gradient(circle at top right, rgba(232, 114, 154, 0.12), transparent 26%),
-    radial-gradient(circle at top left, rgba(155, 126, 216, 0.18), transparent 30%),
-    $xc-bg;
+    radial-gradient(circle at top left, rgba(155, 126, 216, 0.26), transparent 28%),
+    radial-gradient(circle at top right, rgba(255, 228, 179, 0.34), transparent 24%),
+    linear-gradient(180deg, #fff8ef 0%, #fffaf6 52%, #fff6f3 100%);
 }
 
-.shell {
+.page__glow,
+.page__mesh {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.page__glow {
+  filter: blur(14px);
+  opacity: 0.9;
+}
+
+.page__glow--violet {
+  background: radial-gradient(circle at 18% 16%, rgba(155, 126, 216, 0.28), transparent 25%);
+}
+
+.page__glow--gold {
+  background: radial-gradient(circle at 82% 12%, rgba(255, 214, 102, 0.28), transparent 22%);
+}
+
+.page__mesh {
+  opacity: 0.22;
+  background-image:
+    linear-gradient(rgba(155, 126, 216, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(155, 126, 216, 0.05) 1px, transparent 1px);
+  background-size: 28rpx 28rpx;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.48), transparent 80%);
+}
+
+.page__content {
+  position: relative;
+  z-index: 1;
+  padding: 28rpx 24rpx 56rpx;
   display: flex;
   flex-direction: column;
   gap: 20rpx;
+  animation: fade-in-up 0.45s $xc-ease both;
 }
 
-.hero-card,
-.card {
-  @include card-base;
+.hero,
+.surface-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 34rpx;
+  border: 2rpx solid rgba(255, 255, 255, 0.58);
+  box-shadow: 0 24rpx 54rpx rgba(98, 78, 137, 0.12);
 }
 
-.hero-card {
-  padding: 38rpx 30rpx;
-  text-align: center;
-  background:
-    radial-gradient(circle at top, rgba(255, 244, 214, 0.92), rgba(245, 236, 255, 0.9)),
-    linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(248, 242, 255, 0.88));
-}
-
-.hero-card__emoji {
-  display: block;
-  font-size: 88rpx;
-}
-
-.hero-card__name {
-  display: block;
-  margin-top: 12rpx;
-  font-size: 42rpx;
-  font-weight: 800;
-  color: $xc-ink;
-}
-
-.hero-card__date {
-  display: block;
-  margin-top: 8rpx;
-  font-size: 24rpx;
-  color: $xc-muted;
-}
-
-.card {
+.hero {
   padding: 28rpx;
+  background:
+    radial-gradient(circle at top right, rgba(255, 255, 255, 0.52), transparent 26%),
+    linear-gradient(145deg, rgba(121, 89, 192, 0.94), rgba(232, 114, 154, 0.88), rgba(255, 202, 116, 0.86));
+  color: #fff9f1;
 }
 
-.card__title {
-  display: block;
-  font-size: 30rpx;
-  font-weight: 700;
-  color: $xc-ink;
+.hero__back {
+  width: 132rpx;
+  height: 64rpx;
+  margin: 0;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff9f1;
+  font-size: 24rpx;
+  line-height: 64rpx;
 }
 
-.fortune-overview {
-  margin-top: 18rpx;
+.hero__topline,
+.section-head {
   display: flex;
-  flex-direction: column;
-  gap: 22rpx;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20rpx;
 }
 
-.ring {
+.hero__topline {
+  margin-top: 18rpx;
+}
+
+.hero__eyebrow,
+.section-head__eyebrow {
+  display: block;
+  font-size: 20rpx;
+  letter-spacing: 4rpx;
+  text-transform: uppercase;
+}
+
+.hero__badge {
+  flex-shrink: 0;
+  padding: 10rpx 18rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.18);
+  font-size: 22rpx;
+}
+
+.hero__body {
+  margin-top: 24rpx;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220rpx;
+  gap: 22rpx;
+  align-items: center;
+}
+
+.hero__identity {
+  display: flex;
+  gap: 20rpx;
+  align-items: flex-start;
+}
+
+.hero__emoji {
+  flex-shrink: 0;
+  width: 108rpx;
+  height: 108rpx;
+  border-radius: 32rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.14);
+  font-size: 64rpx;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.hero__name {
+  display: block;
+  font-size: 52rpx;
+  font-weight: 800;
+}
+
+.hero__date,
+.hero__desc {
+  display: block;
+}
+
+.hero__date {
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  opacity: 0.88;
+}
+
+.hero__desc {
+  margin-top: 16rpx;
+  font-size: 25rpx;
+  line-height: 1.7;
+  color: rgba(255, 249, 241, 0.92);
+}
+
+.score-dial {
   width: 220rpx;
   height: 220rpx;
-  margin: 0 auto;
   border-radius: 50%;
   padding: 14rpx;
+  justify-self: end;
 }
 
-.ring__inner {
+.score-dial__inner {
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(85, 58, 132, 0.54);
+  backdrop-filter: blur(20px);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
 }
 
-.ring__score {
-  font-size: 56rpx;
+.score-dial__value {
+  font-size: 62rpx;
   font-weight: 800;
-  color: $xc-purple-d;
 }
 
-.ring__label {
-  margin-top: 6rpx;
+.score-dial__label {
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: rgba(255, 249, 241, 0.84);
+}
+
+.hero__tags {
+  margin-top: 24rpx;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+}
+
+.hero-tag {
+  padding: 10rpx 18rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.14);
+  font-size: 22rpx;
+}
+
+.surface-card {
+  padding: 26rpx;
+  background: rgba(255, 251, 247, 0.92);
+  backdrop-filter: blur(20px);
+}
+
+.section-head__eyebrow {
+  color: rgba(121, 89, 192, 0.8);
+}
+
+.section-head__title {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 34rpx;
+  font-weight: 800;
+  color: $xc-ink;
+}
+
+.section-head__meta {
+  flex-shrink: 0;
   font-size: 22rpx;
   color: $xc-muted;
 }
 
-.metrics {
+.insight-grid,
+.metric-list {
   display: flex;
   flex-direction: column;
   gap: 16rpx;
 }
 
-.metric {
-  padding: 18rpx 20rpx;
-  border-radius: 22rpx;
-  background: rgba(248, 246, 255, 0.9);
+.insight-grid {
+  margin-top: 22rpx;
 }
 
-.metric__head {
+.insight-card,
+.metric-card,
+.lucky-card,
+.match-chip {
+  border-radius: 24rpx;
+}
+
+.insight-card {
+  padding: 22rpx;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.84), rgba(252, 244, 255, 0.92)),
+    rgba(255, 255, 255, 0.72);
+  border: 2rpx solid rgba(155, 126, 216, 0.1);
+}
+
+.insight-card__eyebrow {
+  display: block;
+  font-size: 19rpx;
+  letter-spacing: 3rpx;
+  text-transform: uppercase;
+  color: rgba(155, 126, 216, 0.82);
+}
+
+.insight-card__title {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 29rpx;
+  font-weight: 700;
+  color: $xc-ink;
+}
+
+.insight-card__body {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  line-height: 1.7;
+  color: $xc-muted;
+}
+
+.metrics-panel {
+  gap: 18rpx;
+}
+
+.metric-list {
+  margin-top: 22rpx;
+}
+
+.metric-card {
+  padding: 20rpx;
+  background: rgba(247, 243, 255, 0.88);
+}
+
+.metric-card__row {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-.metric__label,
-.metric__value {
-  font-size: 24rpx;
+.metric-card__label,
+.metric-card__value {
+  font-size: 25rpx;
   color: $xc-ink;
 }
 
-.metric__value {
-  font-weight: 700;
+.metric-card__value {
+  font-weight: 800;
 }
 
-.metric__bar {
-  margin-top: 12rpx;
-  height: 12rpx;
+.metric-card__bar {
+  margin-top: 14rpx;
+  height: 14rpx;
   border-radius: 999rpx;
-  background: rgba(155, 126, 216, 0.12);
   overflow: hidden;
+  background: rgba(155, 126, 216, 0.14);
 }
 
-.metric__fill {
+.metric-card__fill {
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, $xc-purple, $xc-pink);
+  background: linear-gradient(90deg, #9b7ed8, #f3b96f);
 }
 
-.metric__stars {
+.metric-card__stars {
   display: block;
   margin-top: 10rpx;
   font-size: 22rpx;
-  color: $xc-gold;
+  color: #d7a632;
 }
 
 .lucky-grid {
-  margin-top: 18rpx;
+  margin-top: 22rpx;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14rpx;
 }
 
-.lucky-item {
-  padding: 18rpx 14rpx;
-  border-radius: 22rpx;
-  background: rgba(248, 246, 255, 0.92);
+.lucky-card {
+  padding: 22rpx 16rpx;
   text-align: center;
+  background: linear-gradient(180deg, rgba(255, 245, 216, 0.88), rgba(255, 255, 255, 0.9));
 }
 
-.lucky-item__label {
+.lucky-card__icon {
   display: block;
+  font-size: 28rpx;
+  font-weight: 700;
+  color: rgba(121, 89, 192, 0.72);
+}
+
+.lucky-card__label {
+  display: block;
+  margin-top: 8rpx;
   font-size: 21rpx;
   color: $xc-muted;
 }
 
-.lucky-item__value {
+.lucky-card__value {
   display: block;
-  margin-top: 8rpx;
-  font-size: 27rpx;
-  font-weight: 700;
+  margin-top: 10rpx;
+  font-size: 28rpx;
+  font-weight: 800;
   color: $xc-ink;
 }
 
-.advice {
+.advice-panel__text {
   display: block;
-  margin-top: 18rpx;
-  font-size: 25rpx;
-  line-height: 1.8;
-  color: $xc-muted;
+  margin-top: 22rpx;
+  font-size: 26rpx;
+  line-height: 1.9;
+  color: rgba(58, 46, 66, 0.78);
 }
 
-.match-row {
-  margin-top: 20rpx;
+.match-strip {
+  margin-top: 24rpx;
 }
 
-.match-row__label {
+.match-strip__label {
   display: block;
   font-size: 24rpx;
   font-weight: 700;
   color: $xc-ink;
 }
 
-.match-row__chips {
-  margin-top: 12rpx;
+.match-strip__chips {
+  margin-top: 14rpx;
   display: flex;
-  gap: 12rpx;
   flex-wrap: wrap;
+  gap: 12rpx;
 }
 
 .match-chip {
@@ -539,16 +832,23 @@ onLoad((options) => {
   align-items: center;
   gap: 10rpx;
   padding: 12rpx 18rpx;
-  border-radius: 999rpx;
-  background: linear-gradient(135deg, rgba(237, 229, 249, 0.94), rgba(253, 230, 239, 0.92));
+  background: linear-gradient(145deg, rgba(236, 228, 252, 0.96), rgba(255, 238, 228, 0.92));
   color: $xc-purple-d;
-  font-size: 23rpx;
 }
 
-@keyframes fadeInUp {
+.match-chip__emoji {
+  font-size: 24rpx;
+}
+
+.match-chip__name {
+  font-size: 23rpx;
+  font-weight: 700;
+}
+
+@keyframes fade-in-up {
   from {
     opacity: 0;
-    transform: translateY(16rpx);
+    transform: translateY(18rpx);
   }
 
   to {

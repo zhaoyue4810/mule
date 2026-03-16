@@ -92,6 +92,8 @@ const statDisplay = ref({
   matchCount: 0,
   pendingCount: 0,
 });
+const soulProgressDisplay = ref(0);
+const memoryLevelDisplay = ref(0);
 const selectedBadge = ref<ProfileBadgeItem | null>(null);
 const badgeSheetVisible = computed({
   get: () => Boolean(selectedBadge.value),
@@ -102,6 +104,7 @@ const badgeSheetVisible = computed({
   },
 });
 let statsObserver: UniApp.IntersectionObserver | null = null;
+let progressTimers: ReturnType<typeof setInterval>[] = [];
 const instance = getCurrentInstance();
 
 function playIfEnabled(type: "chime" | "ding" | "whoosh" | "ambient") {
@@ -605,6 +608,7 @@ async function loadProfile() {
     dailyQuestion.value = await fetchMyDailyQuestion();
     capsules.value = (await fetchCapsules()).items;
     profileSettings.value = await fetchMyProfileSettings();
+    startProfileProgressMotion();
   } catch (err) {
     if (
       err instanceof Error &&
@@ -802,6 +806,36 @@ function startStatsCountUp() {
   });
 }
 
+function stopProgressTimers() {
+  progressTimers.forEach((timer) => clearInterval(timer));
+  progressTimers = [];
+}
+
+function animateProgressValue(
+  targetRef: typeof soulProgressDisplay,
+  target: number,
+  interval: number,
+) {
+  targetRef.value = 0;
+  const timer = setInterval(() => {
+    const next = Math.min(
+      target,
+      targetRef.value + Math.max(1, Math.ceil((target - targetRef.value) / 8)),
+    );
+    targetRef.value = next;
+    if (next >= target) {
+      clearInterval(timer);
+    }
+  }, interval);
+  progressTimers.push(timer);
+}
+
+function startProfileProgressMotion() {
+  stopProgressTimers();
+  animateProgressValue(soulProgressDisplay, soulProgress.value, 28);
+  animateProgressValue(memoryLevelDisplay, greeting.value?.know_level || 0, 34);
+}
+
 function initStatsObserver() {
   if (!instance?.proxy) {
     return;
@@ -856,6 +890,7 @@ onReady(() => {
 onUnload(() => {
   statsObserver?.disconnect();
   statsObserver = null;
+  stopProgressTimers();
 });
 </script>
 
@@ -864,7 +899,7 @@ onUnload(() => {
     <view class="page__glow page__glow--violet" />
     <view class="page__glow page__glow--pink" />
     <view class="page__mesh" />
-    <view class="page__content">
+    <view class="page__content xc-enter">
     <view v-if="!hasProfile && !loading && !error" class="panel panel--empty">
       <text class="panel__title">你的旅程还没开始</text>
       <text class="panel__body">
@@ -892,7 +927,7 @@ onUnload(() => {
         @go-settings="goSettings"
       />
 
-      <view class="panel soul-panel">
+      <view class="panel soul-panel xc-card-lift xc-enter xc-enter--1">
         <view class="panel__head">
           <text class="panel__title">灵魂画像</text>
           <text class="panel__head-link" @tap="soulExpanded = !soulExpanded">
@@ -906,9 +941,9 @@ onUnload(() => {
           <view class="soul-panel__meta">
             <text class="soul-panel__level">Lv.{{ soulLevel }} 灵魂等级</text>
             <view class="soul-panel__track">
-              <view class="soul-panel__fill" :style="{ width: `${soulProgress}%` }" />
+              <view class="soul-panel__fill" :style="{ width: `${soulProgressDisplay}%` }" />
             </view>
-            <text class="soul-panel__progress">距离下一级 {{ 100 - soulProgress }}%</text>
+            <text class="soul-panel__progress">距离下一级 {{ 100 - soulProgressDisplay }}%</text>
             <view class="soul-panel__tags">
               <text v-for="item in overview.dominant_dimensions" :key="item.dim_code" class="soul-tag">
                 {{ item.dim_code.toUpperCase() }}
@@ -924,17 +959,17 @@ onUnload(() => {
         </view>
       </view>
 
-      <view class="panel memory-panel">
+      <view class="panel memory-panel xc-card-lift xc-enter xc-enter--2">
         <view class="memory-panel__head">
           <XiaoCe expression="happy" size="sm" :animated="true" />
           <text class="panel__title">小测的记忆</text>
         </view>
         <text class="panel__body">{{ greeting?.greeting || "小测正在学习你的节奏" }}</text>
         <view class="memory-panel__track">
-          <view class="memory-panel__fill" :style="{ width: `${greeting?.know_level || 0}%` }" />
+          <view class="memory-panel__fill" :style="{ width: `${memoryLevelDisplay}%` }" />
         </view>
         <text class="memory-panel__meta">
-          熟悉度 {{ greeting?.know_level || 0 }}% · {{ memoryLevel }}
+          熟悉度 {{ memoryLevelDisplay }}% · {{ memoryLevel }}
         </text>
         <text class="memory-panel__meta">{{ memoryRecent }}</text>
         <text class="memory-panel__meta">
@@ -955,7 +990,7 @@ onUnload(() => {
         @open-badge="openBadgeDetail"
       />
 
-      <view class="panel panel--calendar" v-if="overview.calendar_heatmap.length">
+      <view class="panel panel--calendar xc-card-lift xc-enter xc-enter--3" v-if="overview.calendar_heatmap.length">
         <view class="calendar-hero">
           <view class="calendar-hero__copy">
             <text class="panel__eyebrow">MOOD CALENDAR</text>
