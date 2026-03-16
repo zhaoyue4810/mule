@@ -76,6 +76,8 @@ export interface MatchHistoryItem {
   test_code: string;
   test_name: string;
   status: string;
+  invite_code: string;
+  invite_link?: string | null;
   partner?: MatchUserSummary | null;
   compatibility_score?: number | null;
   tier?: string | null;

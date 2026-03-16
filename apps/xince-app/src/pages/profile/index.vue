@@ -194,6 +194,62 @@ const miniStats = computed(() => [
     value: `${calendarStats.value?.best_streak || 0}`,
   },
 ]);
+const calendarTone = computed(() => {
+  const mood = calendarStats.value?.average_mood || 0;
+  if (mood >= 4.5) {
+    return {
+      emoji: "☀️",
+      title: "晴空高能",
+      body: "最近的状态很亮，适合去开启一段新的探索。",
+    };
+  }
+  if (mood >= 3.5) {
+    return {
+      emoji: "🌤️",
+      title: "微风顺流",
+      body: "节奏稳定而柔和，适合把灵感继续推进一点点。",
+    };
+  }
+  if (mood >= 2.5) {
+    return {
+      emoji: "⛅",
+      title: "云层轻覆",
+      body: "最近稍微有点慢下来，记录会帮你重新看见自己的变化。",
+    };
+  }
+  if (mood > 0) {
+    return {
+      emoji: "🌧️",
+      title: "细雨修复",
+      body: "先温柔照顾自己，留下一点心情，也是在收集能量。",
+    };
+  }
+  return {
+    emoji: "🌙",
+    title: "等待落笔",
+    body: "从今天开始记录之后，这里会慢慢形成专属于你的天气图。",
+  };
+});
+const calendarActivityTotal = computed(() =>
+  (overview.value?.calendar_heatmap || []).reduce(
+    (total, item) => total + item.activity_count,
+    0,
+  ),
+);
+const dailyQuestionOptionCards = computed(() =>
+  (dailyQuestion.value?.options || []).map((option, index) => ({
+    option,
+    index,
+    label: String.fromCharCode(65 + index),
+    emoji: ["🕊️", "🌸", "⚡", "🌙", "💭", "✨"][index % 6],
+  })),
+);
+const retroQuestionCards = computed(() =>
+  (dailyQuestion.value?.retroactive_dates || []).map((date, index) => ({
+    date,
+    emoji: ["🪄", "🌙", "💌"][index % 3],
+  })),
+);
 const todayDateText = `${new Date().getFullYear()}-${`${new Date().getMonth() + 1}`.padStart(2, "0")}-${`${new Date().getDate()}`.padStart(2, "0")}`;
 const matchReports = computed(() =>
   reports.value.filter(
@@ -212,6 +268,23 @@ const pendingUnlockCount = computed(() => {
     0,
   );
 });
+const fragmentCompletionRate = computed(() => {
+  const total = overview.value?.fragment_progress.reduce(
+    (sum, item) => sum + item.total_count,
+    0,
+  ) || 0;
+  if (!total) {
+    return 0;
+  }
+  const unlocked = overview.value?.fragment_progress.reduce(
+    (sum, item) => sum + item.unlocked_count,
+    0,
+  ) || 0;
+  return Math.round((unlocked / total) * 100);
+});
+const fragmentCompletedCount = computed(() =>
+  overview.value?.fragment_progress.filter((item) => item.completed).length || 0,
+);
 const statTargets = computed(() => ({
   testCount: overview.value?.test_count || 0,
   matchCount: matchReports.value.length,
@@ -246,6 +319,72 @@ const duoBadges = computed(() =>
     return key.includes("match") || key.includes("duo") || key.includes("pair") || key.includes("cp");
   }),
 );
+const capsuleUnlockedCount = computed(() =>
+  capsules.value.filter((item) => item.is_unlocked).length,
+);
+const accountStatusCards = computed(() => [
+  {
+    key: "session",
+    emoji: sessionUser.value?.is_guest ? "👣" : "🪪",
+    title: sessionUser.value?.is_guest ? "访客档案" : "正式账号",
+    body: sessionUser.value?.is_guest
+      ? "当前记录保存在这台设备里，建议尽快绑定，避免换设备后丢失。"
+      : "你的灵魂档案会跟随账号同步，跨设备也能继续接力。",
+  },
+  {
+    key: "wechat",
+    emoji: "💬",
+    title:
+      isWechatMiniProgram.value && sessionUser.value?.has_openid
+        ? "已连接微信"
+        : "微信身份",
+    body: isWechatMiniProgram.value
+      ? sessionUser.value?.has_openid
+        ? "小程序内会优先复用当前身份，回到测试时不用重新建立新档案。"
+        : "还可以升级成微信身份，并把当前记录完整保留下来。"
+      : "H5 先保留轻量体验，进入小程序后也能继续升级身份。",
+  },
+  {
+    key: "phone",
+    emoji: "📱",
+    title: sessionUser.value?.has_phone ? "手机号已绑定" : "手机号未绑定",
+    body: sessionUser.value?.has_phone
+      ? `当前账号已绑定 ${sessionUser.value.masked_phone || "手机号"}，验证码登录和历史同步已开启。`
+      : "绑定手机号后，测试记录、报告、碎片与徽章都能跨设备找回。",
+  },
+]);
+const settingMenuItems = computed(() => [
+  {
+    key: "edit" as const,
+    icon: "👤",
+    label: "编辑资料",
+    description: "更新头像、昵称和签名，让你的名片更像现在的你。",
+  },
+  {
+    key: "sound" as const,
+    icon: "🔊",
+    label: "声音与触感",
+    description: "控制音效、轻触反馈和答题时的沉浸感节奏。",
+  },
+  {
+    key: "notify" as const,
+    icon: "🔔",
+    label: "通知设置",
+    description: "集中查看匹配提醒、报告生成和系统动态。",
+  },
+  {
+    key: "privacy" as const,
+    icon: "🛡️",
+    label: "隐私设置",
+    description: "管理资料展示和数据可见范围，保护你的灵魂档案。",
+  },
+  {
+    key: "about" as const,
+    icon: "💜",
+    label: "关于心测",
+    description: "查看品牌介绍、核心能力与版本说明。",
+  },
+]);
 const memoryLevel = computed(() => {
   const value = greeting.value?.know_level || 0;
   if (value >= 85) {
@@ -722,6 +861,10 @@ onUnload(() => {
 
 <template>
   <view class="page">
+    <view class="page__glow page__glow--violet" />
+    <view class="page__glow page__glow--pink" />
+    <view class="page__mesh" />
+    <view class="page__content">
     <view v-if="!hasProfile && !loading && !error" class="panel panel--empty">
       <text class="panel__title">你的旅程还没开始</text>
       <text class="panel__body">
@@ -812,15 +955,33 @@ onUnload(() => {
         @open-badge="openBadgeDetail"
       />
 
-      <view class="panel" v-if="overview.calendar_heatmap.length">
-        <view class="calendar-panel__header">
-          <view>
+      <view class="panel panel--calendar" v-if="overview.calendar_heatmap.length">
+        <view class="calendar-hero">
+          <view class="calendar-hero__copy">
+            <text class="panel__eyebrow">MOOD CALENDAR</text>
             <text class="panel__title">运势晴雨图</text>
             <text class="panel__body">
               日历会汇总测试完成、每日一问、手动心情和碎片收集等事件，点开单元格可查看详情并补记心情。
             </text>
           </view>
-          <text class="calendar-panel__all" @tap="toggleCalendarView('year')">查看全部</text>
+          <view class="calendar-hero__badge">
+            <text class="calendar-hero__emoji">{{ calendarTone.emoji }}</text>
+            <text class="calendar-hero__label">{{ calendarTone.title }}</text>
+            <text class="calendar-hero__desc">{{ calendarTone.body }}</text>
+          </view>
+        </view>
+        <view class="calendar-callouts">
+          <text class="calendar-callout">🔥 连续 {{ calendarStats?.current_streak || 0 }} 天</text>
+          <text class="calendar-callout">🫧 共记录 {{ calendarActivityTotal }} 次</text>
+          <text class="calendar-callout">📍 {{ calendarView === "month" ? "月度视图" : "年度视图" }}</text>
+        </view>
+        <view class="calendar-stats">
+          <view v-for="item in miniStats" :key="item.label" class="calendar-stats__card">
+            <text class="calendar-stats__value">{{ item.value }}</text>
+            <text class="calendar-stats__label">{{ item.label }}</text>
+          </view>
+        </view>
+        <view class="calendar-controls">
           <view class="calendar-toggle">
             <button
               class="calendar-toggle__button"
@@ -837,12 +998,7 @@ onUnload(() => {
               年
             </button>
           </view>
-        </view>
-        <view class="calendar-stats">
-          <view v-for="item in miniStats" :key="item.label" class="calendar-stats__card">
-            <text class="calendar-stats__value">{{ item.value }}</text>
-            <text class="calendar-stats__label">{{ item.label }}</text>
-          </view>
+          <text class="calendar-panel__all" @tap="toggleCalendarView('year')">切到全年总览</text>
         </view>
         <view class="calendar-toolbar">
           <button class="calendar-toolbar__arrow" @tap="changeCalendarMonth(-1)">‹</button>
@@ -900,6 +1056,24 @@ onUnload(() => {
             </view>
           </view>
         </scroll-view>
+        <view class="calendar-legend">
+          <view class="calendar-legend__item">
+            <view class="calendar-legend__dot heatmap-cell--level-0" />
+            <text>轻记录</text>
+          </view>
+          <view class="calendar-legend__item">
+            <view class="calendar-legend__dot heatmap-cell--level-1" />
+            <text>开始活跃</text>
+          </view>
+          <view class="calendar-legend__item">
+            <view class="calendar-legend__dot heatmap-cell--level-2" />
+            <text>状态在线</text>
+          </view>
+          <view class="calendar-legend__item">
+            <view class="calendar-legend__dot heatmap-cell--level-4" />
+            <text>高光时刻</text>
+          </view>
+        </view>
         <view class="heatmap heatmap--mini">
           <view
             v-for="(week, weekIndex) in calendarHeatmapWeeks"
@@ -921,9 +1095,18 @@ onUnload(() => {
         </view>
       </view>
 
-      <view class="panel" v-if="dailyQuestion">
-        <text class="panel__title">今日灵魂一问</text>
-        <text class="panel__body">{{ dailyQuestion.question_text }}</text>
+      <view class="panel panel--daily" v-if="dailyQuestion">
+        <view class="daily-question__hero">
+          <view>
+            <text class="panel__eyebrow">SOUL PROMPT</text>
+            <text class="panel__title">今日灵魂一问</text>
+          </view>
+          <view class="daily-question__orb">{{ dailyQuestion.answered ? "✨" : "🪄" }}</view>
+        </view>
+        <view class="daily-question__question-card">
+          <text class="daily-question__date">记录于 {{ formatDayLabel(dailyQuestion.answer_date) }}</text>
+          <text class="daily-question__question">{{ dailyQuestion.question_text }}</text>
+        </view>
         <view class="daily-question-stats">
           <view class="daily-question-stat">
             <text class="daily-question-stat__value">{{ dailyQuestion.current_streak }}</text>
@@ -940,36 +1123,43 @@ onUnload(() => {
         </view>
         <view v-if="!dailyQuestion.answered" class="daily-question-options">
           <button
-            v-for="(option, index) in dailyQuestion.options"
-            :key="`${dailyQuestion.question_id}-${index}`"
+            v-for="item in dailyQuestionOptionCards"
+            :key="`${dailyQuestion?.question_id}-${item.index}`"
             class="daily-question-option"
             :disabled="dailyQuestionSubmitting"
-            @tap="answerDailyQuestion(index)"
+            @tap="answerDailyQuestion(item.index)"
           >
-            {{ option }}
+            <view class="daily-question-option__badge">
+              <text class="daily-question-option__index">{{ item.label }}</text>
+            </view>
+            <view class="daily-question-option__copy">
+              <text class="daily-question-option__emoji">{{ item.emoji }}</text>
+              <text class="daily-question-option__label">{{ item.option }}</text>
+            </view>
+            <text class="daily-question-option__arrow">›</text>
           </button>
-          <view
-            v-if="dailyQuestion.retroactive_dates && dailyQuestion.retroactive_dates.length"
-            class="daily-question-retro"
-          >
+          <view v-if="retroQuestionCards.length" class="daily-question-retro">
             <text class="daily-question-retro__title">最近 3 天可补签</text>
             <view class="daily-question-retro__chips">
               <button
-                v-for="retroDate in dailyQuestion.retroactive_dates"
-                :key="retroDate"
+                v-for="item in retroQuestionCards"
+                :key="item.date"
                 class="daily-question-retro__chip"
                 :disabled="dailyQuestionSubmitting"
-                @tap="answerDailyQuestion(0, retroDate)"
+                @tap="answerDailyQuestion(0, item.date)"
               >
-                补签 {{ formatRetroDate(retroDate) }}
+                {{ item.emoji }} 补签 {{ formatRetroDate(item.date) }}
               </button>
             </view>
           </view>
         </view>
         <view v-else class="daily-question-result">
-          <text class="daily-question-result__label">
-            今日选择：{{ dailyQuestion.options[dailyQuestion.selected_index || 0] }}
-          </text>
+          <view class="daily-question-result__head">
+            <text class="daily-question-result__tag">今日选择</text>
+            <text class="daily-question-result__choice">
+              {{ dailyQuestion.options[dailyQuestion.selected_index || 0] }}
+            </text>
+          </view>
           <text class="daily-question-result__body">
             {{ dailyQuestion.insight || "今天的答案已经留下，明天再来看看新的问题。" }}
           </text>
@@ -991,18 +1181,34 @@ onUnload(() => {
         </view>
       </view>
 
-      <view class="panel" v-if="overview.fragment_progress.length">
-        <text class="panel__title">灵魂碎片地图</text>
-        <text class="panel__body">
-          5 个类别会形成一张横向灵魂地图。每列都会显示收集进度，集齐后可以展开更深一层的洞察。
-        </text>
+      <view class="panel panel--fragment" v-if="overview.fragment_progress.length">
+        <view class="fragment-panel__hero">
+          <view class="fragment-panel__copy">
+            <text class="panel__eyebrow">SOUL FRAGMENTS</text>
+            <text class="panel__title">灵魂碎片地图</text>
+            <text class="panel__body">
+              5 个类别会形成一张横向灵魂地图。每列都会显示收集进度，集齐后可以展开更深一层的洞察。
+            </text>
+          </view>
+          <view class="fragment-panel__badge">
+            <text class="fragment-panel__badge-value">{{ fragmentCompletionRate }}%</text>
+            <text class="fragment-panel__badge-label">已点亮</text>
+          </view>
+        </view>
+        <view class="fragment-panel__meta">
+          <text class="fragment-panel__chip">已完成 {{ fragmentCompletedCount }} / {{ overview.fragment_progress.length }} 组</text>
+          <text class="fragment-panel__chip">收集 {{ overview.soul_fragments.length }} 片碎片</text>
+          <text class="fragment-panel__chip">待解锁 {{ pendingUnlockCount }} 片</text>
+        </view>
         <scroll-view scroll-x class="fragment-map">
           <view class="fragment-map__grid">
             <view
               v-for="category in fragmentColumns"
               :key="category.category_code"
               class="fragment-column"
+              :class="{ 'fragment-column--completed': category.completed }"
             >
+              <view class="fragment-column__aura" />
               <view
                 class="fragment-column__head"
                 @tap="
@@ -1015,7 +1221,12 @@ onUnload(() => {
                     )
                 "
               >
-                <text class="fragment-column__emoji">{{ category.emoji }}</text>
+                <view class="fragment-column__topline">
+                  <text class="fragment-column__emoji">{{ category.emoji }}</text>
+                  <text class="fragment-column__state">
+                    {{ category.completed ? "已完成" : "收集中" }}
+                  </text>
+                </view>
                 <text class="fragment-column__name">{{ category.category_name }}</text>
                 <text class="fragment-column__meta">
                   {{ category.unlocked_count }}/{{ category.total_count }}
@@ -1049,11 +1260,24 @@ onUnload(() => {
         </scroll-view>
       </view>
 
-      <view class="panel" v-if="capsules.length">
-        <text class="panel__title">时光胶囊</text>
-        <text class="panel__body">
-          这里会保存你写给未来的信。锁定中的胶囊会显示剩余天数，已解锁的内容会在首页优先弹出揭示。
-        </text>
+      <view class="panel panel--capsule" v-if="capsules.length">
+        <view class="panel__head">
+          <view>
+            <text class="panel__eyebrow">TIME CAPSULES</text>
+            <text class="panel__title">时光胶囊</text>
+            <text class="panel__body">
+              这里会保存你写给未来的信。锁定中的胶囊会显示剩余天数，已解锁的内容会在首页优先弹出揭示。
+            </text>
+          </view>
+          <view class="capsule-panel__counter">
+            <text class="capsule-panel__counter-value">{{ capsuleUnlockedCount }}/{{ capsules.length }}</text>
+            <text class="capsule-panel__counter-label">已揭封</text>
+          </view>
+        </view>
+        <view class="capsule-panel__summary">
+          <text class="capsule-panel__summary-chip">💌 已开启 {{ capsuleUnlockedCount }} 封</text>
+          <text class="capsule-panel__summary-chip">🔒 待开启 {{ capsules.length - capsuleUnlockedCount }} 封</text>
+        </view>
         <view class="capsule-list">
           <view
             v-for="item in capsules"
@@ -1061,20 +1285,22 @@ onUnload(() => {
             class="capsule-card"
             :class="{ 'capsule-card--open': item.is_unlocked }"
           >
-            <text class="capsule-card__icon">{{ item.is_unlocked ? item.persona_icon || "💌" : "🔒" }}</text>
-            <view class="capsule-card__content">
-              <text class="capsule-card__title">{{ item.persona_title || "时光胶囊" }}</text>
-              <text class="capsule-card__meta">
-                {{
-                  item.is_unlocked
-                    ? `已到期 · ${formatDayLabel(item.unlock_date)}`
-                    : `锁定中 · 还剩 ${item.days_remaining} 天`
-                }}
-              </text>
-              <text class="capsule-card__body">
-                {{ item.is_unlocked ? item.message : "等时间到达后，首页会自动帮你揭开这封信。" }}
-              </text>
-            </view>
+            <text class="capsule-card__stamp">{{ item.is_unlocked ? "💌" : "🔒" }}</text>
+            <text class="capsule-card__dear">亲爱的 {{ overview.nickname || "你" }}，</text>
+            <text class="capsule-card__title">{{ item.persona_title || "时光胶囊" }}</text>
+            <text class="capsule-card__meta">
+              {{
+                item.is_unlocked
+                  ? `已在 ${formatDayLabel(item.unlock_date)} 打开`
+                  : `锁定中 · 还剩 ${item.days_remaining} 天`
+              }}
+            </text>
+            <text class="capsule-card__body">
+              {{ item.is_unlocked ? item.message : "等时间到达后，首页会自动帮你揭开这封信。" }}
+            </text>
+            <text class="capsule-card__sign">
+              来自 {{ item.persona_icon || "✨" }} {{ item.is_unlocked ? "过去的你" : "未来的你" }}
+            </text>
           </view>
         </view>
       </view>
@@ -1100,16 +1326,26 @@ onUnload(() => {
         </view>
       </view>
 
-      <view class="panel">
-        <text class="panel__title">账号与登录</text>
-        <text
-          v-if="isWechatMiniProgram && sessionUser?.has_openid"
-          class="panel__body panel__body--accent"
-        >
-          当前已绑定微信身份，小程序重新登录时会优先复用这个账号。
-        </text>
+      <view class="panel panel--account">
+        <view class="panel__head">
+          <view>
+            <text class="panel__eyebrow">ACCOUNT LAYER</text>
+            <text class="panel__title">账号与登录</text>
+            <text class="panel__body">把这份灵魂档案稳稳保存下来，换设备也不会丢。</text>
+          </view>
+          <view class="account-panel__badge">
+            {{ sessionUser?.is_guest ? "访客模式" : "已保护" }}
+          </view>
+        </view>
+        <view class="account-status">
+          <view v-for="item in accountStatusCards" :key="item.key" class="account-status__card">
+            <text class="account-status__emoji">{{ item.emoji }}</text>
+            <text class="account-status__title">{{ item.title }}</text>
+            <text class="account-status__body">{{ item.body }}</text>
+          </view>
+        </view>
         <view
-          v-else-if="isWechatMiniProgram && sessionUser && !sessionUser.has_openid"
+          v-if="isWechatMiniProgram && sessionUser && !sessionUser.has_openid"
           class="account-form"
         >
           <text class="panel__body">
@@ -1123,10 +1359,7 @@ onUnload(() => {
             {{ linkingWechat ? "升级中..." : "升级为微信身份" }}
           </button>
         </view>
-        <text class="panel__body" v-if="sessionUser?.has_phone">
-          当前账号已绑定手机号 {{ sessionUser.masked_phone || "已绑定" }}，后续可直接用验证码登录并同步历史记录。
-        </text>
-        <view v-else class="account-form">
+        <view v-if="!sessionUser?.has_phone" class="account-form">
           <text class="panel__body">
             绑定手机号后，你的访客记录会升级到正式账号，换设备也能找回历史测试和报告。
           </text>
@@ -1159,83 +1392,89 @@ onUnload(() => {
           >
             {{ bindingPhone ? "绑定中..." : "绑定手机号" }}
           </button>
-          <view
-            v-if="profileSettings"
-            class="sound-setting"
-          >
+        </view>
+        <view v-if="profileSettings" class="sound-setting sound-setting--panel">
+          <view>
             <text class="sound-setting__label">声音反馈</text>
-            <switch
-              :checked="profileSettings.sound_enabled"
-              :disabled="savingSound"
-              color="#9B7ED8"
-              @change="onProfileSoundSwitchChange"
-            />
+            <text class="sound-setting__hint">答题、切页和解锁成就时播放轻量反馈</text>
           </view>
+          <switch
+            :checked="profileSettings.sound_enabled"
+            :disabled="savingSound"
+            color="#9B7ED8"
+            @change="onProfileSoundSwitchChange"
+          />
         </view>
       </view>
 
-      <view class="panel">
-        <text class="panel__title">设置菜单</text>
+      <view class="panel panel--settings">
+        <view class="panel__head">
+          <view>
+            <text class="panel__eyebrow">SETTINGS</text>
+            <text class="panel__title">系统与偏好</text>
+            <text class="panel__body">通知、声音、隐私和关于页面都会从这里继续展开。</text>
+          </view>
+        </view>
         <view class="settings-menu">
-          <view class="settings-item" @tap="openSettingItem('edit')">
-            <text class="settings-item__icon">👤</text>
-            <text class="settings-item__label">编辑资料</text>
-            <text class="settings-item__arrow">›</text>
-          </view>
-          <view class="settings-item" @tap="openSettingItem('sound')">
-            <text class="settings-item__icon">🔊</text>
-            <text class="settings-item__label">声音与触感</text>
-            <text class="settings-item__arrow">›</text>
-          </view>
-          <view class="settings-item" @tap="openSettingItem('notify')">
-            <text class="settings-item__icon">🔔</text>
-            <text class="settings-item__label">通知设置</text>
-            <text class="settings-item__arrow">›</text>
-          </view>
-          <view class="settings-item" @tap="openSettingItem('privacy')">
-            <text class="settings-item__icon">🛡️</text>
-            <text class="settings-item__label">隐私设置</text>
-            <text class="settings-item__arrow">›</text>
-          </view>
-          <view class="settings-item" @tap="openSettingItem('about')">
-            <text class="settings-item__icon">💜</text>
-            <text class="settings-item__label">关于心测</text>
-            <text class="settings-item__arrow">›</text>
-          </view>
-        </view>
-      </view>
-
-      <view class="panel" v-if="overview.dominant_dimensions.length">
-        <text class="panel__title">基础画像聚合</text>
-        <text class="panel__body">
-          当前阶段先基于你已完成的报告，聚合出最稳定浮现的核心维度。
-        </text>
-        <view class="chips">
           <view
-            v-for="item in overview.dominant_dimensions"
-            :key="item.dim_code"
-            class="chip"
+            v-for="item in settingMenuItems"
+            :key="item.key"
+            class="settings-item"
+            @tap="openSettingItem(item.key)"
           >
-            <text class="chip__name">{{ item.dim_code }}</text>
-            <text class="chip__score">{{ item.total_score.toFixed(2) }}</text>
+            <view class="settings-item__icon-wrap">
+              <text class="settings-item__icon">{{ item.icon }}</text>
+            </view>
+            <view class="settings-item__content">
+              <text class="settings-item__label">{{ item.label }}</text>
+              <text class="settings-item__desc">{{ item.description }}</text>
+            </view>
+            <text class="settings-item__arrow">›</text>
           </view>
         </view>
       </view>
 
-      <view class="panel" v-if="overview.persona_distribution.length">
-        <text class="panel__title">人格分布</text>
-        <view class="rows">
-          <view
-            v-for="item in overview.persona_distribution"
-            :key="`${item.persona_key || 'unknown'}-${item.count}`"
-            class="row"
-          >
-            <text class="row__name">{{ item.persona_name || "未命名人格" }}</text>
-            <text class="row__value">{{ item.count }} 次</text>
+      <view
+        class="panel archive-panel"
+        v-if="overview.dominant_dimensions.length || overview.persona_distribution.length"
+      >
+        <view class="panel__head">
+          <view>
+            <text class="panel__eyebrow">ARCHIVE SNAPSHOT</text>
+            <text class="panel__title">灵魂档案摘要</text>
+            <text class="panel__body">把已经出现得最稳定的维度和人格，压缩成一张易读的总览。</text>
+          </view>
+          <text class="archive-panel__meta">{{ overview.distinct_test_count }} 类测试</text>
+        </view>
+        <view v-if="overview.dominant_dimensions.length" class="archive-panel__section">
+          <text class="archive-panel__section-title">稳定维度</text>
+          <view class="chips">
+            <view
+              v-for="item in overview.dominant_dimensions"
+              :key="item.dim_code"
+              class="chip"
+            >
+              <text class="chip__name">{{ item.dim_code }}</text>
+              <text class="chip__score">{{ item.total_score.toFixed(2) }}</text>
+            </view>
+          </view>
+        </view>
+        <view v-if="overview.persona_distribution.length" class="archive-panel__section">
+          <text class="archive-panel__section-title">人格分布</text>
+          <view class="rows">
+            <view
+              v-for="item in overview.persona_distribution.slice(0, 5)"
+              :key="`${item.persona_key || 'unknown'}-${item.count}`"
+              class="row"
+            >
+              <text class="row__name">{{ item.persona_name || "未命名人格" }}</text>
+              <text class="row__value">{{ item.count }} 次</text>
+            </view>
           </view>
         </view>
       </view>
 
+    </view>
     </view>
   </view>
   <CelebrationOverlay
@@ -1308,7 +1547,52 @@ onUnload(() => {
 <style lang="scss" scoped>
 /* ── Page shell ── */
 .page {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
   padding: 28rpx 28rpx 40rpx;
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.94), rgba(255, 246, 239, 0.78) 46%, #fffaf7 100%);
+}
+
+.page__content {
+  position: relative;
+  z-index: 1;
+}
+
+.page__glow,
+.page__mesh {
+  position: absolute;
+  pointer-events: none;
+}
+
+.page__glow {
+  width: 460rpx;
+  height: 460rpx;
+  border-radius: 50%;
+  filter: blur(34px);
+  opacity: 0.42;
+}
+
+.page__glow--violet {
+  top: -120rpx;
+  right: -120rpx;
+  background: rgba(155, 126, 216, 0.24);
+}
+
+.page__glow--pink {
+  left: -140rpx;
+  top: 420rpx;
+  background: rgba(232, 114, 154, 0.16);
+}
+
+.page__mesh {
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(155, 126, 216, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(232, 114, 154, 0.03) 1px, transparent 1px);
+  background-size: 44rpx 44rpx;
+  opacity: 0.42;
 }
 
 .badge-sheet {
@@ -1403,9 +1687,15 @@ onUnload(() => {
 .panel {
   padding: 28rpx;
   border-radius: 24rpx;
-  background: rgba(255, 255, 255, 0.85);
-  border: 2rpx solid $xc-line;
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(155, 126, 216, 0.12);
+  box-shadow: 0 20rpx 52rpx rgba(155, 126, 216, 0.12);
   transition: transform $xc-fast $xc-ease, box-shadow $xc-fast $xc-ease;
+
+  // #ifdef H5
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  // #endif
 
   &:active {
     transform: scale(0.995);
@@ -2848,6 +3138,457 @@ onUnload(() => {
   font-size: 24rpx;
   color: $xc-hint;
   text-align: right;
+}
+
+.panel__eyebrow {
+  display: block;
+  margin-bottom: 10rpx;
+  font-size: 19rpx;
+  font-weight: 700;
+  letter-spacing: 2.8rpx;
+  color: rgba(123, 110, 133, 0.7);
+}
+
+.calendar-hero,
+.fragment-panel__hero {
+  display: flex;
+  gap: 18rpx;
+  align-items: flex-start;
+}
+
+.calendar-hero__copy,
+.fragment-panel__copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.calendar-hero__badge,
+.fragment-panel__badge {
+  width: 188rpx;
+  padding: 18rpx 16rpx;
+  border-radius: 24rpx;
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.92), rgba(245, 235, 255, 0.88));
+  border: 2rpx solid rgba(155, 126, 216, 0.12);
+  text-align: center;
+  box-shadow: 0 16rpx 36rpx rgba(155, 126, 216, 0.12);
+}
+
+.calendar-hero__emoji {
+  display: block;
+  font-size: 40rpx;
+}
+
+.calendar-hero__label,
+.fragment-panel__badge-value {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 30rpx;
+  font-weight: 700;
+  color: $xc-accent;
+}
+
+.calendar-hero__desc,
+.fragment-panel__badge-label {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 21rpx;
+  line-height: 1.5;
+  color: $xc-muted;
+}
+
+.calendar-callouts,
+.fragment-panel__meta,
+.capsule-panel__summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx;
+  margin-top: 18rpx;
+}
+
+.calendar-callout,
+.fragment-panel__chip,
+.capsule-panel__summary-chip {
+  padding: 10rpx 16rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 243, 233, 0.95);
+  border: 1px solid rgba(155, 126, 216, 0.08);
+  font-size: 22rpx;
+  color: $xc-ink;
+}
+
+.calendar-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18rpx;
+  margin-top: 18rpx;
+}
+
+.calendar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx 16rpx;
+  margin-top: 20rpx;
+}
+
+.calendar-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8rpx;
+  font-size: 21rpx;
+  color: $xc-muted;
+}
+
+.calendar-legend__dot {
+  width: 20rpx;
+  height: 20rpx;
+  border-radius: 8rpx;
+  border: 1px solid rgba(155, 126, 216, 0.08);
+}
+
+.daily-question__hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18rpx;
+}
+
+.daily-question__orb {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.92), rgba(255, 236, 245, 0.75)),
+    linear-gradient(135deg, rgba(155, 126, 216, 0.26), rgba(232, 114, 154, 0.18));
+  box-shadow: 0 16rpx 32rpx rgba(155, 126, 216, 0.14);
+  font-size: 34rpx;
+}
+
+.daily-question__question-card {
+  margin-top: 18rpx;
+  padding: 22rpx 22rpx 24rpx;
+  border-radius: 24rpx;
+  background:
+    linear-gradient(145deg, rgba(255, 248, 242, 0.96), rgba(248, 240, 255, 0.92));
+  border: 2rpx solid rgba(155, 126, 216, 0.1);
+}
+
+.daily-question__date {
+  display: block;
+  font-size: 21rpx;
+  color: $xc-muted;
+}
+
+.daily-question__question {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 31rpx;
+  line-height: 1.55;
+  color: $xc-ink;
+  font-weight: 600;
+}
+
+.daily-question-option {
+  min-height: 112rpx;
+  padding: 0 18rpx;
+  display: grid;
+  grid-template-columns: 64rpx 1fr 24rpx;
+  align-items: center;
+  gap: 14rpx;
+}
+
+.daily-question-option__badge {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 18rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.86);
+}
+
+.daily-question-option__index {
+  font-size: 24rpx;
+  font-weight: 700;
+  color: $xc-purple;
+}
+
+.daily-question-option__copy {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.daily-question-option__emoji {
+  font-size: 26rpx;
+}
+
+.daily-question-option__label {
+  flex: 1;
+  font-size: 24rpx;
+  line-height: 1.55;
+  color: $xc-ink;
+  text-align: left;
+}
+
+.daily-question-option__arrow {
+  font-size: 24rpx;
+  color: $xc-hint;
+}
+
+.daily-question-result__head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx;
+  align-items: center;
+}
+
+.daily-question-result__tag {
+  padding: 8rpx 14rpx;
+  border-radius: 999rpx;
+  background: rgba(155, 126, 216, 0.12);
+  font-size: 21rpx;
+  color: $xc-purple;
+}
+
+.daily-question-result__choice {
+  font-size: 25rpx;
+  font-weight: 700;
+  color: $xc-ink;
+}
+
+.fragment-column {
+  position: relative;
+  overflow: hidden;
+}
+
+.fragment-column--completed {
+  border-color: rgba(232, 114, 154, 0.22);
+  box-shadow: 0 18rpx 34rpx rgba(232, 114, 154, 0.12);
+}
+
+.fragment-column__aura {
+  position: absolute;
+  top: -42rpx;
+  right: -30rpx;
+  width: 132rpx;
+  height: 132rpx;
+  border-radius: 50%;
+  background: rgba(232, 114, 154, 0.12);
+  filter: blur(6px);
+  pointer-events: none;
+}
+
+.fragment-column__topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12rpx;
+}
+
+.fragment-column__state {
+  padding: 6rpx 12rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.72);
+  font-size: 20rpx;
+  color: $xc-purple;
+}
+
+.settings-item__icon-wrap {
+  width: 44rpx;
+  height: 44rpx;
+  border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(245, 238, 255, 0.88);
+}
+
+.settings-item__content {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.settings-item__label {
+  color: $xc-ink;
+}
+
+.settings-item__desc {
+  font-size: 20rpx;
+  line-height: 1.5;
+  color: $xc-muted;
+}
+
+.capsule-panel__counter {
+  min-width: 156rpx;
+  padding: 18rpx 16rpx;
+  border-radius: 24rpx;
+  background:
+    linear-gradient(145deg, rgba(253, 244, 222, 0.96), rgba(255, 234, 205, 0.92));
+  border: 2rpx solid rgba($xc-gold, 0.24);
+  text-align: center;
+  box-shadow: 0 18rpx 36rpx rgba($xc-gold, 0.14);
+}
+
+.capsule-panel__counter-value {
+  display: block;
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #8b6220;
+}
+
+.capsule-panel__counter-label {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 21rpx;
+  color: rgba(143, 97, 39, 0.82);
+}
+
+.capsule-card {
+  position: relative;
+  display: block;
+  padding: 30rpx 24rpx 24rpx;
+  border-radius: 28rpx;
+  background: linear-gradient(160deg, #faf6ee, #f5ede2);
+  border: 2rpx solid rgba($xc-gold, 0.18);
+  box-shadow: 0 18rpx 36rpx rgba(132, 96, 41, 0.08);
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 34rpx,
+        rgba(155, 126, 216, 0.04) 34rpx,
+        rgba(155, 126, 216, 0.04) 35rpx
+      );
+    pointer-events: none;
+  }
+}
+
+.capsule-card__stamp {
+  position: absolute;
+  top: 16rpx;
+  right: 18rpx;
+  font-size: 42rpx;
+  opacity: 0.62;
+  transform: rotate(12deg);
+}
+
+.capsule-card__dear {
+  display: block;
+  font-family: $xc-font-serif;
+  font-size: 25rpx;
+  font-weight: 700;
+  color: $xc-ink;
+}
+
+.capsule-card__title {
+  margin-top: 16rpx;
+  font-family: $xc-font-serif;
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
+.capsule-card__meta {
+  margin-top: 12rpx;
+  font-size: 22rpx;
+  color: rgba(143, 97, 39, 0.84);
+}
+
+.capsule-card__body {
+  margin-top: 16rpx;
+  font-family: $xc-font-serif;
+  font-size: 24rpx;
+  line-height: 1.95;
+  color: rgba(58, 46, 66, 0.82);
+}
+
+.capsule-card__sign {
+  display: block;
+  margin-top: 18rpx;
+  text-align: right;
+  font-family: $xc-font-serif;
+  font-size: 22rpx;
+  color: $xc-muted;
+  font-style: italic;
+}
+
+.account-panel__badge,
+.archive-panel__meta {
+  align-self: flex-start;
+  padding: 10rpx 16rpx;
+  border-radius: 999rpx;
+  background: rgba(245, 238, 255, 0.9);
+  font-size: 21rpx;
+  color: $xc-purple;
+}
+
+.account-status {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12rpx;
+  margin-top: 18rpx;
+}
+
+.account-status__card {
+  min-height: 172rpx;
+  padding: 18rpx 16rpx;
+  border-radius: 22rpx;
+  background: rgba(255, 247, 239, 0.92);
+  border: 2rpx solid rgba(155, 126, 216, 0.08);
+}
+
+.account-status__emoji {
+  display: block;
+  font-size: 32rpx;
+}
+
+.account-status__title {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  font-weight: 700;
+  color: $xc-ink;
+}
+
+.account-status__body {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 21rpx;
+  line-height: 1.6;
+  color: $xc-muted;
+}
+
+.sound-setting--panel {
+  margin-top: 18rpx;
+}
+
+.sound-setting__hint {
+  display: block;
+  margin-top: 6rpx;
+  font-size: 20rpx;
+  color: $xc-muted;
+}
+
+.archive-panel__section {
+  margin-top: 18rpx;
+}
+
+.archive-panel__section-title {
+  display: block;
+  font-size: 22rpx;
+  font-weight: 700;
+  color: $xc-muted;
 }
 
 /* ── Cascading entrance animations ── */

@@ -24,6 +24,59 @@ const countdownText = computed(() => {
   return `${hour}:${minute}:${second}`;
 });
 
+const heroBadge = computed(() => {
+  if (invite.value?.partner_joined) {
+    return "对方已加入";
+  }
+  if (invite.value?.can_join) {
+    return "你已准备就绪";
+  }
+  if (invite.value?.requires_test_completion) {
+    return "先完成同套测试";
+  }
+  return "邀请 24 小时有效";
+});
+
+const heroTitle = computed(() => {
+  if (!invite.value) {
+    return "灵魂匹配邀请";
+  }
+  return `邀请你一起完成「${invite.value.test_name}」`;
+});
+
+const heroBody = computed(() => {
+  if (!invite.value) {
+    return "把这份邀请发给重要的人，对方完成同一套测试后，就会自动生成双人匹配报告。";
+  }
+  return `${invite.value.initiator.nickname} 已经准备好进入这场关系实验。你们完成同一套测试后，会直接生成专属匹配报告与双人徽章。`;
+});
+
+const statusTitle = computed(() => {
+  if (invite.value?.partner_joined) {
+    return "当前已经进入匹配流程";
+  }
+  if (invite.value?.requires_test_completion) {
+    return "加入前需要先完成测试";
+  }
+  if (invite.value?.can_join) {
+    return "你的加入资格已确认";
+  }
+  return "邀请链接已经准备好了";
+});
+
+const statusBody = computed(() => {
+  if (invite.value?.partner_joined) {
+    return "系统检测到对方已经加入，接下来会自动跳入等待页并持续同步匹配进度。";
+  }
+  if (invite.value?.requires_test_completion) {
+    return `你还没有完成「${invite.value?.test_name || "当前测试"}」，先做完同一套题，再回来加入会更顺畅。`;
+  }
+  if (invite.value?.can_join) {
+    return "你的结果已经就绪，点击加入后会立即进入等待页，系统开始生成双人匹配结果。";
+  }
+  return "把邀请码或链接发给想一起测试的人，对方进入后会自动接上这条关系链路。";
+});
+
 function calcRemainSeconds() {
   if (!invite.value?.created_at) {
     remainSeconds.value = 24 * 3600;
@@ -56,6 +109,7 @@ function stopCountdown() {
 
 async function loadInvite() {
   if (!code.value) {
+    error.value = "缺少邀请码";
     return;
   }
   loading.value = true;
@@ -153,57 +207,134 @@ onShareTimeline(() => ({
 
 <template>
   <view class="page">
-    <view v-if="loading" class="panel">
-      <text class="panel__text">正在核对这份匹配邀请...</text>
-    </view>
+    <view class="page__glow page__glow--violet" />
+    <view class="page__glow page__glow--pink" />
+    <view class="page__mesh" />
 
-    <view v-else-if="error" class="panel panel--error">
-      <text class="panel__title">邀请加载失败</text>
-      <text class="panel__text">{{ error }}</text>
-      <button class="panel__button" @tap="loadInvite">重新加载</button>
-    </view>
+    <view class="page__content">
+      <view v-if="loading" class="surface-card panel">
+        <text class="panel__eyebrow">INVITATION</text>
+        <text class="panel__title">正在核对这份匹配邀请</text>
+        <text class="panel__text">我们会同步测试信息、邀请码和你的加入资格。</text>
+      </view>
 
-    <view v-else-if="invite" class="stack">
-      <view class="invite-card">
-        <text class="invite-card__title">{{ invite.test_name }}</text>
-        <text class="invite-card__desc">{{ invite.initiator.nickname }} 邀请你参与双人灵魂匹配</text>
-        <view class="invite-card__code-wrap">
-          <text class="invite-card__code">{{ invite.invite_code }}</text>
-          <button class="mini-btn" @tap="copyInviteCode">复制</button>
+      <view v-else-if="error" class="surface-card panel panel--error">
+        <text class="panel__eyebrow">UNAVAILABLE</text>
+        <text class="panel__title">邀请加载失败</text>
+        <text class="panel__text">{{ error }}</text>
+        <button class="panel__button" @tap="loadInvite">重新加载</button>
+      </view>
+
+      <view v-else-if="invite" class="stack">
+        <view class="hero">
+          <view class="hero__orb hero__orb--violet" />
+          <view class="hero__orb hero__orb--pink" />
+          <view class="hero__topline">
+            <text class="hero__eyebrow">SOUL INVITATION</text>
+            <text class="hero__badge">{{ heroBadge }}</text>
+          </view>
+
+          <view class="hero__avatars">
+            <view class="hero__avatar-wrap">
+              <view class="hero__avatar hero__avatar--primary">
+                {{ invite.initiator.avatar_value }}
+              </view>
+              <text class="hero__avatar-name">{{ invite.initiator.nickname }}</text>
+            </view>
+            <view class="hero__connector">❤</view>
+            <view class="hero__avatar-wrap">
+              <view class="hero__avatar hero__avatar--secondary">
+                {{ invite.partner?.avatar_value || "✨" }}
+              </view>
+              <text class="hero__avatar-name">{{ invite.partner?.nickname || "等待你加入" }}</text>
+            </view>
+          </view>
+
+          <text class="hero__title">{{ heroTitle }}</text>
+          <text class="hero__body">{{ heroBody }}</text>
+
+          <view class="code-card">
+            <text class="code-card__label">邀请码</text>
+            <view class="code-card__main">
+              <text class="code-card__value">{{ invite.invite_code }}</text>
+              <button class="code-card__button" @tap="copyInviteCode">复制</button>
+            </view>
+            <text class="code-card__meta">24 小时内有效 · 倒计时 {{ countdownText }}</text>
+          </view>
         </view>
-        <text class="invite-card__countdown">24 小时内有效 · {{ countdownText }}</text>
-      </view>
 
-      <view class="panel">
-        <text class="panel__title">分享方式</text>
-        <view class="share-actions">
-          <!-- #ifdef MP-WEIXIN -->
-          <button class="share-btn" open-type="share">微信好友</button>
-          <!-- #endif -->
-          <button class="share-btn" @tap="copyInviteLink">复制链接</button>
-          <button class="share-btn" @tap="openPoster">生成海报</button>
+        <view class="surface-card share-panel">
+          <view class="section-head">
+            <view>
+              <text class="section-head__title">发送这份邀请</text>
+              <text class="section-head__desc">把邀请码或链接发出去，对方完成同套测试后就会生成专属双人报告。</text>
+            </view>
+          </view>
+
+          <view class="share-grid">
+            <!-- #ifdef MP-WEIXIN -->
+            <button class="share-card" open-type="share">
+              <text class="share-card__emoji">💬</text>
+              <text class="share-card__title">微信好友</text>
+              <text class="share-card__body">直接分享给聊天对象</text>
+            </button>
+            <!-- #endif -->
+            <button class="share-card" @tap="copyInviteLink">
+              <text class="share-card__emoji">🔗</text>
+              <text class="share-card__title">复制链接</text>
+              <text class="share-card__body">适合发到任意社交平台</text>
+            </button>
+            <button class="share-card" @tap="openPoster">
+              <text class="share-card__emoji">🖼</text>
+              <text class="share-card__title">挑战海报</text>
+              <text class="share-card__body">在报告页生成更完整的分享图</text>
+            </button>
+          </view>
         </view>
-      </view>
 
-      <view class="panel" v-if="invite.partner_joined">
-        <text class="panel__title">当前状态</text>
-        <text class="panel__text">好友已加入，系统正在生成匹配报告，请稍候在等待页查看进度。</text>
-      </view>
+        <view class="surface-card status-card">
+          <view class="section-head">
+            <view>
+              <text class="section-head__title">{{ statusTitle }}</text>
+              <text class="section-head__desc">{{ statusBody }}</text>
+            </view>
+          </view>
 
-      <view class="panel" v-else-if="invite.requires_test_completion">
-        <text class="panel__title">加入前先完成测试</text>
-        <text class="panel__text">你还没有完成「{{ invite.test_name }}」，先做完同一套测试再回来加入。</text>
-        <button class="panel__button" @tap="startTest">去完成测试</button>
-      </view>
+          <view class="status-steps">
+            <view class="status-step status-step--done">
+              <text class="status-step__emoji">💌</text>
+              <text class="status-step__label">邀请创建</text>
+            </view>
+            <view class="status-step" :class="{ 'status-step--done': invite.partner_joined || invite.can_join }">
+              <text class="status-step__emoji">{{ invite.can_join ? "✅" : "🧩" }}</text>
+              <text class="status-step__label">
+                {{ invite.requires_test_completion ? "完成测试" : "确认资格" }}
+              </text>
+            </view>
+            <view class="status-step" :class="{ 'status-step--done': invite.partner_joined }">
+              <text class="status-step__emoji">{{ invite.partner_joined ? "🌙" : "⌛" }}</text>
+              <text class="status-step__label">进入等待</text>
+            </view>
+          </view>
 
-      <view class="panel" v-else-if="invite.can_join">
-        <text class="panel__title">立即加入</text>
-        <text class="panel__text">你的结果已就绪，加入后将自动进入匹配等待页。</text>
-        <button class="panel__button" :loading="joining" @tap="joinInvite">加入匹配</button>
-      </view>
+          <view v-if="invite.requires_test_completion" class="cta-card">
+            <text class="cta-card__title">先完成这套测试，再回来加入</text>
+            <text class="cta-card__body">你的个人结果准备好之后，系统才能为你们计算专属匹配度。</text>
+            <button class="panel__button" @tap="startTest">去完成测试</button>
+          </view>
 
-      <view class="hint">
-        <text>{{ invite.partner_joined ? "邀请已送达，对方正在作答中..." : "邀请已准备好，发送给朋友后等待对方加入。" }}</text>
+          <view v-else-if="invite.can_join" class="cta-card">
+            <text class="cta-card__title">现在就可以加入匹配</text>
+            <text class="cta-card__body">点击后会自动进入等待页，系统开始拉起这场双人关系实验。</text>
+            <button class="panel__button" :loading="joining" @tap="joinInvite">加入匹配</button>
+          </view>
+
+          <view v-else class="cta-card cta-card--soft">
+            <text class="cta-card__title">邀请已准备就绪</text>
+            <text class="cta-card__body">如果这是你自己打开的邀请页，现在可以继续把它转发给那位想一起测试的人。</text>
+            <button class="panel__button panel__button--ghost" @tap="copyInviteLink">复制链接继续发送</button>
+          </view>
+        </view>
       </view>
     </view>
   </view>
@@ -211,30 +342,97 @@ onShareTimeline(() => ({
 
 <style lang="scss" scoped>
 .page {
-  padding: 28rpx 24rpx 40rpx;
-  animation: fadeInUp 0.45s $xc-ease both;
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  padding: 28rpx 24rpx calc(46rpx + env(safe-area-inset-bottom, 0rpx));
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.94), rgba(255, 246, 240, 0.8) 48%, #fffaf7 100%);
+}
+
+.page__content {
+  position: relative;
+  z-index: 1;
+}
+
+.page__glow,
+.page__mesh {
+  position: absolute;
+  pointer-events: none;
+}
+
+.page__glow {
+  width: 420rpx;
+  height: 420rpx;
+  border-radius: 50%;
+  filter: blur(32px);
+  opacity: 0.42;
+}
+
+.page__glow--violet {
+  top: -120rpx;
+  right: -120rpx;
+  background: rgba(155, 126, 216, 0.26);
+}
+
+.page__glow--pink {
+  bottom: 120rpx;
+  left: -120rpx;
+  background: rgba(232, 114, 154, 0.16);
+}
+
+.page__mesh {
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(155, 126, 216, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(232, 114, 154, 0.03) 1px, transparent 1px);
+  background-size: 44rpx 44rpx;
+  opacity: 0.42;
 }
 
 .stack {
   display: flex;
   flex-direction: column;
-  gap: 16rpx;
+  gap: 18rpx;
 }
 
-.panel,
-.invite-card {
-  @include card-base;
-  padding: 24rpx;
+.surface-card {
+  border-radius: 34rpx;
+  border: 1px solid rgba(155, 126, 216, 0.12);
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 24rpx 60rpx rgba(155, 126, 216, 0.1);
+
+  // #ifdef H5
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  // #endif
+}
+
+.panel {
+  padding: 28rpx;
 }
 
 .panel--error {
-  border-color: rgba(232, 114, 154, 0.26);
+  border-color: rgba(232, 114, 154, 0.18);
+}
+
+.panel__eyebrow,
+.hero__eyebrow {
+  font-size: 20rpx;
+  letter-spacing: 4rpx;
+  text-transform: uppercase;
+}
+
+.panel__eyebrow {
+  color: rgba(124, 93, 191, 0.52);
 }
 
 .panel__title {
   display: block;
+  margin-top: 10rpx;
   font-size: 30rpx;
   font-weight: 700;
+  color: $xc-ink;
 }
 
 .panel__text {
@@ -246,85 +444,320 @@ onShareTimeline(() => ({
 }
 
 .panel__button {
-  margin-top: 14rpx;
+  margin-top: 18rpx;
   border-radius: 999rpx;
-  background: linear-gradient(135deg, #9b7ed8, #e8729a);
+  background: linear-gradient(135deg, #7c5dbf, #e8729a);
   color: #fff;
-}
-
-.invite-card {
-  background:
-    linear-gradient(140deg, rgba(155, 126, 216, 0.2), rgba(232, 114, 154, 0.16)),
-    rgba(255, 255, 255, 0.9);
-}
-
-.invite-card__title {
-  display: block;
-  font-size: 34rpx;
+  font-size: 24rpx;
   font-weight: 700;
 }
 
-.invite-card__desc {
-  display: block;
-  margin-top: 10rpx;
-  font-size: 23rpx;
-  color: $xc-muted;
+.panel__button--ghost {
+  background: rgba(124, 93, 191, 0.08);
+  color: $xc-purple-d;
 }
 
-.invite-card__code-wrap {
-  margin-top: 18rpx;
+.hero {
+  position: relative;
+  overflow: hidden;
+  padding: 30rpx 28rpx 28rpx;
+  border-radius: 40rpx;
+  background:
+    radial-gradient(circle at top right, rgba(255, 255, 255, 0.3), transparent 36%),
+    linear-gradient(145deg, #7459bf 0%, #9b7ed8 36%, #f093b7 100%);
+  color: #fff;
+  box-shadow: 0 28rpx 72rpx rgba(124, 93, 191, 0.24);
+}
+
+.hero__orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(14px);
+  opacity: 0.26;
+}
+
+.hero__orb--violet {
+  top: -28rpx;
+  left: -18rpx;
+  width: 170rpx;
+  height: 170rpx;
+  background: rgba(255, 255, 255, 0.42);
+}
+
+.hero__orb--pink {
+  right: -34rpx;
+  bottom: 64rpx;
+  width: 170rpx;
+  height: 170rpx;
+  background: rgba(255, 220, 232, 0.42);
+}
+
+.hero__topline {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12rpx;
-  padding: 14rpx 16rpx;
-  border-radius: 18rpx;
-  background: rgba(255, 255, 255, 0.88);
 }
 
-.invite-card__code {
-  font-size: 54rpx;
-  font-weight: 700;
-  letter-spacing: 10rpx;
-  color: $xc-purple;
+.hero__eyebrow {
+  color: rgba(255, 255, 255, 0.8);
 }
 
-.invite-card__countdown {
-  display: block;
-  margin-top: 12rpx;
-  font-size: 22rpx;
-  color: $xc-muted;
-}
-
-.mini-btn {
-  margin: 0;
+.hero__badge {
+  padding: 10rpx 16rpx;
   border-radius: 999rpx;
-  background: rgba(155, 126, 216, 0.14);
-  color: $xc-purple;
-  font-size: 22rpx;
-  padding: 0 22rpx;
+  background: rgba(255, 255, 255, 0.16);
+  font-size: 20rpx;
+  color: rgba(255, 255, 255, 0.92);
 }
 
-.share-actions {
-  margin-top: 12rpx;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+.hero__avatars {
+  position: relative;
+  z-index: 1;
+  margin-top: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16rpx;
+}
+
+.hero__avatar-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 10rpx;
 }
 
-.share-btn {
-  border-radius: 16rpx;
-  background: rgba(255, 255, 255, 0.88);
-  color: $xc-ink;
-  font-size: 22rpx;
-  border: 1px solid rgba(155, 126, 216, 0.14);
+.hero__avatar {
+  width: 116rpx;
+  height: 116rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 50rpx;
+  color: #47335f;
+  border: 4rpx solid rgba(255, 255, 255, 0.72);
 }
 
-.hint {
-  padding: 18rpx 20rpx;
-  border-radius: 16rpx;
-  background: rgba(237, 229, 249, 0.5);
+.hero__avatar--primary {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.hero__avatar--secondary {
+  background: rgba(255, 243, 247, 0.86);
+}
+
+.hero__avatar-name {
+  font-size: 21rpx;
+  color: rgba(255, 255, 255, 0.84);
+}
+
+.hero__connector {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.14);
+  font-size: 26rpx;
+}
+
+.hero__title {
+  position: relative;
+  z-index: 1;
+  display: block;
+  margin-top: 22rpx;
+  text-align: center;
+  font-size: 48rpx;
+  line-height: 1.2;
+  font-family: $xc-font-serif;
+  font-weight: 700;
+}
+
+.hero__body {
+  position: relative;
+  z-index: 1;
+  display: block;
+  margin-top: 12rpx;
+  text-align: center;
+  font-size: 24rpx;
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.code-card {
+  position: relative;
+  z-index: 1;
+  margin-top: 24rpx;
+  padding: 20rpx;
+  border-radius: 28rpx;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.code-card__label,
+.code-card__meta {
+  display: block;
+}
+
+.code-card__label {
+  font-size: 21rpx;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.code-card__main {
+  margin-top: 14rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12rpx;
+}
+
+.code-card__value {
+  font-size: 56rpx;
+  line-height: 1;
+  letter-spacing: 10rpx;
+  font-weight: 800;
+}
+
+.code-card__button {
+  min-width: 122rpx;
+  height: 68rpx;
+  padding: 0 18rpx;
+  border-radius: 999rpx;
+  border: none;
+  background: rgba(255, 255, 255, 0.92);
+  color: $xc-purple-d;
   font-size: 22rpx;
-  color: $xc-purple;
+  font-weight: 700;
+}
+
+.code-card__meta {
+  margin-top: 12rpx;
+  font-size: 20rpx;
+  color: rgba(255, 255, 255, 0.76);
+}
+
+.share-panel,
+.status-card {
+  padding: 26rpx;
+}
+
+.section-head__title {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 700;
+  color: $xc-ink;
+}
+
+.section-head__desc {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  line-height: 1.7;
+  color: $xc-muted;
+}
+
+.share-grid {
+  margin-top: 18rpx;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12rpx;
+}
+
+.share-card {
+  min-height: 176rpx;
+  padding: 20rpx 18rpx;
+  border-radius: 26rpx;
+  border: 1px solid rgba(155, 126, 216, 0.1);
+  background:
+    radial-gradient(circle at top right, rgba(255, 255, 255, 0.58), transparent 34%),
+    rgba(255, 255, 255, 0.84);
+  text-align: left;
+}
+
+.share-card__emoji {
+  display: block;
+  font-size: 34rpx;
+}
+
+.share-card__title {
+  display: block;
+  margin-top: 16rpx;
+  font-size: 24rpx;
+  font-weight: 700;
+  color: $xc-ink;
+}
+
+.share-card__body {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 20rpx;
+  line-height: 1.6;
+  color: $xc-muted;
+}
+
+.status-steps {
+  margin-top: 18rpx;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12rpx;
+}
+
+.status-step {
+  padding: 18rpx 14rpx;
+  border-radius: 22rpx;
+  background: rgba(124, 93, 191, 0.05);
+  text-align: center;
+}
+
+.status-step--done {
+  background: linear-gradient(145deg, rgba(124, 93, 191, 0.12), rgba(232, 114, 154, 0.1));
+}
+
+.status-step__emoji {
+  display: block;
+  font-size: 30rpx;
+}
+
+.status-step__label {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 20rpx;
+  line-height: 1.5;
+  color: $xc-ink;
+  font-weight: 600;
+}
+
+.cta-card {
+  margin-top: 18rpx;
+  padding: 20rpx;
+  border-radius: 26rpx;
+  background:
+    radial-gradient(circle at top right, rgba(255, 255, 255, 0.62), transparent 34%),
+    linear-gradient(145deg, rgba(124, 93, 191, 0.12), rgba(232, 114, 154, 0.1)),
+    rgba(255, 255, 255, 0.84);
+}
+
+.cta-card--soft {
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.cta-card__title {
+  display: block;
+  font-size: 26rpx;
+  font-weight: 700;
+  color: $xc-ink;
+}
+
+.cta-card__body {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  line-height: 1.7;
+  color: $xc-muted;
 }
 </style>

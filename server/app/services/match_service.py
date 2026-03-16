@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import random
 import string
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -117,7 +117,7 @@ class MatchService:
         )
         session.partner_id = user.id
         session.status = "COMPLETED"
-        session.completed_at = datetime.now(timezone.utc)
+        session.completed_at = self._as_naive_utc(datetime.now(UTC))
         self.db.add(report)
         await self.db.flush()
 
@@ -218,6 +218,8 @@ class MatchService:
                     "test_code": test.test_code if test else "",
                     "test_name": test.title if test else "",
                     "status": session.status,
+                    "invite_code": session.invite_code,
+                    "invite_link": self._build_invite_link(session.invite_code),
                     "partner": self._user_payload(partner) if partner else None,
                     "compatibility_score": report.compatibility_score if report else None,
                     "tier": self._resolve_tier(report.compatibility_score) if report else None,
@@ -528,6 +530,12 @@ class MatchService:
 
     def _build_invite_link(self, invite_code: str) -> str:
         return f"/pages/match/invite?code={invite_code}"
+
+    @staticmethod
+    def _as_naive_utc(value: datetime) -> datetime:
+        if value.tzinfo is None:
+            return value
+        return value.astimezone(UTC).replace(tzinfo=None)
 
     def _user_payload(self, user: User | None) -> dict | None:
         if user is None:

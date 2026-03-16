@@ -159,6 +159,7 @@ def test_match_flow_creates_result_and_history() -> None:
         assert history_response.status_code == 200
         history_payload = history_response.json()
         assert len(history_payload["items"]) == 1
+        assert history_payload["items"][0]["invite_code"] == create_payload["invite_code"]
         badge_keys = {item["badge_key"] for item in history_payload["duo_badges"]}
         assert "perfect_match" in badge_keys
         assert "soul_resonance" in badge_keys

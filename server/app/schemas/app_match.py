@@ -87,6 +87,8 @@ class MatchHistoryItem(BaseModel):
     test_code: str
     test_name: str
     status: str
+    invite_code: str
+    invite_link: str | None = None
     partner: MatchUserSummary | None = None
     compatibility_score: int | None = None
     tier: str | None = None
